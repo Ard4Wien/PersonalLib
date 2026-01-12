@@ -1,0 +1,76 @@
+import { z } from "zod";
+
+// Auth şemaları
+export const registerSchema = z.object({
+    email: z.string().email("Geçerli bir e-posta adresi giriniz"),
+    username: z
+        .string()
+        .min(3, "Kullanıcı adı en az 3 karakter olmalıdır")
+        .max(20, "Kullanıcı adı en fazla 20 karakter olabilir")
+        .regex(
+            /^[a-zA-Z0-9_]+$/,
+            "Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir"
+        ),
+    displayName: z
+        .string()
+        .min(2, "Görünen ad en az 2 karakter olmalıdır")
+        .max(50, "Görünen ad en fazla 50 karakter olabilir")
+        .regex(
+            /^[a-zA-ZğüşıöçĞÜŞİÖÇ0-9\s]+$/,
+            "Görünen ad sadece harf, rakam ve boşluk içerebilir"
+        ),
+    password: z
+        .string()
+        .min(8, "Şifre en az 8 karakter olmalıdır")
+        .max(100, "Şifre en fazla 100 karakter olabilir")
+        .regex(
+            /^(?=.*[a-zA-Z])(?=.*\d)/,
+            "Şifre en az bir harf ve bir rakam içermelidir"
+        ),
+});
+
+export const loginSchema = z.object({
+    email: z.string().email("Geçerli bir e-posta adresi giriniz"),
+    password: z.string().min(1, "Şifre gereklidir"),
+});
+
+// İçerik şemaları
+export const bookSchema = z.object({
+    title: z.string().min(1, "Kitap başlığı gereklidir"),
+    author: z.string().min(1, "Yazar adı gereklidir"),
+    coverImage: z.string().url().optional().or(z.literal("")),
+    description: z.string().optional(),
+    publishedYear: z.number().optional(),
+    genre: z.string().optional(),
+    pageCount: z.number().optional(),
+    isbn: z.string().optional(),
+});
+
+export const movieSchema = z.object({
+    title: z.string().min(1, "Film başlığı gereklidir"),
+    director: z.string().min(1, "Yönetmen adı gereklidir"),
+    coverImage: z.string().url().optional().or(z.literal("")),
+    description: z.string().optional(),
+    releaseYear: z.number().optional(),
+    genre: z.string().optional(),
+    duration: z.number().optional(),
+    imdbId: z.string().optional(),
+});
+
+export const seriesSchema = z.object({
+    title: z.string().min(1, "Dizi başlığı gereklidir"),
+    creator: z.string().min(1, "Yapımcı adı gereklidir"),
+    coverImage: z.string().url().optional().or(z.literal("")),
+    description: z.string().optional(),
+    startYear: z.number().optional(),
+    endYear: z.number().optional(),
+    genre: z.string().optional(),
+    totalSeasons: z.number().min(1).default(1),
+    imdbId: z.string().optional(),
+});
+
+export type RegisterInput = z.infer<typeof registerSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+export type BookInput = z.infer<typeof bookSchema>;
+export type MovieInput = z.infer<typeof movieSchema>;
+export type SeriesInput = z.infer<typeof seriesSchema>;

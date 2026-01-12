@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════
+// KULLANICI MODELİ
+// ═══════════════════════════════════════════════════════════
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  displayName  String
+  passwordHash String
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // İlişkiler
+  books  UserBook[]
+  movies UserMovie[]
+  series UserSeries[]
+
+  @@map("users")
+}
+
+// ═══════════════════════════════════════════════════════════
+// İÇERİK MODELLERİ
+// ═══════════════════════════════════════════════════════════
+
+model Book {
+  id            String   @id @default(cuid())
+  title         String
+  author        String
+  coverImage    String?
+  description   String?
+  publishedYear Int?
+  genre         String?
+  pageCount     Int?
+  isbn          String?  @unique
+  createdAt     DateTime @default(now())
+
+  users UserBook[]
+
+  @@map("books")
+}
+
+model Movie {
+  id          String   @id @default(cuid())
+  title       String
+  director    String
+  coverImage  String?
+  description String?
+  releaseYear Int?
+  genre       String?
+  duration    Int? // dakika cinsinden
+  imdbId      String?  @unique
+  createdAt   DateTime @default(now())
+
+  users UserMovie[]
+
+  @@map("movies")
+}
+
+model Series {
+  id           String   @id @default(cuid())
+  title        String
+  creator      String
+  coverImage   String?
+  description  String?
+  startYear    Int?
+  endYear      Int?
+  genre        String?
+  totalSeasons Int      @default(1)
+  imdbId       String?  @unique
+  createdAt    DateTime @default(now())
+
+  seasons Season[]
+  users   UserSeries[]
+
+  @@map("series")
+}
+
+model Season {
+  id           String @id @default(cuid())
+  seriesId     String
+  seasonNumber Int
+  episodeCount Int?
+  releaseYear  Int?
+
+  series      Series             @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  userSeasons UserSeasonStatus[]
+
+  @@unique([seriesId, seasonNumber])
+  @@map("seasons")
+}
+
+// ═══════════════════════════════════════════════════════════
+// KULLANICI-İÇERİK İLİŞKİ MODELLERİ
+// ═══════════════════════════════════════════════════════════
+
+model UserBook {
+  id        String   @id @default(cuid())
+  userId    String
+  bookId    String
+  status    String   @default("WISHLIST") // READING, COMPLETED, WISHLIST, DROPPED
+  rating    Int?
+  notes     String?
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@map("user_books")
+}
+
+model UserMovie {
+  id          String    @id @default(cuid())
+  userId      String
+  movieId     String
+  status      String    @default("WISHLIST") // WATCHING, COMPLETED, WISHLIST, DROPPED
+  rating      Int?
+  notes       String?
+  watchedDate DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, movieId])
+  @@map("user_movies")
+}
+
+model UserSeries {
+  id            String   @id @default(cuid())
+  userId        String
+  seriesId      String
+  overallStatus String   @default("WISHLIST") // WATCHING, COMPLETED, WISHLIST, DROPPED
+  rating        Int?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  series         Series             @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  seasonStatuses UserSeasonStatus[]
+
+  @@unique([userId, seriesId])
+  @@map("user_series")
+}
+
+model UserSeasonStatus {
+  id           String @id @default(cuid())
+  userSeriesId String
+  seasonId     String
+  status       String @default("WISHLIST") // WATCHING, COMPLETED, WISHLIST, DROPPED
+
+  userSeries UserSeries @relation(fields: [userSeriesId], references: [id], onDelete: Cascade)
+  season     Season     @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([userSeriesId, seasonId])
+  @@map("user_season_statuses")
+}
