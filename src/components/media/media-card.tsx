@@ -85,14 +85,14 @@ export default function MediaCard({
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
                 <Card className="group relative flex items-center p-4 bg-white/5 border-white/10 hover:border-purple-500/50 transition-colors duration-300 overflow-hidden">
-                    <Link href={href} className="flex-1 flex items-center justify-between">
-                        <div className="flex flex-col">
-                            <h3 className="font-semibold text-white text-base line-clamp-1 group-hover:text-purple-300 transition-colors">
+                    <Link href={href} className="flex-1 flex items-center justify-between w-full min-w-0 pr-4">
+                        <div className="flex flex-col items-start text-left min-w-0">
+                            <h3 className="font-semibold text-white text-base line-clamp-1 group-hover:text-purple-300 transition-colors truncate w-full">
                                 {title}
                             </h3>
-                            <p className="text-sm text-gray-400 italic line-clamp-1">{subtitle}</p>
+                            <p className="text-sm text-gray-400 italic line-clamp-1 truncate w-full">{subtitle}</p>
                         </div>
-                        <div className="flex flex-col items-end gap-1 text-right flex-shrink-0 mr-4">
+                        <div className="flex flex-col items-end gap-1 text-right flex-shrink-0">
                             <Badge className={`text-sm py-1 px-3 ${getStatusColor(status)}`}>
                                 {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
                             </Badge>
@@ -103,7 +103,7 @@ export default function MediaCard({
                             )}
                         </div>
                     </Link>
-                    <div className="flex items-center flex-shrink-0">
+                    <div className="flex items-center flex-shrink-0 ml-2">
                         <StatusButton
                             type={type}
                             currentStatus={status}
