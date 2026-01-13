@@ -8,11 +8,6 @@
 - **📊 Durum Yönetimi:** "Okunacak", "Okunuyor", "Tamamlandı" gibi durumlarla ilerlemenizi takip edin.
 - **✨ Modern Arayüz:** Tailwind CSS ve shadcn/ui ile tasarlanmış, Responsive ve Karanlık Mod (Dark Mode) destekli şık tasarım.
 - **🔒 Gelişmiş Güvenlik:**
-  - **Rate Limiting:** DDoS saldırılarına karşı API koruması.
-  - **Secure Auth:** NextAuth.js ile güvenli oturum yönetimi ve bcrypt şifreleme.
-  - **Input Validation:** Zod ile sıkı veri doğrulama (XSS ve Injection koruması).
-  - **Profanity Filter:** Kullanıcı adlarında uygunsuz içerik filtresi.
-- **🐘 Neon PostgreSQL:** Bulut tabanlı, ölçeklenebilir ve güvenli veritabanı altyapısı.
 
 ## 🛠️ Teknolojiler
 
