@@ -56,17 +56,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     email: user.email,
                     name: user.displayName,
                     username: user.username,
+                    avatarUrl: user.avatarUrl,
                 };
             },
         }),
     ],
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.id = user.id as string;
                 token.username = (user as { username: string }).username;
                 token.email = user.email;
+                token.avatarUrl = (user as { avatarUrl?: string }).avatarUrl;
             }
+
+            // Allow updating the session manually
+            if (trigger === "update" && session?.avatarUrl) {
+                token.avatarUrl = session.avatarUrl;
+            }
+
             return token;
         },
         async session({ session, token }) {
@@ -74,6 +82,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.id = token.id as string;
                 session.user.username = token.username as string;
                 session.user.email = token.email as string;
+                session.user.avatarUrl = token.avatarUrl as string | null | undefined;
             }
             return session;
         },
