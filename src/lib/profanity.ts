@@ -5,7 +5,7 @@ const BAD_WORDS = [
     "admin", "administrator", "moderator", "mod", "support", "yardim", // Sistem ve yetkili taklidi
     "root", "sysadmin", "system",
     // Genel küfür kökleri (Örnek amaçlıdır, buraya engellemek istediğiniz kelimeleri ekleyin)
-    "küfür", "hakaret", "aptal", "gerizekali", "salak"
+    "kaka", "çiş", "porno", "porn", "p0rn", "seks", "sek", "sex", "s3x", "s3ks", "sik", "sapık", "sapik", "sık", "sikis", "sikiş", "s!k", "am", "amcık", "amcik"
 ];
 
 export function containsProfanity(text: string): boolean {
