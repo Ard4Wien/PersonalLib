@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 const DEFAULT_AVATAR = "/default-avatar.png";
 const STORAGE_KEY = "profileImage";
