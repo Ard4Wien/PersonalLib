@@ -95,14 +95,6 @@ export default function MediaCard({
                     </Link>
 
                     <div className="flex items-center gap-3 flex-shrink-0 ml-2">
-                        <StatusButton
-                            type={type}
-                            currentStatus={status}
-                            onStatusChange={(newStatus) => onStatusChange?.(id, newStatus)}
-                            onEdit={() => onEdit?.(id)}
-                            onDelete={() => onDelete?.(id)}
-                        />
-
                         <Link href={href} className="flex flex-col items-end gap-1 text-right">
                             <Badge className={`text-sm py-1 px-3 ${getStatusColor(status)}`}>
                                 {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
@@ -113,6 +105,14 @@ export default function MediaCard({
                                 </span>
                             )}
                         </Link>
+
+                        <StatusButton
+                            type={type}
+                            currentStatus={status}
+                            onStatusChange={(newStatus) => onStatusChange?.(id, newStatus)}
+                            onEdit={() => onEdit?.(id)}
+                            onDelete={() => onDelete?.(id)}
+                        />
                     </div>
                 </Card>
             </motion.div>
