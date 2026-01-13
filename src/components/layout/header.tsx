@@ -19,6 +19,8 @@ import {
     BookOpen,
     Film,
     Heart,
+    LayoutGrid,
+    List,
     LogOut,
     Menu,
     Search,
@@ -26,6 +28,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useProfileImage } from "@/contexts/profile-image-context";
+import { useViewMode } from "@/contexts/view-mode-context";
 
 const navItems = [
     { href: "/books", label: "Kitaplar", icon: BookOpen },
@@ -39,6 +42,7 @@ export default function Header() {
     const [searchQuery, setSearchQuery] = useState("");
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { profileImage } = useProfileImage();
+    const { viewMode, toggleViewMode } = useViewMode();
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -220,6 +224,22 @@ export default function Header() {
                                             <BookOpen className="h-4 w-4" />
                                             <span>Portfolyo</span>
                                         </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={toggleViewMode}
+                                        className="flex items-center gap-2 text-gray-300 hover:text-white cursor-pointer"
+                                    >
+                                        {viewMode === "compact" ? (
+                                            <>
+                                                <List className="h-4 w-4" />
+                                                <span>Liste Görünümü</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <LayoutGrid className="h-4 w-4" />
+                                                <span>Kompakt Görünüm</span>
+                                            </>
+                                        )}
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator className="bg-white/10" />
                                     <DropdownMenuItem

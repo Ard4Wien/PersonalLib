@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { ReactNode, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import { ProfileImageProvider } from "@/contexts/profile-image-context";
+import { ViewModeProvider } from "@/contexts/view-mode-context";
 
 interface ProvidersProps {
     children: ReactNode;
@@ -30,7 +31,9 @@ export default function Providers({ children }: ProvidersProps) {
                 enableSystem={false}
             >
                 <ProfileImageProvider>
-                    {children}
+                    <ViewModeProvider>
+                        {children}
+                    </ViewModeProvider>
                 </ProfileImageProvider>
             </ThemeProvider>
         </SessionProvider>

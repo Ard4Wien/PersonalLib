@@ -155,6 +155,10 @@ export default function RegisterPage() {
                                         autoCapitalize="none"
                                         autoCorrect="off"
                                         spellCheck="false"
+                                        onInput={(e) => {
+                                            const target = e.target as HTMLInputElement;
+                                            target.value = target.value.toLowerCase();
+                                        }}
                                         className="bg-white/5 dark:bg-zinc-800/50 border-white/10 dark:border-zinc-700 text-white placeholder:text-gray-500 transition-all focus:scale-[1.01]"
                                     />
                                 </div>
@@ -237,10 +241,6 @@ export default function RegisterPage() {
                     </form>
                 </Card>
             </motion.div>
-
-            <footer className="mt-8 relative z-10 text-gray-500 text-sm">
-                PersonalLib ile oluşturuldu 📚🎬
-            </footer>
         </div>
     );
 }

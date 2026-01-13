@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import MediaCard, { MediaCardProps } from "./media-card";
+import { useViewMode } from "@/contexts/view-mode-context";
 
 interface MediaGridProps {
     items: Omit<MediaCardProps, "onStatusChange" | "onDelete" | "onEdit">[];
@@ -26,6 +27,8 @@ export default function MediaGrid({
     onDelete,
     emptyMessage = "Henüz içerik eklenmemiş",
 }: MediaGridProps) {
+    const { viewMode } = useViewMode();
+
     if (items.length === 0) {
         return (
             <motion.div
@@ -44,7 +47,10 @@ export default function MediaGrid({
             variants={container}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+            className={viewMode === "list"
+                ? "flex flex-col gap-3"
+                : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+            }
         >
             {items.map((item) => (
                 <MediaCard

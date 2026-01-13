@@ -9,9 +9,10 @@ export const registerSchema = z.object({
         .min(3, "Kullanıcı adı en az 3 karakter olmalıdır")
         .max(20, "Kullanıcı adı en fazla 20 karakter olabilir")
         .regex(
-            /^[a-zA-Z0-9_]+$/,
-            "Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir"
+            /^[a-z0-9_]+$/,
+            "Kullanıcı adı sadece küçük harf, rakam ve alt çizgi içerebilir"
         )
+        .transform((val) => val.toLowerCase())
         .refine((val) => isValidUsername(val), {
             message: "Bu kullanıcı adı kullanılamaz veya uygunsuz içerik barındırıyor",
         }),

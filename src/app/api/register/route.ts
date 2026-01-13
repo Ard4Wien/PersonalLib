@@ -34,8 +34,9 @@ export async function POST(request: Request) {
             );
         }
 
-        const { email: rawEmail, username, displayName, password } = validatedFields.data;
+        const { email: rawEmail, username: rawUsername, displayName, password } = validatedFields.data;
         const email = rawEmail.toLowerCase();
+        const username = rawUsername.toLowerCase();
 
         // Paralel kontrol - performans optimizasyonu
         const [existingUserByEmail, existingUserByUsername] = await Promise.all([

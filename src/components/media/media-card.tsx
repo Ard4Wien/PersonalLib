@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import StatusButton from "./status-button";
+import { useViewMode } from "@/contexts/view-mode-context";
 
 export interface MediaCardProps {
     id: string;
@@ -37,6 +38,8 @@ export default function MediaCard({
     onEdit,
     onDelete,
 }: MediaCardProps) {
+    const { viewMode } = useViewMode();
+
     const statusLabels = {
         book: {
             COMPLETED: "Okundu",
@@ -74,6 +77,46 @@ export default function MediaCard({
         }
     };
 
+    if (viewMode === "list") {
+        return (
+            <motion.div
+                variants={itemVariants}
+                whileHover={{ x: 5 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+                <Card className="group relative flex items-center justify-between p-4 bg-white/5 border-white/10 hover:border-purple-500/50 transition-colors duration-300 overflow-hidden">
+                    <Link href={href} className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col">
+                            <h3 className="font-semibold text-white text-base line-clamp-1 group-hover:text-purple-300 transition-colors">
+                                {title}
+                            </h3>
+                            <p className="text-sm text-gray-400 italic line-clamp-1">{subtitle}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {genre && (
+                                <Badge variant="secondary" className="bg-white/5 text-gray-400 text-xs border-white/10 hidden sm:flex">
+                                    {genre}
+                                </Badge>
+                            )}
+                            <Badge className={`text-xs ${getStatusColor(status)}`}>
+                                {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
+                            </Badge>
+                        </div>
+                    </Link>
+                    <div className="flex items-center gap-2 ml-4">
+                        <StatusButton
+                            type={type}
+                            currentStatus={status}
+                            onStatusChange={(newStatus) => onStatusChange?.(id, newStatus)}
+                            onEdit={() => onEdit?.(id)}
+                            onDelete={() => onDelete?.(id)}
+                        />
+                    </div>
+                </Card>
+            </motion.div>
+        );
+    }
+
     return (
         <motion.div
             variants={itemVariants}
@@ -92,9 +135,12 @@ export default function MediaCard({
                                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                             />
                         ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="text-6xl text-gray-600">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                                <div className="text-4xl text-gray-700/50 mb-2">
                                     {type === "book" ? "📚" : type === "movie" ? "🎬" : "📺"}
+                                </div>
+                                <div className="text-white/60 font-black text-xl md:text-2xl uppercase tracking-tighter leading-tight line-clamp-4 select-none">
+                                    {title}
                                 </div>
                             </div>
                         )}
@@ -134,9 +180,7 @@ export default function MediaCard({
                         <p className="text-xs md:text-sm text-gray-400 italic line-clamp-1">{subtitle}</p>
                     </div>
                 </Link>
-                <motion.div
-                    className="absolute bottom-20 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
-                >
+                <div className="absolute bottom-20 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
                     <StatusButton
                         type={type}
                         currentStatus={status}
@@ -144,8 +188,9 @@ export default function MediaCard({
                         onEdit={() => onEdit?.(id)}
                         onDelete={() => onDelete?.(id)}
                     />
-                </motion.div>
+                </div>
             </Card>
         </motion.div>
     );
 }
+
