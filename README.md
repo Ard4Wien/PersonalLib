@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📚 Personal Media Library
 
-## Getting Started
+**PersonalLib**, okuduğunuz kitapları, izlediğiniz filmleri ve dizileri takip etmenizi sağlayan; modern, güvenli ve kişiselleştirilebilir bir dijital kütüphane uygulamasıdır.
 
-First, run the development server:
+![Project Banner](https://personal-lib.vercel.app/og-image.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Özellikler
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **📂 Medya Takibi:** Kitap, Film ve Dizi koleksiyonlarınızı ayrı ayrı yönetin.
+- **📊 Durum Yönetimi:** "Okunacak", "Okunuyor", "Tamamlandı" gibi durumlarla ilerlemenizi takip edin.
+- **✨ Modern Arayüz:** Tailwind CSS ve shadcn/ui ile tasarlanmış, Responsive ve Karanlık Mod (Dark Mode) destekli şık tasarım.
+- **🔒 Gelişmiş Güvenlik:**
+  - **Rate Limiting:** DDoS saldırılarına karşı API koruması.
+  - **Secure Auth:** NextAuth.js ile güvenli oturum yönetimi ve bcrypt şifreleme.
+  - **Input Validation:** Zod ile sıkı veri doğrulama (XSS ve Injection koruması).
+  - **Profanity Filter:** Kullanıcı adlarında uygunsuz içerik filtresi.
+- **🐘 Neon PostgreSQL:** Bulut tabanlı, ölçeklenebilir ve güvenli veritabanı altyapısı.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Teknolojiler
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Frontend:** [Next.js 15+](https://nextjs.org/), React 19, Tailwind CSS, Framer Motion
+- **Backend:** Next.js API Routes (Serverless)
+- **Database:** [Neon (PostgreSQL)](https://neon.tech/), Prisma ORM
+- **Auth:** [Auth.js (NextAuth)](https://authjs.dev/)
+- **Deploy:** [Vercel](https://vercel.com/)
 
-## Learn More
+## 📦 Kurulum
 
-To learn more about Next.js, take a look at the following resources:
+Projeyi yerel ortamınızda çalıştırmak için adımları takip edin:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Repoyu Klonlayın:**
+   ```bash
+   git clone https://github.com/Ard4Wien/PersonalLib.git
+   cd PersonalLib
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Bağımlılıkları Yükleyin:**
+   ```bash
+   npm install
+   ```
 
-## Deploy on Vercel
+3. **Çevresel Değişkenleri Ayarlayın (.env):**
+   ```env
+   DATABASE_URL="postgresql://user:password@endpoint-pooler.neon.tech/neondb?sslmode=require"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="gizli-anahtariniz"
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. **Veritabanını Hazırlayın:**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. **Uygulamayı Başlatın:**
+   ```bash
+   npm run dev
+   ```
+   Tarayıcınızda `http://localhost:3000` adresine gidin.
+
+## 🛡️ Lisans
+
+Bu proje **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** ile lisanslanmıştır.
+- ✅ Kişisel ve eğitim amaçlı kullanabilir, değiştirebilir ve paylaşabilirsiniz.
+- ❌ **Ticari amaçla KULLANILAMAZ.**
+- ✍️ Paylaşırken atıf yapılması zorunludur.
+
+Detaylar için [LICENSE](LICENSE) dosyasına bakınız.
+
+---
+Made with ❤️ by [IsikArda](https://github.com/Ard4Wien)
