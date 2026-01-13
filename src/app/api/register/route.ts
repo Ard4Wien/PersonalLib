@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
     try {
         // Rate limiting kontrolü

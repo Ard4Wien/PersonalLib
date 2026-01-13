@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { bookSchema } from "@/lib/validations";
 
+export const dynamic = 'force-dynamic';
+
 // GET - Kullanıcının kitaplarını listele
 export async function GET() {
     try {

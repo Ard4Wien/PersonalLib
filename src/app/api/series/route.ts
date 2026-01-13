@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { seriesSchema } from "@/lib/validations";
 
+export const dynamic = 'force-dynamic';
+
 // GET - Kullanıcının dizilerini listele
 export async function GET() {
     try {

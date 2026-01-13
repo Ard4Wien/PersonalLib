@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { movieSchema } from "@/lib/validations";
 
+export const dynamic = 'force-dynamic';
+
 // GET - Kullanıcının filmlerini listele
 export async function GET() {
     try {
