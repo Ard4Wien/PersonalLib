@@ -56,8 +56,8 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
     const totalContent = totalBooks + totalMovies + totalSeries;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-black dark:via-zinc-950 dark:to-black transition-colors duration-300">
-            <div className="container mx-auto px-4 py-12 max-w-4xl">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-black dark:via-zinc-950 dark:to-black transition-colors duration-300">
+            <div className="container mx-auto px-4 py-12 max-w-4xl flex-1">
                 {/* Header */}
                 <div className="text-center mb-12">
                     <Avatar className="h-24 w-24 mx-auto mb-4 border-4 border-purple-500/50">
@@ -246,12 +246,10 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                         </p>
                     </div>
                 )}
-
-                {/* Footer */}
-                <div className="text-center mt-12 text-gray-500 text-sm">
-                    PersonalLib ile oluşturuldu 📚🎬
-                </div>
             </div>
+            <footer className="text-center py-8 text-gray-400 text-sm">
+                PersonalLib ile oluşturuldu 📚🎬
+            </footer>
         </div>
     );
 }
