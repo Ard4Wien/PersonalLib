@@ -43,13 +43,13 @@ export default function LoginPage() {
 
             if (result?.error) {
                 setError("E-posta veya şifre hatalı");
+                setIsLoading(false);
             } else {
-                router.push("/books");
-                router.refresh();
+                // Hard redirect for mobile reliability
+                window.location.href = "/books";
             }
         } catch {
             setError("Bir hata oluştu. Lütfen tekrar deneyin.");
-        } finally {
             setIsLoading(false);
         }
     };
@@ -114,6 +114,9 @@ export default function LoginPage() {
                                     type="email"
                                     placeholder="ornek@email.com"
                                     required
+                                    autoCapitalize="none"
+                                    autoCorrect="off"
+                                    spellCheck="false"
                                     className="bg-white/5 dark:bg-zinc-800/50 border-white/10 dark:border-zinc-700 text-white placeholder:text-gray-500 transition-all focus:scale-[1.01]"
                                 />
                             </div>

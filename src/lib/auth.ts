@@ -20,7 +20,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     return null;
                 }
 
-                const { email, password } = validatedFields.data;
+                const { email: rawEmail, password } = validatedFields.data;
+                const email = rawEmail.toLowerCase();
 
                 // Account lockout kontrolü
                 const lockoutStatus = checkLoginAttempt(email);
