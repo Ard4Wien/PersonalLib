@@ -41,11 +41,23 @@ export const loginSchema = z.object({
     password: z.string().min(1, "Şifre gereklidir"),
 });
 
+const imageSchema = z.string().url().optional().or(z.literal("")).refine((val) => {
+    if (!val) return true;
+    return val.startsWith("http://") || val.startsWith("https://");
+}, {
+    message: "Resim URL'i http veya https ile başlamalıdır"
+}).refine((val) => {
+    if (!val) return true;
+    return /\.(jpg|jpeg|png|webp|gif)$/i.test(val);
+}, {
+    message: "URL geçerli bir resim uzantısıyla bitmelidir (jpg, jpeg, png, webp, gif)"
+});
+
 // İçerik şemaları
 export const bookSchema = z.object({
     title: z.string().min(1, "Kitap başlığı gereklidir"),
     author: z.string().min(1, "Yazar adı gereklidir"),
-    coverImage: z.string().url().optional().or(z.literal("")),
+    coverImage: imageSchema,
     description: z.string().optional(),
     publishedYear: z.number().optional(),
     genre: z.string().optional(),
@@ -56,7 +68,7 @@ export const bookSchema = z.object({
 export const movieSchema = z.object({
     title: z.string().min(1, "Film başlığı gereklidir"),
     director: z.string().min(1, "Yönetmen adı gereklidir"),
-    coverImage: z.string().url().optional().or(z.literal("")),
+    coverImage: imageSchema,
     description: z.string().optional(),
     releaseYear: z.number().optional(),
     genre: z.string().optional(),
@@ -67,7 +79,7 @@ export const movieSchema = z.object({
 export const seriesSchema = z.object({
     title: z.string().min(1, "Dizi başlığı gereklidir"),
     creator: z.string().min(1, "Yapımcı adı gereklidir"),
-    coverImage: z.string().url().optional().or(z.literal("")),
+    coverImage: imageSchema,
     description: z.string().optional(),
     startYear: z.number().optional(),
     endYear: z.number().optional(),
