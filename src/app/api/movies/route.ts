@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { movieSchema } from "@/lib/validations";
+import { checkRateLimit } from "@/lib/rate-limiter";
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +36,17 @@ export async function POST(request: Request) {
         const session = await auth();
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+        }
+
+        // Rate limiting kontrolü
+        const clientIP = request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
+        const rateLimitResult = checkRateLimit(clientIP);
+
+        if (!rateLimitResult.success) {
+            return NextResponse.json(
+                { error: rateLimitResult.message },
+                { status: 429 }
+            );
         }
 
         const body = await request.json();

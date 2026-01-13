@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { bookSchema } from "@/lib/validations";
+import { checkRateLimit } from "@/lib/rate-limiter";
 
 export const dynamic = 'force-dynamic';
 

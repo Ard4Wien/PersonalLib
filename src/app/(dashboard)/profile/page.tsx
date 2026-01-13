@@ -149,13 +149,13 @@ export default function ProfilePage() {
                                     </div>
                                 </div>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                            <DropdownMenuContent align="start" className="w-56">
                                 <DropdownMenuItem className="cursor-pointer" onClick={handleFileClick}>
                                     <ImagePlus className="h-4 w-4 mr-2" />
                                     <span>Fotoğrafı Değiştir</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="cursor-pointer text-red-400 focus:text-red-400" onClick={handleRemovePhoto}>
+                                <DropdownMenuItem className="cursor-pointer text-red-500 focus:text-red-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20" onClick={handleRemovePhoto}>
                                     <Trash2 className="h-4 w-4 mr-2" />
                                     <span>Fotoğrafı Kaldır</span>
                                 </DropdownMenuItem>
