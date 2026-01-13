@@ -85,25 +85,27 @@ export default function MediaCard({
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
                 <Card className="group relative flex items-center justify-between p-4 bg-white/5 border-white/10 hover:border-purple-500/50 transition-colors duration-300 overflow-hidden">
-                    <Link href={href} className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col">
+                    <Link href={href} className="flex-1 flex items-center justify-between">
+                        <div className="flex flex-col pr-4">
                             <h3 className="font-semibold text-white text-base line-clamp-1 group-hover:text-purple-300 transition-colors">
                                 {title}
                             </h3>
                             <p className="text-sm text-gray-400 italic line-clamp-1">{subtitle}</p>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-col items-end gap-1.5 text-right flex-shrink-0">
+                            <div className="flex items-center gap-3">
+                                <Badge className={`text-sm py-1 px-3 ${getStatusColor(status)}`}>
+                                    {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
+                                </Badge>
+                            </div>
                             {genre && (
-                                <Badge variant="secondary" className="bg-white/5 text-gray-400 text-xs border-white/10 hidden sm:flex">
+                                <Badge variant="secondary" className="bg-white/5 text-gray-400 text-[10px] border-white/10 flex-shrink-0">
                                     {genre}
                                 </Badge>
                             )}
-                            <Badge className={`text-xs ${getStatusColor(status)}`}>
-                                {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
-                            </Badge>
                         </div>
                     </Link>
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex items-center ml-4">
                         <StatusButton
                             type={type}
                             currentStatus={status}
@@ -126,7 +128,7 @@ export default function MediaCard({
         >
             <Card className="group h-full relative overflow-hidden bg-white/5 border-white/10 hover:border-purple-500/50 transition-colors duration-300 hover:shadow-2xl hover:shadow-purple-500/10">
                 <Link href={href} className="block">
-                    <div className="relative aspect-[2/3] overflow-hidden bg-gradient-to-br from-slate-700 to-slate-800">
+                    <div className="relative aspect-[2/3] overflow-hidden bg-zinc-900 border-b border-white/5">
                         {coverImage ? (
                             <Image
                                 src={coverImage}
@@ -135,10 +137,7 @@ export default function MediaCard({
                                 className="object-cover transition-transform duration-500 group-hover:scale-110"
                             />
                         ) : (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                                <div className="text-4xl text-gray-700/50 mb-2">
-                                    {type === "book" ? "📚" : type === "movie" ? "🎬" : "📺"}
-                                </div>
+                            <div className="absolute inset-0 flex items-center justify-center p-4 text-center">
                                 <div className="text-white/60 font-black text-xl md:text-2xl uppercase tracking-tighter leading-tight line-clamp-4 select-none">
                                     {title}
                                 </div>
