@@ -24,16 +24,27 @@ export function ProfileImageProvider({ children }: { children: ReactNode }) {
     // Load from localStorage on mount and Sync to DB
     useEffect(() => {
         const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
+        if (stored && stored !== DEFAULT_AVATAR) {
             setProfileImageState(stored);
 
             // Auto-sync to DB if logged in
-            if (session?.user) {
+            if (session?.user?.email) {
+                // To avoid spamming toast on every refresh, we can be subtle or check a flag.
+                // But since the user is debugging, let's be explicit.
+
                 fetch("/api/user/update-avatar", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ avatarUrl: stored }),
-                }).catch(err => console.error("Auto-sync failed", err));
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error("Sync failed");
+                        // Success silently to not annoy everyday usage
+                    })
+                    .catch(err => {
+                        console.error("Auto-sync failed", err);
+                        toast.error("Profil fotoğrafı veritabanına yedeklenemedi.");
+                    });
             }
         }
         setIsLoaded(true);
