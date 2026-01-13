@@ -94,18 +94,18 @@ export default function MediaCard({
                         </div>
                     </Link>
 
-                    <div className="flex items-center gap-3 flex-shrink-0 ml-2">
-                        <Link href={href} className="flex flex-col items-end gap-1 text-right mr-[100px] -translate-y-[10px]">
-                            <Badge className={`text-sm py-1 px-3 ${getStatusColor(status)}`}>
-                                {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
-                            </Badge>
-                            {genre && (
-                                <span className="text-[10px] text-gray-500 font-medium px-2 italic">
-                                    {genre}
-                                </span>
-                            )}
-                        </Link>
+                    <Link href={href} className="absolute right-[150px] top-1/2 -translate-y-[calc(50%+10px)] flex flex-col items-end gap-1 text-right">
+                        <Badge className={`text-sm py-1 px-3 ${getStatusColor(status)}`}>
+                            {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
+                        </Badge>
+                        {genre && (
+                            <span className="text-[10px] text-gray-500 font-medium px-2 italic">
+                                {genre}
+                            </span>
+                        )}
+                    </Link>
 
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10">
                         <StatusButton
                             type={type}
                             currentStatus={status}
