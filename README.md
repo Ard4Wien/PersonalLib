@@ -11,7 +11,11 @@
 
 ## 📸 Ön İzleme
 
-
+![Ana Sayfa](public/screenshots/landing.png)
+![Dashboard](public/screenshots/dashboard.png)
+![Portfolyo](public/screenshots/portfolio.png)
+![Kitaplar](public/screenshots/books.png)
+![Filmler](public/screenshots/movies.png)
 
 ## 🛠️ Teknolojiler
 
