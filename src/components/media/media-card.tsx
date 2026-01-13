@@ -84,28 +84,26 @@ export default function MediaCard({
                 whileHover={{ x: 5 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-                <Card className="group relative flex items-center justify-between p-4 bg-white/5 border-white/10 hover:border-purple-500/50 transition-colors duration-300 overflow-hidden">
+                <Card className="group relative flex items-center p-4 bg-white/5 border-white/10 hover:border-purple-500/50 transition-colors duration-300 overflow-hidden">
                     <Link href={href} className="flex-1 flex items-center justify-between">
-                        <div className="flex flex-col pr-4">
+                        <div className="flex flex-col">
                             <h3 className="font-semibold text-white text-base line-clamp-1 group-hover:text-purple-300 transition-colors">
                                 {title}
                             </h3>
                             <p className="text-sm text-gray-400 italic line-clamp-1">{subtitle}</p>
                         </div>
-                        <div className="flex flex-col items-end gap-1.5 text-right flex-shrink-0">
-                            <div className="flex items-center gap-3">
-                                <Badge className={`text-sm py-1 px-3 ${getStatusColor(status)}`}>
-                                    {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
-                                </Badge>
-                            </div>
+                        <div className="flex flex-col items-end gap-1 text-right flex-shrink-0 mr-4">
+                            <Badge className={`text-sm py-1 px-3 ${getStatusColor(status)}`}>
+                                {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
+                            </Badge>
                             {genre && (
-                                <Badge variant="secondary" className="bg-white/5 text-gray-400 text-[10px] border-white/10 flex-shrink-0">
+                                <span className="text-[10px] text-gray-500 font-medium px-2 italic">
                                     {genre}
-                                </Badge>
+                                </span>
                             )}
                         </div>
                     </Link>
-                    <div className="flex items-center ml-4">
+                    <div className="flex items-center flex-shrink-0">
                         <StatusButton
                             type={type}
                             currentStatus={status}
