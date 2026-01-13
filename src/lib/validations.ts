@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidUsername, containsProfanity } from "./profanity";
 
 // Auth şemaları
 export const registerSchema = z.object({
@@ -10,7 +11,10 @@ export const registerSchema = z.object({
         .regex(
             /^[a-zA-Z0-9_]+$/,
             "Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir"
-        ),
+        )
+        .refine((val) => isValidUsername(val), {
+            message: "Bu kullanıcı adı kullanılamaz veya uygunsuz içerik barındırıyor",
+        }),
     displayName: z
         .string()
         .min(2, "Görünen ad en az 2 karakter olmalıdır")
@@ -18,7 +22,10 @@ export const registerSchema = z.object({
         .regex(
             /^[a-zA-ZğüşıöçĞÜŞİÖÇ0-9\s]+$/,
             "Görünen ad sadece harf, rakam ve boşluk içerebilir"
-        ),
+        )
+        .refine((val) => !containsProfanity(val), {
+            message: "Görünen ad uygunsuz içerik barındıramaz",
+        }),
     password: z
         .string()
         .min(8, "Şifre en az 8 karakter olmalıdır")
