@@ -16,7 +16,7 @@ export default async function DashboardLayout({
 
     return (
         <Providers>
-            <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-black dark:via-zinc-950 dark:to-black transition-colors duration-300">
+            <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-black dark:via-zinc-950 dark:to-black transition-colors duration-300 w-full max-w-full overflow-x-hidden">
                 <Header />
                 <main className="container mx-auto px-4 py-8 flex-1">{children}</main>
                 <footer className="py-8 text-center text-gray-400 text-sm">

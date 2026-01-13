@@ -118,10 +118,19 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    overflow-wrap: break-word;
   }
 
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  }
+
+  html {
+    overflow-x: hidden;
+    width: 100%;
   }
 }
 
