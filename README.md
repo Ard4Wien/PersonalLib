@@ -2,8 +2,6 @@
 
 **PersonalLib**, okuduğunuz kitapları, izlediğiniz filmleri ve dizileri takip etmenizi sağlayan; modern, güvenli ve kişiselleştirilebilir bir dijital kütüphane uygulamasıdır.
 
-![Project Banner](https://personal-lib.vercel.app/og-image.png)
-
 ## 🚀 Özellikler
 
 - **📂 Medya Takibi:** Kitap, Film ve Dizi koleksiyonlarınızı ayrı ayrı yönetin.
