@@ -26,9 +26,19 @@ export function ProfileImageProvider({ children }: { children: ReactNode }) {
         setIsLoaded(true);
     }, []);
 
-    const setProfileImage = (image: string) => {
+    const setProfileImage = async (image: string) => {
         setProfileImageState(image);
         localStorage.setItem(STORAGE_KEY, image);
+
+        try {
+            await fetch("/api/user/update-avatar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ avatarUrl: image }),
+            });
+        } catch (error) {
+            console.error("Failed to sync avatar to database", error);
+        }
     };
 
     const removeProfileImage = () => {

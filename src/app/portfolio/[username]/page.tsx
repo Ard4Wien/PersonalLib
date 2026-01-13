@@ -61,6 +61,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                 {/* Header */}
                 <div className="text-center mb-12">
                     <Avatar className="h-24 w-24 mx-auto mb-4 border-4 border-purple-500/50">
+                        {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.displayName} />}
                         <AvatarFallback className="bg-gradient-to-br from-purple-600 to-pink-600 text-white text-2xl">
                             {getInitials(user.displayName)}
                         </AvatarFallback>
