@@ -95,7 +95,7 @@ export default function MediaCard({
                     </Link>
 
                     <div className="flex items-center gap-3 flex-shrink-0 ml-2">
-                        <Link href={href} className="flex flex-col items-end gap-1 text-right">
+                        <Link href={href} className="flex flex-col items-end gap-1 text-right mr-[100px] -translate-y-[10px]">
                             <Badge className={`text-sm py-1 px-3 ${getStatusColor(status)}`}>
                                 {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
                             </Badge>
