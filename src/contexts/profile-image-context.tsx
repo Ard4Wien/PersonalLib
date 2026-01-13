@@ -16,10 +16,16 @@ interface ProfileImageContextType {
 const ProfileImageContext = createContext<ProfileImageContextType | undefined>(undefined);
 
 export function ProfileImageProvider({ children }: { children: ReactNode }) {
+    const { data: session, update } = useSession();
     const [profileImage, setProfileImageState] = useState<string>(DEFAULT_AVATAR);
     const [isLoaded, setIsLoaded] = useState(false);
 
-    const { data: session } = useSession();
+    // Sync from Session (Database Source of Truth)
+    useEffect(() => {
+        if (session?.user?.avatarUrl) {
+            setProfileImageState(session.user.avatarUrl);
+        }
+    }, [session]);
 
     // Load from localStorage on mount and Sync to DB
     useEffect(() => {
@@ -60,6 +66,8 @@ export function ProfileImageProvider({ children }: { children: ReactNode }) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ avatarUrl: image }),
             });
+            // Update session to reflect changes globally
+            await update({ avatarUrl: image });
         } catch (error) {
             console.error("Failed to sync avatar to database", error);
         }
