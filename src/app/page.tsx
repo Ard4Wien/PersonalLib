@@ -131,7 +131,8 @@ export default function HomePage() {
         </motion.div>
 
         {/* Footer */}
-        <motion.p variants={item} className="mt-12 text-gray-500 text-sm">
+        <motion.p variants={item} className="mt-12 text-gray-400 text-sm">
+          PersonalLib ile oluşturuldu 📚🎬
         </motion.p>
       </motion.div>
     </div>

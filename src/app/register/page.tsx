@@ -231,6 +231,10 @@ export default function RegisterPage() {
                     </form>
                 </Card>
             </motion.div>
+
+            <footer className="mt-8 relative z-10 text-gray-500 text-sm">
+                PersonalLib ile oluşturuldu 📚🎬
+            </footer>
         </div>
     );
 }
