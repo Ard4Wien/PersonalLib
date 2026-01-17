@@ -96,7 +96,14 @@ export default function BooksPage() {
                 toast.success("Kitap başarıyla eklendi!");
             } else {
                 const error = await response.json();
-                toast.error(error.error || "Kitap eklenemedi");
+                const errorMessage = typeof error.error === 'string'
+                    ? error.error
+                    : Array.isArray(error.error)
+                        ? error.error.join(', ')
+                        : typeof error.error === 'object'
+                            ? Object.values(error.error).flat().join(', ')
+                            : "Kitap eklenemedi";
+                toast.error(errorMessage);
             }
         } catch {
             toast.error("Bir hata oluştu");
@@ -138,7 +145,14 @@ export default function BooksPage() {
                 toast.success("Kitap güncellendi!");
             } else {
                 const error = await response.json();
-                toast.error(error.error || "Kitap güncellenemedi");
+                const errorMessage = typeof error.error === 'string'
+                    ? error.error
+                    : Array.isArray(error.error)
+                        ? error.error.join(', ')
+                        : typeof error.error === 'object'
+                            ? Object.values(error.error).flat().join(', ')
+                            : "Kitap güncellenemedi";
+                toast.error(errorMessage);
             }
         } catch {
             toast.error("Bir hata oluştu");
