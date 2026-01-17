@@ -70,7 +70,7 @@ export default function MoviesPage() {
     const [isMovieDialogOpen, setIsMovieDialogOpen] = useState(false);
     const [isSeriesDialogOpen, setIsSeriesDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [activeTab, setActiveTab] = useState("movies");
+    const [activeTab, setActiveTab] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [movieStatus, setMovieStatus] = useState("WISHLIST");
     const [seriesStatus, setSeriesStatus] = useState("WISHLIST");
@@ -438,6 +438,10 @@ export default function MoviesPage() {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                     <TabsList className="bg-white/5 border border-white/10">
+                        <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 text-gray-300 data-[state=active]:text-white hover:text-white">
+                            <Film className="h-4 w-4 mr-2" />
+                            Tümü ({movies.length + series.length})
+                        </TabsTrigger>
                         <TabsTrigger value="movies" className="data-[state=active]:bg-blue-600 text-gray-300 data-[state=active]:text-white hover:text-white">
                             <Clapperboard className="h-4 w-4 mr-2" />
                             Filmler ({movies.length})
@@ -468,6 +472,29 @@ export default function MoviesPage() {
                         </SelectContent>
                     </Select>
                 </div>
+
+                <TabsContent value="all" className="mt-6">
+                    <MediaGrid
+                        items={[...movieItems, ...seriesItems]}
+                        onStatusChange={(id, status) => {
+                            const isMovie = movieItems.some(m => m.id === id);
+                            if (isMovie) {
+                                handleMovieStatusChange(id, status);
+                            } else {
+                                handleSeriesStatusChange(id, status);
+                            }
+                        }}
+                        onDelete={(id) => {
+                            const isMovie = movieItems.some(m => m.id === id);
+                            if (isMovie) {
+                                handleMovieDelete(id);
+                            } else {
+                                handleSeriesDelete(id);
+                            }
+                        }}
+                        emptyMessage="Henüz içerik eklenmemiş"
+                    />
+                </TabsContent>
 
                 <TabsContent value="movies" className="mt-6">
                     <MediaGrid
