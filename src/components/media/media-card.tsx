@@ -99,7 +99,7 @@ export default function MediaCard({
                             {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
                         </Badge>
                         {genre && (
-                            <span className="text-[10px] text-gray-500 font-medium px-2 italic">
+                            <span className="text-[12px] text-gray-500 font-medium px-2 italic">
                                 {genre}
                             </span>
                         )}
