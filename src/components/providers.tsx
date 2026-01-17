@@ -27,8 +27,8 @@ export default function Providers({ children }: ProvidersProps) {
         <SessionProvider>
             <ThemeProvider
                 attribute="class"
-                defaultTheme="light"
-                enableSystem={false}
+                defaultTheme="system"
+                enableSystem={true}
             >
                 <ProfileImageProvider>
                     <ViewModeProvider>
