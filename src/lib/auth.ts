@@ -68,12 +68,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.id = user.id as string;
                 token.username = (user as { username: string }).username;
                 token.email = user.email;
-                token.avatarUrl = (user as { avatarUrl?: string }).avatarUrl;
+                // token.avatarUrl = (user as { avatarUrl?: string }).avatarUrl;
             }
 
             // Allow updating the session manually
             if (trigger === "update" && session?.avatarUrl) {
-                token.avatarUrl = session.avatarUrl;
+                // token.avatarUrl = session.avatarUrl;
             }
 
             return token;
@@ -83,7 +83,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.id = token.id as string;
                 session.user.username = token.username as string;
                 session.user.email = token.email as string;
-                session.user.avatarUrl = token.avatarUrl as string | null | undefined;
+                // session.user.avatarUrl = token.avatarUrl as string | null | undefined;
             }
             return session;
         },
