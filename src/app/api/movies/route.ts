@@ -67,7 +67,16 @@ export async function POST(request: Request) {
 
         if (!movie) {
             movie = await prisma.movie.create({
-                data: validatedFields.data,
+                data: {
+                    title: validatedFields.data.title,
+                    ...(validatedFields.data.director && { director: validatedFields.data.director }),
+                    ...(validatedFields.data.coverImage && { coverImage: validatedFields.data.coverImage }),
+                    ...(validatedFields.data.description && { description: validatedFields.data.description }),
+                    ...(validatedFields.data.releaseYear && { releaseYear: validatedFields.data.releaseYear }),
+                    ...(validatedFields.data.genre && { genre: validatedFields.data.genre }),
+                    ...(validatedFields.data.duration && { duration: validatedFields.data.duration }),
+                    ...(validatedFields.data.imdbId && { imdbId: validatedFields.data.imdbId }),
+                } as any,
             });
         }
 
@@ -103,6 +112,50 @@ export async function POST(request: Request) {
         console.error("Film ekleme hatası:", error);
         return NextResponse.json(
             { error: "Film eklenirken bir hata oluştu" },
+            { status: 500 }
+        );
+    }
+}
+
+// PUT - Film bilgilerini güncelle
+export async function PUT(request: Request) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { userMovieId, movieId, title, director, coverImage, genre, status } = body;
+
+        // Film bilgilerini güncelle
+        await prisma.movie.update({
+            where: { id: movieId },
+            data: {
+                title,
+                director,
+                coverImage: coverImage || null,
+                genre: genre || null,
+            },
+        });
+
+        // UserMovie durumunu güncelle
+        const userMovie = await prisma.userMovie.update({
+            where: {
+                id: userMovieId,
+                userId: session.user.id,
+            },
+            data: {
+                status,
+            },
+            include: { movie: true },
+        });
+
+        return NextResponse.json(userMovie);
+    } catch (error) {
+        console.error("Film güncelleme hatası:", error);
+        return NextResponse.json(
+            { error: "Film güncellenirken bir hata oluştu" },
             { status: 500 }
         );
     }

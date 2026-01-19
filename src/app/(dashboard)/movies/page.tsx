@@ -75,6 +75,14 @@ export default function MoviesPage() {
     const [movieStatus, setMovieStatus] = useState("WISHLIST");
     const [seriesStatus, setSeriesStatus] = useState("WISHLIST");
 
+    // Edit states
+    const [isMovieEditDialogOpen, setIsMovieEditDialogOpen] = useState(false);
+    const [isSeriesEditDialogOpen, setIsSeriesEditDialogOpen] = useState(false);
+    const [editingMovie, setEditingMovie] = useState<UserMovie | null>(null);
+    const [editingSeries, setEditingSeries] = useState<UserSeries | null>(null);
+    const [editMovieStatus, setEditMovieStatus] = useState("WISHLIST");
+    const [editSeriesStatus, setEditSeriesStatus] = useState("WISHLIST");
+
     useEffect(() => {
         fetchContent();
     }, []);
@@ -177,6 +185,91 @@ export default function MoviesPage() {
         }
     };
 
+    const handleEditMovie = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!editingMovie) return;
+        setIsSubmitting(true);
+
+        const formData = new FormData(e.currentTarget);
+        const data = {
+            userMovieId: editingMovie.id,
+            movieId: editingMovie.movie.id,
+            title: formData.get("title") as string,
+            director: formData.get("director") as string,
+            coverImage: formData.get("coverImage") as string,
+            genre: formData.get("genre") as string,
+            status: editMovieStatus,
+        };
+
+        try {
+            const response = await fetch("/api/movies", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                const updatedMovie = await response.json();
+                setMovies((prev) =>
+                    prev.map((m) => (m.id === editingMovie.id ? updatedMovie : m))
+                );
+                setIsMovieDialogOpen(false);
+                setEditingMovie(null);
+                toast.success("Film güncellendi!");
+            } else {
+                const error = await response.json();
+                toast.error(error.error || "Film güncellenemedi");
+            }
+        } catch {
+            toast.error("Bir hata oluştu");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleEditSeries = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (!editingSeries) return;
+        setIsSubmitting(true);
+
+        const formData = new FormData(e.currentTarget);
+        const data = {
+            userSeriesId: editingSeries.id,
+            seriesId: editingSeries.series.id,
+            title: formData.get("title") as string,
+            creator: formData.get("creator") as string,
+            coverImage: formData.get("coverImage") as string,
+            genre: formData.get("genre") as string,
+            totalSeasons: parseInt(formData.get("totalSeasons") as string),
+            status: editSeriesStatus,
+        };
+
+        try {
+            const response = await fetch("/api/series", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                const updatedSeries = await response.json();
+                setSeries((prev) =>
+                    prev.map((s) => (s.id === editingSeries.id ? updatedSeries : s))
+                );
+                setIsSeriesDialogOpen(false);
+                setEditingSeries(null);
+                toast.success("Dizi güncellendi!");
+            } else {
+                const error = await response.json();
+                toast.error(error.error || "Dizi güncellenemedi");
+            }
+        } catch {
+            toast.error("Bir hata oluştu");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleMovieStatusChange = async (userMovieId: string, status: string) => {
         try {
             const response = await fetch("/api/movies", {
@@ -214,6 +307,22 @@ export default function MoviesPage() {
             }
         } catch {
             toast.error("Durum güncellenemedi");
+        }
+    };
+
+    const handleEdit = (id: string) => {
+        const movie = movies.find((m) => m.id === id);
+        if (movie) {
+            setEditingMovie(movie);
+            setEditMovieStatus(movie.status);
+            setIsMovieEditDialogOpen(true);
+            return;
+        }
+        const s = series.find((s) => s.id === id);
+        if (s) {
+            setEditingSeries(s);
+            setEditSeriesStatus(s.overallStatus);
+            setIsSeriesEditDialogOpen(true);
         }
     };
 
@@ -431,6 +540,128 @@ export default function MoviesPage() {
                             </form>
                         </DialogContent>
                     </Dialog>
+
+                    {/* Film Düzenle Dialog */}
+                    <Dialog open={isMovieEditDialogOpen} onOpenChange={(open) => { setIsMovieEditDialogOpen(open); if (!open) setEditingMovie(null); }}>
+                        <DialogContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                            <DialogHeader>
+                                <DialogTitle className="text-white">Filmi Düzenle</DialogTitle>
+                                <DialogDescription className="text-gray-400">
+                                    Film bilgilerini güncelleyin
+                                </DialogDescription>
+                            </DialogHeader>
+                            {editingMovie && (
+                                <form onSubmit={handleEditMovie} className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-movie-title" className="text-gray-300">Film Adı *</Label>
+                                        <Input id="edit-movie-title" name="title" required defaultValue={editingMovie.movie.title} className="bg-white/5 border-white/10 text-white" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-movie-director" className="text-gray-300">Yönetmen</Label>
+                                        <Input id="edit-movie-director" name="director" defaultValue={editingMovie.movie.director} className="bg-white/5 border-white/10 text-white" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-movie-cover" className="text-gray-300">Kapak Görseli URL</Label>
+                                        <Input id="edit-movie-cover" name="coverImage" type="url" defaultValue={editingMovie.movie.coverImage || ""} className="bg-white/5 border-white/10 text-white" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-movie-genre" className="text-gray-300">Tür</Label>
+                                        <Input id="edit-movie-genre" name="genre" defaultValue={editingMovie.movie.genre || ""} className="bg-white/5 border-white/10 text-white" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-gray-300">Durum</Label>
+                                        <Select value={editMovieStatus} onValueChange={setEditMovieStatus}>
+                                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                                                {statusOptions.slice(0, 3).map((option) => {
+                                                    const Icon = option.icon;
+                                                    return (
+                                                        <SelectItem key={option.value} value={option.value} className="text-white hover:bg-white/10 focus:bg-white/10">
+                                                            <div className="flex items-center gap-2">
+                                                                <Icon className={`h-4 w-4 ${option.color}`} />
+                                                                <span>{option.label}</span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button type="submit" disabled={isSubmitting} className="bg-gradient-to-r from-blue-600 to-cyan-600">
+                                            {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Güncelleniyor...</> : "Güncelle"}
+                                        </Button>
+                                    </DialogFooter>
+                                </form>
+                            )}
+                        </DialogContent>
+                    </Dialog>
+
+                    {/* Dizi Düzenle Dialog */}
+                    <Dialog open={isSeriesEditDialogOpen} onOpenChange={(open) => { setIsSeriesEditDialogOpen(open); if (!open) setEditingSeries(null); }}>
+                        <DialogContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                            <DialogHeader>
+                                <DialogTitle className="text-white">Diziyi Düzenle</DialogTitle>
+                                <DialogDescription className="text-gray-400">
+                                    Dizi bilgilerini güncelleyin
+                                </DialogDescription>
+                            </DialogHeader>
+                            {editingSeries && (
+                                <form onSubmit={handleEditSeries} className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-series-title" className="text-gray-300">Dizi Adı *</Label>
+                                        <Input id="edit-series-title" name="title" required defaultValue={editingSeries.series.title} className="bg-white/5 border-white/10 text-white" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-series-creator" className="text-gray-300">Yapımcı</Label>
+                                        <Input id="edit-series-creator" name="creator" defaultValue={editingSeries.series.creator} className="bg-white/5 border-white/10 text-white" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="edit-series-cover" className="text-gray-300">Kapak Görseli URL</Label>
+                                        <Input id="edit-series-cover" name="coverImage" type="url" defaultValue={editingSeries.series.coverImage || ""} className="bg-white/5 border-white/10 text-white" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="edit-series-genre" className="text-gray-300">Tür</Label>
+                                            <Input id="edit-series-genre" name="genre" defaultValue={editingSeries.series.genre || ""} className="bg-white/5 border-white/10 text-white" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="edit-series-seasons" className="text-gray-300">Sezon Sayısı</Label>
+                                            <Input id="edit-series-seasons" name="totalSeasons" type="number" min="1" defaultValue={editingSeries.series.totalSeasons} className="bg-white/5 border-white/10 text-white" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-gray-300">Durum</Label>
+                                        <Select value={editSeriesStatus} onValueChange={setEditSeriesStatus}>
+                                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                                                {statusOptions.slice(0, 3).map((option) => {
+                                                    const Icon = option.icon;
+                                                    return (
+                                                        <SelectItem key={option.value} value={option.value} className="text-white hover:bg-white/10 focus:bg-white/10">
+                                                            <div className="flex items-center gap-2">
+                                                                <Icon className={`h-4 w-4 ${option.color}`} />
+                                                                <span>{option.label}</span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button type="submit" disabled={isSubmitting} className="bg-gradient-to-r from-purple-600 to-pink-600">
+                                            {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Güncelleniyor...</> : "Güncelle"}
+                                        </Button>
+                                    </DialogFooter>
+                                </form>
+                            )}
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
 
@@ -484,6 +715,7 @@ export default function MoviesPage() {
                                 handleSeriesStatusChange(id, status);
                             }
                         }}
+                        onEdit={handleEdit}
                         onDelete={(id) => {
                             const isMovie = movieItems.some(m => m.id === id);
                             if (isMovie) {
@@ -500,6 +732,7 @@ export default function MoviesPage() {
                     <MediaGrid
                         items={movieItems}
                         onStatusChange={handleMovieStatusChange}
+                        onEdit={handleEdit}
                         onDelete={handleMovieDelete}
                         emptyMessage="Henüz film eklenmemiş"
                     />
@@ -509,6 +742,7 @@ export default function MoviesPage() {
                     <MediaGrid
                         items={seriesItems}
                         onStatusChange={handleSeriesStatusChange}
+                        onEdit={handleEdit}
                         onDelete={handleSeriesDelete}
                         emptyMessage="Henüz dizi eklenmemiş"
                     />

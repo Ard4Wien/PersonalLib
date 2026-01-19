@@ -75,13 +75,21 @@ export async function POST(request: Request) {
         if (!series) {
             series = await prisma.series.create({
                 data: {
-                    ...validatedFields.data,
+                    title: validatedFields.data.title,
+                    totalSeasons: validatedFields.data.totalSeasons,
+                    ...(validatedFields.data.creator && { creator: validatedFields.data.creator }),
+                    ...(validatedFields.data.coverImage && { coverImage: validatedFields.data.coverImage }),
+                    ...(validatedFields.data.description && { description: validatedFields.data.description }),
+                    ...(validatedFields.data.startYear && { startYear: validatedFields.data.startYear }),
+                    ...(validatedFields.data.endYear && { endYear: validatedFields.data.endYear }),
+                    ...(validatedFields.data.genre && { genre: validatedFields.data.genre }),
+                    ...(validatedFields.data.imdbId && { imdbId: validatedFields.data.imdbId }),
                     seasons: {
                         create: Array.from({ length: validatedFields.data.totalSeasons }, (_, i) => ({
                             seasonNumber: i + 1,
                         })),
                     },
-                },
+                } as any,
                 include: { seasons: true },
             });
         }
@@ -120,6 +128,54 @@ export async function POST(request: Request) {
         console.error("Dizi ekleme hatası:", error);
         return NextResponse.json(
             { error: "Dizi eklenirken bir hata oluştu" },
+            { status: 500 }
+        );
+    }
+}
+
+// PUT - Dizi bilgilerini güncelle
+export async function PUT(request: Request) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { userSeriesId, seriesId, title, creator, coverImage, genre, totalSeasons, status } = body;
+
+        // Dizi bilgilerini güncelle
+        await prisma.series.update({
+            where: { id: seriesId },
+            data: {
+                title,
+                creator,
+                coverImage: coverImage || null,
+                genre: genre || null,
+                totalSeasons: totalSeasons ? parseInt(totalSeasons) : undefined,
+            },
+        });
+
+        // UserSeries durumunu güncelle
+        const userSeries = await prisma.userSeries.update({
+            where: {
+                id: userSeriesId,
+                userId: session.user.id,
+            },
+            data: {
+                overallStatus: status,
+            },
+            include: {
+                series: { include: { seasons: true } },
+                seasonStatuses: true,
+            },
+        });
+
+        return NextResponse.json(userSeries);
+    } catch (error) {
+        console.error("Dizi güncelleme hatası:", error);
+        return NextResponse.json(
+            { error: "Dizi güncellenirken bir hata oluştu" },
             { status: 500 }
         );
     }

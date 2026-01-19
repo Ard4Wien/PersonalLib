@@ -57,7 +57,7 @@ const imageSchema = z.string().url().optional().or(z.literal("")).refine((val) =
 // İçerik şemaları
 export const bookSchema = z.object({
     title: z.string().min(1, "Kitap başlığı gereklidir"),
-    author: z.string().min(1, "Yazar adı gereklidir"),
+    author: z.string().optional(),
     coverImage: imageSchema,
     description: z.string().optional(),
     publishedYear: z.number().optional(),
@@ -68,7 +68,7 @@ export const bookSchema = z.object({
 
 export const movieSchema = z.object({
     title: z.string().min(1, "Film başlığı gereklidir"),
-    director: z.string().min(1, "Yönetmen adı gereklidir"),
+    director: z.string().optional(),
     coverImage: imageSchema,
     description: z.string().optional(),
     releaseYear: z.number().optional(),
@@ -79,7 +79,7 @@ export const movieSchema = z.object({
 
 export const seriesSchema = z.object({
     title: z.string().min(1, "Dizi başlığı gereklidir"),
-    creator: z.string().min(1, "Yapımcı adı gereklidir"),
+    creator: z.string().optional(),
     coverImage: imageSchema,
     description: z.string().optional(),
     startYear: z.number().optional(),
