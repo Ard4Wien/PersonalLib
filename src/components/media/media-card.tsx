@@ -25,6 +25,43 @@ const itemVariants = {
     show: { opacity: 1, y: 0 }
 };
 
+const statusLabels = {
+    book: {
+        COMPLETED: "Okundu",
+        READING: "Okunuyor",
+        WISHLIST: "İstek Listesi",
+        DROPPED: "Bırakıldı",
+    },
+    movie: {
+        COMPLETED: "İzlendi",
+        WATCHING: "İzleniyor",
+        WISHLIST: "İstek Listesi",
+        DROPPED: "Bırakıldı",
+    },
+    series: {
+        COMPLETED: "İzlendi",
+        WATCHING: "İzleniyor",
+        WISHLIST: "İstek Listesi",
+        DROPPED: "Bırakıldı",
+    },
+} as const;
+
+const getStatusColor = (s: string) => {
+    switch (s) {
+        case "COMPLETED":
+            return "bg-green-500/20 text-green-400 border-green-500/30";
+        case "READING":
+        case "WATCHING":
+            return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+        case "WISHLIST":
+            return "bg-purple-500/20 text-purple-400 border-purple-500/30";
+        case "DROPPED":
+            return "bg-red-500/20 text-red-400 border-red-500/30";
+        default:
+            return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+    }
+};
+
 export default function MediaCard({
     id,
     title,
@@ -40,42 +77,6 @@ export default function MediaCard({
 }: MediaCardProps) {
     const { viewMode } = useViewMode();
 
-    const statusLabels = {
-        book: {
-            COMPLETED: "Okundu",
-            READING: "Okunuyor",
-            WISHLIST: "İstek Listesi",
-            DROPPED: "Bırakıldı",
-        },
-        movie: {
-            COMPLETED: "İzlendi",
-            WATCHING: "İzleniyor",
-            WISHLIST: "İstek Listesi",
-            DROPPED: "Bırakıldı",
-        },
-        series: {
-            COMPLETED: "İzlendi",
-            WATCHING: "İzleniyor",
-            WISHLIST: "İstek Listesi",
-            DROPPED: "Bırakıldı",
-        },
-    };
-
-    const getStatusColor = (s: string) => {
-        switch (s) {
-            case "COMPLETED":
-                return "bg-green-500/20 text-green-400 border-green-500/30";
-            case "READING":
-            case "WATCHING":
-                return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-            case "WISHLIST":
-                return "bg-purple-500/20 text-purple-400 border-purple-500/30";
-            case "DROPPED":
-                return "bg-red-500/20 text-red-400 border-red-500/30";
-            default:
-                return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-        }
-    };
 
     if (viewMode === "list") {
         return (

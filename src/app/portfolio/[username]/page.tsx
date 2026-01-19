@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { BookOpen, Check, Film, Tv } from "lucide-react";
+import { getInitials, BACKGROUND_GRADIENT } from "@/lib/utils";
 
 interface PortfolioPageProps {
     params: Promise<{ username: string }>;
@@ -41,14 +42,6 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
         notFound();
     }
 
-    const getInitials = (name: string) => {
-        return name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2);
-    };
 
     const totalBooks = user.books.length;
     const totalMovies = user.movies.length;
@@ -56,7 +49,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
     const totalContent = totalBooks + totalMovies + totalSeries;
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-black dark:via-zinc-950 dark:to-black transition-colors duration-300">
+        <div className={BACKGROUND_GRADIENT}>
             <div className="container mx-auto px-4 py-12 max-w-4xl flex-1">
                 {/* Header */}
                 <div className="text-center mb-12">

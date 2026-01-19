@@ -16,7 +16,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { BookOpen, Film, Loader2 } from "lucide-react";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 import { motion } from "framer-motion";
 
@@ -59,7 +59,7 @@ export default function LoginPage() {
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
 
             <div className="relative z-10 mb-6">
-                <ModeToggle />
+                <ThemeToggle />
             </div>
 
             <motion.div

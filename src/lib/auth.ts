@@ -39,7 +39,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         passwordHash: true,
                         displayName: true,
                         username: true,
-                        // avatarUrl: false // Explicitly creating a user object without avatar data
                     }
                 });
 
@@ -65,7 +64,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     email: user.email,
                     name: user.displayName,
                     username: user.username,
-                    // avatarUrl: user.avatarUrl,
                 };
             },
         }),
@@ -76,13 +74,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 token.id = user.id as string;
                 token.username = (user as { username: string }).username;
                 token.email = user.email;
-                // token.avatarUrl = (user as { avatarUrl?: string }).avatarUrl;
             }
 
-            // Allow updating the session manually
-            if (trigger === "update" && session?.avatarUrl) {
-                // token.avatarUrl = session.avatarUrl;
-            }
 
             return token;
         },
@@ -91,7 +84,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.id = token.id as string;
                 session.user.username = token.username as string;
                 session.user.email = token.email as string;
-                // session.user.avatarUrl = token.avatarUrl as string | null | undefined;
             }
             return session;
         },

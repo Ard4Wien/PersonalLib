@@ -52,12 +52,6 @@ export function ThemeToggle() {
                     <Sun className="h-4 w-4" />
                 )}
             </motion.div>
-
-            {/* Background Icons for decoration */}
-            <div className="absolute inset-0 flex justify-between items-center px-2 pointer-events-none">
-                <Sun className={`h-4 w-4 transition-opacity duration-300 ${isDark ? "opacity-0" : "opacity-0"}`} />
-                <Moon className={`h-4 w-4 transition-opacity duration-300 ${isDark ? "opacity-0" : "opacity-0"}`} />
-            </div>
         </div>
     );
 }

@@ -29,6 +29,7 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useProfileImage } from "@/contexts/profile-image-context";
 import { useViewMode } from "@/contexts/view-mode-context";
+import { getInitials } from "@/lib/utils";
 
 const navItems = [
     { href: "/books", label: "Kitaplar", icon: BookOpen },
@@ -46,20 +47,9 @@ export default function Header() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        if (searchQuery.trim()) {
-            // Arama işlevi daha sonra eklenecek
-            console.log("Aranıyor:", searchQuery);
-        }
+        // Arama işlevi daha sonra eklenecek
     };
 
-    const getInitials = (name: string) => {
-        return name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2);
-    };
 
     return (
         <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-slate-900/90 to-purple-900/30 dark:bg-none dark:bg-[#09090b]/90 backdrop-blur-xl transition-colors duration-300">

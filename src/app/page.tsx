@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Film, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -55,7 +55,7 @@ export default function HomePage() {
         className="relative z-10 text-center max-w-3xl mx-auto"
       >
         <motion.div variants={item} className="flex justify-center mb-6">
-          <ModeToggle />
+          <ThemeToggle />
         </motion.div>
 
         {/* Logo */}
