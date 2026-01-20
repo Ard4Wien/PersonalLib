@@ -2,20 +2,20 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { bookSchema } from "@/lib/validations";
-import { checkRateLimit } from "@/lib/rate-limiter";
+import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
 export const dynamic = 'force-dynamic';
 
 // GET - Kullanıcının kitaplarını listele
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
         const userBooks = await prisma.userBook.findMany({
-            where: { userId: session.user.id },
+            where: { userId },
             include: { book: true },
             orderBy: { updatedAt: "desc" },
         });
@@ -33,8 +33,8 @@ export async function GET() {
 // POST - Yeni kitap ekle ve kullanıcıya bağla
 export async function POST(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         const existingUserBook = await prisma.userBook.findUnique({
             where: {
                 userId_bookId: {
-                    userId: session.user.id,
+                    userId,
                     bookId: book.id,
                 },
             },
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
         // Kullanıcı-kitap ilişkisini oluştur
         const userBook = await prisma.userBook.create({
             data: {
-                userId: session.user.id,
+                userId,
                 bookId: book.id,
                 status,
             },
@@ -100,8 +100,8 @@ export async function POST(request: Request) {
 // PUT - Kitap bilgilerini güncelle
 export async function PUT(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -123,7 +123,7 @@ export async function PUT(request: Request) {
         const userBook = await prisma.userBook.update({
             where: {
                 id: userBookId,
-                userId: session.user.id,
+                userId,
             },
             data: {
                 status,
@@ -144,8 +144,8 @@ export async function PUT(request: Request) {
 // PATCH - Kullanıcı kitap ilişkisini güncelle
 export async function PATCH(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -155,7 +155,7 @@ export async function PATCH(request: Request) {
         const userBook = await prisma.userBook.update({
             where: {
                 id: userBookId,
-                userId: session.user.id,
+                userId,
             },
             data: {
                 ...(status && { status }),
@@ -180,8 +180,8 @@ export async function PATCH(request: Request) {
 // DELETE - Kullanıcının kitabını kaldır
 export async function DELETE(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -195,7 +195,7 @@ export async function DELETE(request: Request) {
         await prisma.userBook.delete({
             where: {
                 id: userBookId,
-                userId: session.user.id,
+                userId,
             },
         });
 

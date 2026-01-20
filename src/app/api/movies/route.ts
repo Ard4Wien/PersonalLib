@@ -3,19 +3,20 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { movieSchema } from "@/lib/validations";
 import { checkRateLimit } from "@/lib/rate-limiter";
+import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
 export const dynamic = 'force-dynamic';
 
 // GET - Kullanıcının filmlerini listele
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
         const userMovies = await prisma.userMovie.findMany({
-            where: { userId: session.user.id },
+            where: { userId },
             include: { movie: true },
             orderBy: { updatedAt: "desc" },
         });
@@ -33,8 +34,8 @@ export async function GET() {
 // POST - Yeni film ekle
 export async function POST(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
         const existingUserMovie = await prisma.userMovie.findUnique({
             where: {
                 userId_movieId: {
-                    userId: session.user.id,
+                    userId,
                     movieId: movie.id,
                 },
             },
@@ -100,7 +101,7 @@ export async function POST(request: Request) {
         // Kullanıcı-film ilişkisini oluştur
         const userMovie = await prisma.userMovie.create({
             data: {
-                userId: session.user.id,
+                userId,
                 movieId: movie.id,
                 status,
             },
@@ -120,8 +121,8 @@ export async function POST(request: Request) {
 // PUT - Film bilgilerini güncelle
 export async function PUT(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -143,7 +144,7 @@ export async function PUT(request: Request) {
         const userMovie = await prisma.userMovie.update({
             where: {
                 id: userMovieId,
-                userId: session.user.id,
+                userId,
             },
             data: {
                 status,
@@ -164,8 +165,8 @@ export async function PUT(request: Request) {
 // PATCH - Film durumunu güncelle
 export async function PATCH(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -175,7 +176,7 @@ export async function PATCH(request: Request) {
         const userMovie = await prisma.userMovie.update({
             where: {
                 id: userMovieId,
-                userId: session.user.id,
+                userId,
             },
             data: {
                 ...(status && { status }),
@@ -199,8 +200,8 @@ export async function PATCH(request: Request) {
 // DELETE - Filmi kaldır
 export async function DELETE(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -214,7 +215,7 @@ export async function DELETE(request: Request) {
         await prisma.userMovie.delete({
             where: {
                 id: userMovieId,
-                userId: session.user.id,
+                userId,
             },
         });
 

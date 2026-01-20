@@ -3,19 +3,20 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { seriesSchema } from "@/lib/validations";
 import { checkRateLimit } from "@/lib/rate-limiter";
+import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
 export const dynamic = 'force-dynamic';
 
 // GET - Kullanıcının dizilerini listele
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
         const userSeries = await prisma.userSeries.findMany({
-            where: { userId: session.user.id },
+            where: { userId },
             include: {
                 series: {
                     include: { seasons: true },
@@ -40,8 +41,8 @@ export async function GET() {
 // POST - Yeni dizi ekle
 export async function POST(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -98,7 +99,7 @@ export async function POST(request: Request) {
         const existingUserSeries = await prisma.userSeries.findUnique({
             where: {
                 userId_seriesId: {
-                    userId: session.user.id,
+                    userId,
                     seriesId: series.id,
                 },
             },
@@ -114,7 +115,7 @@ export async function POST(request: Request) {
         // Kullanıcı-dizi ilişkisini oluştur
         const userSeries = await prisma.userSeries.create({
             data: {
-                userId: session.user.id,
+                userId,
                 seriesId: series.id,
                 overallStatus: status,
             },
@@ -136,8 +137,8 @@ export async function POST(request: Request) {
 // PUT - Dizi bilgilerini güncelle
 export async function PUT(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -160,7 +161,7 @@ export async function PUT(request: Request) {
         const userSeries = await prisma.userSeries.update({
             where: {
                 id: userSeriesId,
-                userId: session.user.id,
+                userId,
             },
             data: {
                 overallStatus: status,
@@ -184,8 +185,8 @@ export async function PUT(request: Request) {
 // PATCH - Dizi durumunu güncelle
 export async function PATCH(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -195,7 +196,7 @@ export async function PATCH(request: Request) {
         // Sezon durumu güncellemesi
         if (seasonId && seasonStatus) {
             const userSeries = await prisma.userSeries.findUnique({
-                where: { id: userSeriesId, userId: session.user.id },
+                where: { id: userSeriesId, userId },
             });
 
             if (!userSeries) {
@@ -222,7 +223,7 @@ export async function PATCH(request: Request) {
         const userSeries = await prisma.userSeries.update({
             where: {
                 id: userSeriesId,
-                userId: session.user.id,
+                userId,
             },
             data: {
                 ...(status && { overallStatus: status }),
@@ -248,8 +249,8 @@ export async function PATCH(request: Request) {
 // DELETE - Diziyi kaldır
 export async function DELETE(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.id) {
+        const userId = await getUserIdFromRequest(request, auth);
+        if (!userId) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
@@ -263,7 +264,7 @@ export async function DELETE(request: Request) {
         await prisma.userSeries.delete({
             where: {
                 id: userSeriesId,
-                userId: session.user.id,
+                userId,
             },
         });
 
