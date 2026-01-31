@@ -7,7 +7,7 @@ export async function POST(request: Request) {
     try {
         const { email } = await request.json();
 
-        // Get IP address for rate limiting
+
         const forwarded = request.headers.get("x-forwarded-for");
         const ip = forwarded ? forwarded.split(",")[0] : "127.0.0.1";
 
@@ -18,10 +18,10 @@ export async function POST(request: Request) {
             );
         }
 
-        // --- SECURITY HARDENING: Rate Limiting ---
+
         const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-        // 1. Check IP based attempts in last 24h
+
         const ipAttempts = await prisma.passwordResetAttempt.count({
             where: {
                 ip,
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // 2. Check Email based attempts in last 24h
+
         const emailAttempts = await prisma.passwordResetAttempt.count({
             where: {
                 email,
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Record the attempt
+
         await prisma.passwordResetAttempt.create({
             data: { email, ip }
         });
@@ -60,21 +60,21 @@ export async function POST(request: Request) {
             where: { email },
         });
 
-        // Always return success to prevent email enumeration in production
+
         if (!user) {
             return NextResponse.json({ message: "Sıfırlama bağlantısı gönderildi" });
         }
 
-        // Eski token'ları temizle
+
         await prisma.passwordResetToken.deleteMany({
             where: { userId: user.id },
         });
 
-        // Generate token
+
         const token = crypto.randomBytes(32).toString("hex");
         const expiresAt = new Date(Date.now() + 3600000); // 1 hour from now
 
-        // Store token in database
+
         await prisma.passwordResetToken.create({
             data: {
                 token,
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
             },
         });
 
-        // E-posta gönderimi (Nodemailer)
+
         const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {

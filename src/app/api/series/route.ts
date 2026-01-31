@@ -7,7 +7,7 @@ import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
 export const dynamic = 'force-dynamic';
 
-// GET - Kullanıcının dizilerini listele
+
 export async function GET(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -28,20 +28,20 @@ export async function GET(request: Request) {
             orderBy: { updatedAt: "desc" },
         });
 
-        // DTO Mapping
+
         const standardizedSeries = userSeries.map((us) => ({
             id: us.id,
             mediaId: us.seriesId,
             title: us.series.title,
             subtitle: us.series.creator || "Bilinmeyen Yapımcı",
             image: us.series.coverImage,
-            coverImage: us.series.coverImage, // Compatibility
-            type: "series", // Lowercase for frontend
+            coverImage: us.series.coverImage,
+            type: "series",
             status: us.overallStatus,
             rating: us.rating,
             isFavorite: us.isFavorite,
             updatedAt: us.updatedAt.toISOString(),
-            // Full compatibility - keep nested object during migration
+
             series: us.series,
             seasonStatuses: us.seasonStatuses
         }));
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
     }
 }
 
-// POST - Yeni dizi ekle
+
 export async function POST(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
-        // Rate limiting kontrolü
+
         const clientIP = request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
         const rateLimitResult = checkRateLimit(clientIP);
 
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Diziyi oluştur veya mevcut olanı bul
+
         let series = await prisma.series.findFirst({
             where: {
                 OR: [
@@ -118,7 +118,7 @@ export async function POST(request: Request) {
             });
         }
 
-        // Kullanıcı-dizi ilişkisini kontrol et
+
         const existingUserSeries = await prisma.userSeries.findUnique({
             where: {
                 userId_seriesId: {
@@ -135,7 +135,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Kullanıcı-dizi ilişkisini oluştur
+
         const userSeries = await prisma.userSeries.create({
             data: {
                 userId,
@@ -155,7 +155,7 @@ export async function POST(request: Request) {
             },
         });
 
-        // Standardized response
+
         const standardizedResponse = {
             id: userSeries.id,
             mediaId: userSeries.seriesId,
@@ -183,7 +183,7 @@ export async function POST(request: Request) {
     }
 }
 
-// PUT - Dizi bilgilerini güncelle
+
 export async function PUT(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -194,7 +194,7 @@ export async function PUT(request: Request) {
         const body = await request.json();
         const { userSeriesId, seriesId, title, creator, coverImage, genre, totalSeasons, status, lastSeason, lastEpisode } = body;
 
-        // Dizi bilgilerini güncelle
+
         await prisma.series.update({
             where: { id: seriesId },
             data: {
@@ -206,7 +206,7 @@ export async function PUT(request: Request) {
             },
         });
 
-        // UserSeries durumunu güncelle
+
         const userSeries = await prisma.userSeries.update({
             where: {
                 id: userSeriesId,
@@ -228,7 +228,7 @@ export async function PUT(request: Request) {
             },
         });
 
-        // Standardized response
+
         const standardizedResponse = {
             id: userSeries.id,
             mediaId: userSeries.seriesId,
@@ -256,7 +256,7 @@ export async function PUT(request: Request) {
     }
 }
 
-// PATCH - Dizi durumunu güncelle
+
 export async function PATCH(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -267,7 +267,7 @@ export async function PATCH(request: Request) {
         const body = await request.json();
         const { userSeriesId, status, rating, notes, seasonId, seasonStatus, isFavorite, lastSeason, lastEpisode } = body;
 
-        // Sezon durumu güncellemesi
+
         if (seasonId && seasonStatus) {
             const userSeries = await prisma.userSeries.findUnique({
                 where: { id: userSeriesId, userId },
@@ -293,7 +293,7 @@ export async function PATCH(request: Request) {
             });
         }
 
-        // Genel dizi durumu güncellemesi
+
         const userSeries = await prisma.userSeries.update({
             where: {
                 id: userSeriesId,
@@ -319,7 +319,7 @@ export async function PATCH(request: Request) {
             },
         });
 
-        // Standardized response
+
         const standardizedResponse = {
             id: userSeries.id,
             mediaId: userSeries.seriesId,
@@ -347,7 +347,7 @@ export async function PATCH(request: Request) {
     }
 }
 
-// DELETE - Diziyi kaldır
+
 export async function DELETE(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);

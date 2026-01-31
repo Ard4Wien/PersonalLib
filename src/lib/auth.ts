@@ -23,11 +23,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 const { email: rawEmail, password } = validatedFields.data;
                 const email = rawEmail.toLowerCase();
 
-                // Account lockout kontrolü
+
                 const lockoutStatus = checkLoginAttempt(email);
                 if (lockoutStatus.locked) {
-                    // NextAuth'da özel hata mesajı gösteremiyoruz, null dönüyoruz
-                    // Ancak hesap kilitli olduğu için giriş başarısız olacak
+
                     return null;
                 }
 
@@ -43,7 +42,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 });
 
                 if (!user || !user.passwordHash) {
-                    // Başarısız denemeyi kaydet
+
                     recordFailedLogin(email);
                     return null;
                 }
@@ -51,12 +50,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 const passwordsMatch = await bcrypt.compare(password, user.passwordHash);
 
                 if (!passwordsMatch) {
-                    // Başarısız denemeyi kaydet
+
                     recordFailedLogin(email);
                     return null;
                 }
 
-                // Başarılı giriş - sayacı sıfırla
+
                 resetLoginAttempts(email);
 
                 return {

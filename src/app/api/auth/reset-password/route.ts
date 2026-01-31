@@ -13,7 +13,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Find and validate token
+
         const resetToken = await prisma.passwordResetToken.findUnique({
             where: { token },
             include: { user: true },
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
         }
 
         if (resetToken.expiresAt < new Date()) {
-            // Delete expired token
+
             await prisma.passwordResetToken.delete({
                 where: { id: resetToken.id },
             });
@@ -37,10 +37,10 @@ export async function POST(request: Request) {
             );
         }
 
-        // Hash new password
+
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // Update user password and delete the token in a transaction
+
         await prisma.$transaction([
             prisma.user.update({
                 where: { id: resetToken.userId },

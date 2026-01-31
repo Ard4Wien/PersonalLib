@@ -35,7 +35,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // JWT Secret - .env dosyasından al
+
         const JWT_SECRET = process.env.JWT_SECRET || process.env.AUTH_SECRET;
 
         if (!JWT_SECRET) {
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // 30 günlük token oluştur - Algoritma açıkça belirtildi
+
         const token = sign(
             {
                 userId: user.id,

@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
         const OMDB_API_KEY = process.env.OMDB_API_KEY;
 
-        // Parallel fetching from TMDB, TVmaze, OMDb, and Jikan (Anime)
+
         const [tmdbResponse, tvmazeResponse, omdbResponse, jikanResponse] = await Promise.all([
             fetch(`${TMDB_BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR&include_adult=false`).catch(() => null),
             fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`).catch(() => null),
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
         let omdbResults: any[] = [];
         let jikanResults: any[] = [];
 
-        // 1. TMDB
+
         if (tmdbResponse?.ok) {
             const data = await tmdbResponse.json();
             tmdbResults = (data.results || []).map((show: any) => ({
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
             }));
         }
 
-        // 2. TVmaze
+
         if (tvmazeResponse?.ok) {
             const data = await tvmazeResponse.json();
             tvmazeResults = data.map((item: any) => {
@@ -71,7 +71,7 @@ export async function GET(request: Request) {
             });
         }
 
-        // 3. OMDb
+
         if (omdbResponse?.ok) {
             const data = await omdbResponse.json();
             if (data.Response === "True") {
@@ -85,7 +85,7 @@ export async function GET(request: Request) {
             }
         }
 
-        // 4. Jikan (Anime)
+
         if (jikanResponse?.ok) {
             const data = await jikanResponse.json();
             jikanResults = (data.data || []).map((anime: any) => ({
@@ -100,18 +100,18 @@ export async function GET(request: Request) {
             }));
         }
 
-        // Scoring function
+
         const getScore = (item: any, query: string) => {
             let score = 0;
             const lowerQuery = query.toLowerCase().trim();
             const lowerTitle = item.title.toLowerCase();
 
-            // title match
+
             if (lowerTitle === lowerQuery) score += 20;
             else if (lowerTitle.startsWith(lowerQuery)) score += 10;
             else if (lowerTitle.includes(lowerQuery)) score += 5;
 
-            // completeness
+
             if (item.coverImage) score += 10;
             if (item.creator && item.creator !== "Bilinmiyor") score += 5;
             if (item.genre && item.genre !== "") score += 3;
@@ -125,7 +125,7 @@ export async function GET(request: Request) {
         const topTVm = tvmazeResults.slice(0, 8);
         const topOMDb = omdbResults.slice(0, 8);
 
-        // Fetch details in parallel
+
         const [detailedTMDB, detailedOMDb, detailedTVm] = await Promise.all([
             Promise.all(topTMDB.map(async (show: any) => {
                 try {
@@ -176,7 +176,7 @@ export async function GET(request: Request) {
             }))
         ]);
 
-        // Global Merge & Sort
+
         const allResults = [...detailedTMDB, ...detailedTVm, ...detailedOMDb, ...jikanResults]
             .map(item => ({ ...item, score: getScore(item, query) }))
             .sort((a, b) => b.score - a.score);

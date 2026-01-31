@@ -18,7 +18,7 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "Arama terimi gerekli" }, { status: 400 });
         }
 
-        // Parallel fetching from Google Books, Open Library, and PRH (if key exists)
+
         const prhApiKey = process.env.PRH_API_KEY;
         const googleApiKey = process.env.GOOGLE_BOOKS_API_KEY;
 
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
         let openLibraryResults: any[] = [];
         let prhResults: any[] = [];
 
-        // 1. Process Google Books
+
         if (googleResponse?.ok) {
             const data = await googleResponse.json();
             googleResults = (data.items || []).map((item: any) => {
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
             });
         }
 
-        // 2. Process Open Library
+
         if (openLibraryResponse?.ok) {
             const data = await openLibraryResponse.json();
             openLibraryResults = (data.docs || []).map((doc: any) => {
@@ -89,7 +89,7 @@ export async function GET(request: Request) {
             });
         }
 
-        // 3. Process PRH (Penguin Random House)
+
         let prhStatus = "active";
         if (prhResponse?.ok) {
             const json = await prhResponse.json();
@@ -99,16 +99,16 @@ export async function GET(request: Request) {
                 const authorData = item.author ? item.author[0] : "";
                 const authorName = authorData.includes("|") ? authorData.split("|")[1] : authorData || "Bilinmiyor";
 
-                // 1. Try to find cover from _links
+
                 let coverLink = item._links?.find((l: any) => l.rel === "icon" || l.rel === "thumbnail")?.href || "";
 
-                // 2. Try ISBN based cover (most reliable for PRH)
+
                 const isbn = item.isbn || item.isbn13;
                 if (!coverLink && isbn) {
                     coverLink = `https://images.penguinrandomhouse.com/cover/${isbn}`;
                 }
 
-                // 3. Fallback to Work ID if key exists
+
                 if (!coverLink && item.key) {
                     coverLink = `https://images.penguinrandomhouse.com/cover/work/${item.key}`;
                 }
@@ -133,18 +133,18 @@ export async function GET(request: Request) {
             prhStatus = "no key";
         }
 
-        // Create a scoring function
+
         const getScore = (item: any, query: string) => {
             let score = 0;
             const lowerQuery = query.toLowerCase().trim();
             const lowerTitle = item.title.toLowerCase();
 
-            // 1. Title match (Highest priority)
+
             if (lowerTitle === lowerQuery) score += 10;
             else if (lowerTitle.startsWith(lowerQuery)) score += 7;
             else if (lowerTitle.includes(lowerQuery)) score += 5;
 
-            // 2. Data completeness
+
             const isPlaceholder = item.coverImage && (
                 item.coverImage.includes("content?id=uS4VAAAAMAAJ") ||
                 item.coverImage.includes("fife/") ||
@@ -158,7 +158,7 @@ export async function GET(request: Request) {
             return score;
         };
 
-        // Score each source individually
+
         const scoreAndSort = (results: any[]) => {
             return results
                 .map(item => ({ ...item, score: getScore(item, query) }))
@@ -169,24 +169,23 @@ export async function GET(request: Request) {
         const sortedOL = scoreAndSort(openLibraryResults);
         const sortedPRH = scoreAndSort(prhResults);
 
-        // --- Interleaving Logic for Variety ---
-        // We take the top results from each source in rotation
+
         const finalResults = [];
         const maxLength = Math.max(sortedGoogle.length, sortedOL.length, sortedPRH.length);
 
         for (let i = 0; i < maxLength; i++) {
-            // First 5 slots: Interleave for guaranteed variety
+
             if (i < sortedGoogle.length) finalResults.push(sortedGoogle[i]);
             if (i < sortedPRH.length) finalResults.push(sortedPRH[i]);
             if (i < sortedOL.length) finalResults.push(sortedOL[i]);
         }
 
-        // Clean up and limit
+
         const cleanResults = finalResults
             .map(({ score, ...item }: any) => item)
             .slice(0, 40);
 
-        // Standard array response to avoid breaking existing frontend
+
         return NextResponse.json(cleanResults);
     } catch (error) {
         console.error("Kitap arama hatası:", error);

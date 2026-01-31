@@ -7,7 +7,7 @@ import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
 export const dynamic = 'force-dynamic';
 
-// GET - Kullanıcının filmlerini listele
+
 export async function GET(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -21,20 +21,20 @@ export async function GET(request: Request) {
             orderBy: { updatedAt: "desc" },
         });
 
-        // DTO Mapping
+
         const standardizedMovies = userMovies.map((um) => ({
             id: um.id,
             mediaId: um.movieId,
             title: um.movie.title,
             subtitle: um.movie.director || "Bilinmeyen Yönetmen",
             image: um.movie.coverImage,
-            coverImage: um.movie.coverImage, // Compatibility
-            type: "movie", // Lowercase for frontend
+            coverImage: um.movie.coverImage,
+            type: "movie",
             status: um.status,
             rating: um.rating,
             isFavorite: um.isFavorite,
             updatedAt: um.updatedAt.toISOString(),
-            // Full compatibility - keep nested object during migration
+
             movie: um.movie
         }));
 
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     }
 }
 
-// POST - Yeni film ekle
+
 export async function POST(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
-        // Rate limiting kontrolü
+
         const clientIP = request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
         const rateLimitResult = checkRateLimit(clientIP);
 
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Filmi oluştur veya mevcut olanı bul
+
         let movie = await prisma.movie.findFirst({
             where: {
                 OR: [
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
             });
         }
 
-        // Kullanıcı-film ilişkisini kontrol et
+
         const existingUserMovie = await prisma.userMovie.findUnique({
             where: {
                 userId_movieId: {
@@ -120,7 +120,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Kullanıcı-film ilişkisini oluştur
+
         const userMovie = await prisma.userMovie.create({
             data: {
                 userId,
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
             include: { movie: true },
         });
 
-        // Standardized response
+
         const standardizedResponse = {
             id: userMovie.id,
             mediaId: userMovie.movieId,
@@ -157,7 +157,7 @@ export async function POST(request: Request) {
     }
 }
 
-// PUT - Film bilgilerini güncelle
+
 export async function PUT(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -168,7 +168,7 @@ export async function PUT(request: Request) {
         const body = await request.json();
         const { userMovieId, movieId, title, director, coverImage, genre, status } = body;
 
-        // Film bilgilerini güncelle
+
         await prisma.movie.update({
             where: { id: movieId },
             data: {
@@ -179,7 +179,7 @@ export async function PUT(request: Request) {
             },
         });
 
-        // UserMovie durumunu güncelle
+
         const userMovie = await prisma.userMovie.update({
             where: {
                 id: userMovieId,
@@ -191,7 +191,7 @@ export async function PUT(request: Request) {
             include: { movie: true },
         });
 
-        // Standardized response
+
         const standardizedResponse = {
             id: userMovie.id,
             mediaId: userMovie.movieId,
@@ -218,7 +218,7 @@ export async function PUT(request: Request) {
     }
 }
 
-// PATCH - Film durumunu güncelle
+
 export async function PATCH(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -244,7 +244,7 @@ export async function PATCH(request: Request) {
             include: { movie: true },
         });
 
-        // Standardized response
+
         const standardizedResponse = {
             id: userMovie.id,
             mediaId: userMovie.movieId,
@@ -271,7 +271,7 @@ export async function PATCH(request: Request) {
     }
 }
 
-// DELETE - Filmi kaldır
+
 export async function DELETE(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);

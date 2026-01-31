@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { isValidUsername, containsProfanity } from "./profanity";
 
-// Auth şemaları
+
 export const registerSchema = z.object({
     email: z.string().email("Geçerli bir e-posta adresi giriniz"),
     username: z
@@ -49,7 +49,7 @@ const imageSchema = z.string().url().optional().or(z.literal("")).refine((val) =
     message: "Resim URL'i http veya https ile başlamalıdır"
 });
 
-// İçerik şemaları
+
 export const bookSchema = z.object({
     title: z.string().min(1, "Kitap başlığı gereklidir"),
     author: z.string().optional(),

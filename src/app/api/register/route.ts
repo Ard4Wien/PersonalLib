@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     try {
-        // Rate limiting kontrolü
+
         const clientIP = getClientIP(request);
         const rateLimitResult = checkRateLimit(clientIP);
 
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
         const email = rawEmail.toLowerCase();
         const username = rawUsername.toLowerCase();
 
-        // 1. Alan adı (DNS) doğrulaması - Hiç var olmayan domainleri engelle
+
         const domainValidation = await validateEmailDomain(email);
         if (!domainValidation.valid) {
             return NextResponse.json(
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Paralel kontrol - performans optimizasyonu
+
         const [existingUserByEmail, existingUserByUsername] = await Promise.all([
             prisma.user.findUnique({ where: { email } }),
             prisma.user.findUnique({ where: { username } }),
@@ -68,10 +68,10 @@ export async function POST(request: Request) {
             );
         }
 
-        // Şifreyi hash'le
+
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // Kullanıcıyı oluştur
+
         const user = await prisma.user.create({
             data: {
                 email,

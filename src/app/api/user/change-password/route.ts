@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
         const { currentPassword, newPassword } = validatedFields.data;
 
-        // Kullanıcıyı bul
+
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: { passwordHash: true }
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Mevcut şifreyi doğrula
+
         const isPasswordMatch = await bcrypt.compare(currentPassword, user.passwordHash);
 
         if (!isPasswordMatch) {
@@ -51,10 +51,10 @@ export async function POST(request: Request) {
             );
         }
 
-        // Yeni şifreyi hashle
+
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        // Şifreyi güncelle
+
         await prisma.user.update({
             where: { id: userId },
             data: { passwordHash: hashedPassword }

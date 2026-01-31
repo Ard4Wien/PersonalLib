@@ -6,7 +6,7 @@ import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
 export const dynamic = 'force-dynamic';
 
-// GET - Kullanıcının kitaplarını listele
+
 export async function GET(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -20,21 +20,20 @@ export async function GET(request: Request) {
             orderBy: { updatedAt: "desc" },
         });
 
-        // DTO Mapping
+
         const standardizedBooks = userBooks.map((ub) => ({
             id: ub.id,
             mediaId: ub.bookId,
             title: ub.book.title,
             subtitle: ub.book.author || "Bilinmeyen Yazar",
             image: ub.book.coverImage,
-            coverImage: ub.book.coverImage, // Compatibility
-            type: "book", // Lowercase for frontend
+            coverImage: ub.book.coverImage,
+            type: "book",
             status: ub.status,
             rating: ub.rating,
             isFavorite: ub.isFavorite,
-            genre: ub.book.genre, // Compatibility
+            genre: ub.book.genre,
             updatedAt: ub.updatedAt.toISOString(),
-            // Full compatibility - keep nested object during migration
             book: ub.book
         }));
 
@@ -48,7 +47,7 @@ export async function GET(request: Request) {
     }
 }
 
-// POST - Yeni kitap ekle ve kullanıcıya bağla
+
 export async function POST(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -67,7 +66,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Kitabı oluştur veya mevcut olanı bul
+
         let book = await prisma.book.findFirst({
             where: {
                 OR: [
@@ -83,7 +82,7 @@ export async function POST(request: Request) {
             });
         }
 
-        // Kullanıcı-kitap ilişkisini kontrol et
+
         const existingUserBook = await prisma.userBook.findUnique({
             where: {
                 userId_bookId: {
@@ -100,7 +99,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Kullanıcı-kitap ilişkisini oluştur
+
         const userBook = await prisma.userBook.create({
             data: {
                 userId,
@@ -110,7 +109,7 @@ export async function POST(request: Request) {
             include: { book: true },
         });
 
-        // Standardized response
+
         const standardizedResponse = {
             id: userBook.id,
             mediaId: userBook.bookId,
@@ -137,7 +136,7 @@ export async function POST(request: Request) {
     }
 }
 
-// PUT - Kitap bilgilerini güncelle
+
 export async function PUT(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -148,7 +147,7 @@ export async function PUT(request: Request) {
         const body = await request.json();
         const { userBookId, bookId, title, author, coverImage, genre, status } = body;
 
-        // Kitap bilgilerini güncelle
+
         await prisma.book.update({
             where: { id: bookId },
             data: {
@@ -159,7 +158,7 @@ export async function PUT(request: Request) {
             },
         });
 
-        // UserBook durumunu güncelle
+
         const userBook = await prisma.userBook.update({
             where: {
                 id: userBookId,
@@ -181,7 +180,7 @@ export async function PUT(request: Request) {
     }
 }
 
-// PATCH - Kullanıcı kitap ilişkisini güncelle
+
 export async function PATCH(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);
@@ -218,7 +217,7 @@ export async function PATCH(request: Request) {
     }
 }
 
-// DELETE - Kullanıcının kitabını kaldır
+
 export async function DELETE(request: Request) {
     try {
         const userId = await getUserIdFromRequest(request, auth);

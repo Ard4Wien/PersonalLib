@@ -21,8 +21,7 @@ export function getOptimizedImageUrl(url: string | null | undefined, width = 600
   if (!url) return "";
   if (url.startsWith("/") || url.startsWith("data:")) return url;
 
-  // External URL ise wsrv.nl ile optimize et (Kaliteyi %90 yaptık)
-  // MyAnimeList görselleri wsrv.nl tarafından engellendiği için onları pas geçiyoruz
+
   if (url.includes("myanimelist.net")) return url;
 
   return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&q=90&output=webp`;
