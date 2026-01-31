@@ -46,7 +46,7 @@ export function MediaSearch({ type, onSelect }: MediaSearchProps) {
             const response = await fetch(`/api/search/${endpoint}?q=${encodeURIComponent(query)}`);
             if (response.ok) {
                 const data = await response.json();
-                // Görseli olsun olmasın tüm sonuçları göster (bazı PRH sonuçları görselsiz gelebilir)
+
                 setResults(data as MediaSearchResult[]);
                 if ((data as MediaSearchResult[]).length === 0) {
                     toast.info("Sonuç bulunamadı");

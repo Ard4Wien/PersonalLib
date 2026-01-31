@@ -57,7 +57,7 @@ export default function RegisterPage() {
 
             if (!response.ok) {
                 if (result.error && typeof result.error === "object") {
-                    // Zod validation errors (fieldErrors)
+
                     const fieldErrors = result.error as Record<string, string[]>;
                     const firstError = Object.values(fieldErrors)[0]?.[0];
                     setError(firstError || "Kayıt işlemi başarısız");

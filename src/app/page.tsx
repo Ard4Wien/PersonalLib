@@ -19,7 +19,7 @@ export default function HomePage() {
     }
   }, [status, router]);
 
-  // Yükleniyor durumu
+
   if (status === "loading" || status === "authenticated") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-black dark:via-zinc-950 dark:to-black flex items-center justify-center">
@@ -58,7 +58,7 @@ export default function HomePage() {
           <ThemeToggle />
         </motion.div>
 
-        {/* Logo */}
+
         <motion.div variants={item} className="flex justify-center gap-3 mb-8">
           <motion.div
             whileHover={{ scale: 1.1, rotate: -5 }}
@@ -84,18 +84,18 @@ export default function HomePage() {
           </motion.div>
         </motion.div>
 
-        {/* Title */}
+
         <motion.h1 variants={item} className="text-5xl md:text-7xl font-bold text-white mb-4">
           Personal<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Lib</span>
         </motion.h1>
 
-        {/* Subtitle */}
+
         <motion.p variants={item} className="text-xl text-gray-400 mb-8 max-w-xl mx-auto">
           Kitaplarınızı, filmlerinizi ve dizilerinizi tek bir yerde takip edin.
           Kişisel medya kütüphanenizi oluşturun ve paylaşın.
         </motion.p>
 
-        {/* Features */}
+
         <motion.div variants={item} className="flex flex-wrap justify-center gap-4 mb-10">
           <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 dark:bg-zinc-900/50 border border-white/10 dark:border-zinc-800 text-gray-300">
             <Sparkles className="h-4 w-4 text-purple-400" />
@@ -111,7 +111,7 @@ export default function HomePage() {
           </motion.div>
         </motion.div>
 
-        {/* CTA Buttons */}
+
         <motion.div variants={item} className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link href="/register">
             <motion.div whileTap={{ scale: 0.95 }}>
@@ -130,7 +130,7 @@ export default function HomePage() {
           </Link>
         </motion.div>
 
-        {/* Footer */}
+
         <motion.p variants={item} className="mt-12 text-gray-400 text-sm">
         </motion.p>
       </motion.div>

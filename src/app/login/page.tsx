@@ -46,7 +46,7 @@ export default function LoginPage() {
                 setError("E-posta veya şifre hatalı");
                 setIsLoading(false);
             } else {
-                // Hard redirect for mobile reliability
+
                 window.location.href = "/books";
             }
         } catch {

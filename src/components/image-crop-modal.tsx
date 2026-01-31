@@ -21,7 +21,7 @@ interface ImageCropModalProps {
     onCropComplete: (croppedImage: string) => void;
 }
 
-// Helper function to create cropped image
+
 const createCroppedImage = async (
     imageSrc: string,
     pixelCrop: Area
@@ -40,11 +40,11 @@ const createCroppedImage = async (
         throw new Error("Canvas context not found");
     }
 
-    // Set canvas size to crop area
+
     canvas.width = pixelCrop.width;
     canvas.height = pixelCrop.height;
 
-    // Draw cropped image
+
     ctx.drawImage(
         image,
         pixelCrop.x,
@@ -57,7 +57,7 @@ const createCroppedImage = async (
         pixelCrop.height
     );
 
-    // Return base64 string
+
     return canvas.toDataURL("image/jpeg", 0.9);
 };
 
@@ -118,7 +118,7 @@ export function ImageCropModal({
                     />
                 </div>
 
-                {/* Zoom Control */}
+
                 <div className="flex items-center gap-4 px-2">
                     <ZoomOut className="h-4 w-4 text-gray-400" />
                     <Slider
