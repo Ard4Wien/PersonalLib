@@ -1,0 +1,231 @@
+"use client";
+
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { BookOpen, Film, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { motion } from "framer-motion";
+
+function ResetPasswordForm() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const token = searchParams.get("token");
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
+    useEffect(() => {
+        if (!token) {
+            setError("Geçersiz veya eksik bağlantı. Lütfen tekrar şifre sıfırlama talebinde bulunun.");
+        }
+    }, [token]);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError(null);
+        setIsLoading(true);
+
+        const formData = new FormData(e.currentTarget);
+        const password = formData.get("password") as string;
+        const confirmPassword = formData.get("confirmPassword") as string;
+
+        if (password !== confirmPassword) {
+            setError("Şifreler eşleşmiyor");
+            setIsLoading(false);
+            return;
+        }
+
+        if (password.length < 6) {
+            setError("Şifre en az 6 karakter olmalıdır");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/auth/reset-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, password }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Bir hata oluştu");
+            }
+
+            setIsSubmitted(true);
+            setTimeout(() => {
+                router.push("/login");
+            }, 3000);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    if (!token && !error) return null;
+
+    return (
+        <Card className="bg-black/40 dark:bg-zinc-900/60 backdrop-blur-xl border-white/10 dark:border-zinc-800 w-full max-w-md">
+            <CardHeader className="text-center space-y-4">
+                <div className="flex justify-center gap-2">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
+                        <BookOpen className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
+                        <Film className="h-6 w-6 text-white" />
+                    </div>
+                </div>
+                <CardTitle className="text-2xl font-bold text-white">
+                    Yeni Şifre Belirle
+                </CardTitle>
+                <CardDescription className="text-gray-400">
+                    {isSubmitted
+                        ? "Şifreniz başarıyla güncellendi"
+                        : "Lütfen hesabınız için yeni bir şifre belirleyin"}
+                </CardDescription>
+            </CardHeader>
+
+            {!isSubmitted ? (
+                <form onSubmit={handleSubmit}>
+                    <CardContent className="space-y-6">
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center flex items-center justify-center gap-2"
+                            >
+                                <AlertCircle className="h-4 w-4 shrink-0" />
+                                {error}
+                            </motion.div>
+                        )}
+
+                        <div className="space-y-2">
+                            <Label htmlFor="password" className="text-gray-300">
+                                Yeni Şifre
+                            </Label>
+                            <Input
+                                id="password"
+                                name="password"
+                                type="password"
+                                placeholder="••••••••"
+                                required
+                                disabled={!!error && !token}
+                                className="bg-white/5 dark:bg-zinc-800/50 border-white/10 dark:border-zinc-700 text-white placeholder:text-gray-500 transition-all focus:scale-[1.01]"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="confirmPassword" className="text-gray-300">
+                                Şifre Tekrar
+                            </Label>
+                            <Input
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                type="password"
+                                placeholder="••••••••"
+                                required
+                                disabled={!!error && !token}
+                                className="bg-white/5 dark:bg-zinc-800/50 border-white/10 dark:border-zinc-700 text-white placeholder:text-gray-500 transition-all focus:scale-[1.01]"
+                            />
+                        </div>
+                    </CardContent>
+
+                    <CardFooter className="flex flex-col gap-4 pt-6">
+                        <Button
+                            type="submit"
+                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all hover:scale-[1.02]"
+                            disabled={isLoading || (!!error && !token)}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Güncelleniyor...
+                                </>
+                            ) : (
+                                "Şifreyi Güncelle"
+                            )}
+                        </Button>
+
+                        {error && !token && (
+                            <Link
+                                href="/forgot-password"
+                                className="text-sm text-purple-400 hover:text-purple-300 transition-colors hover:underline text-center"
+                            >
+                                Yeni bir bağlantı iste
+                            </Link>
+                        )}
+                    </CardFooter>
+                </form>
+            ) : (
+                <CardContent className="text-center space-y-6 py-8">
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="flex justify-center"
+                    >
+                        <div className="p-4 rounded-full bg-green-500/10 border border-green-500/20">
+                            <CheckCircle2 className="h-12 w-12 text-green-500" />
+                        </div>
+                    </motion.div>
+                    <p className="text-gray-300">
+                        Şifreniz başarıyla sıfırlandı. Giriş sayfasına yönlendiriliyorsunuz...
+                    </p>
+                    <Button
+                        asChild
+                        variant="link"
+                        className="text-purple-400"
+                    >
+                        <Link href="/login">Hemen Giriş Yap</Link>
+                    </Button>
+                </CardContent>
+            )}
+        </Card>
+    );
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-black dark:via-zinc-950 dark:to-black p-4 transition-colors duration-500">
+            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+
+            <div className="relative z-10 mb-6">
+                <ThemeToggle />
+            </div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, type: "spring", stiffness: 50 }}
+                className="w-full max-w-md relative flex justify-center"
+            >
+                <Suspense fallback={
+                    <Card className="bg-black/40 dark:bg-zinc-900/60 backdrop-blur-xl border-white/10 dark:border-zinc-800 w-full max-w-md h-[400px] flex items-center justify-center">
+                        <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
+                    </Card>
+                }>
+                    <ResetPasswordForm />
+                </Suspense>
+            </motion.div>
+
+            <footer className="mt-8 relative z-10 text-gray-500 text-sm">
+                PersonalLib ile oluşturuldu 📚🎬
+            </footer>
+        </div>
+    );
+}
