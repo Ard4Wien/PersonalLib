@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Share2, User, BookOpen, Film, ExternalLink, ArrowLeft } from "lucide-react";
+import { Share2, User, BookOpen, Film, ExternalLink, ArrowLeft, Shield, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import AnimatedPage from "@/components/layout/animated-page";
 
@@ -33,6 +33,39 @@ const FILE_SIGNATURES: Record<string, number[]> = {
 export default function ProfilePage() {
     const { data: session } = useSession();
     const router = useRouter();
+    const [isPrivate, setIsPrivate] = useState<boolean | null>(null);
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    useState(() => {
+        fetch("/api/user/privacy")
+            .then(res => res.json())
+            .then(data => setIsPrivate(data.isPrivate))
+            .catch(() => setIsPrivate(false));
+    });
+
+    const togglePrivacy = async () => {
+        if (isUpdating) return;
+        setIsUpdating(true);
+        const newValue = !isPrivate;
+        try {
+            const res = await fetch("/api/user/privacy", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ isPrivate: newValue })
+            });
+            if (res.ok) {
+                setIsPrivate(newValue);
+                toast.success(newValue ? "Profiliniz gizlendi" : "Profiliniz artık herkese açık");
+            } else {
+                toast.error("Gizlilik ayarı güncellenemedi");
+            }
+        } catch {
+            toast.error("Bir hata oluştu");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
 
     const getInitials = (name: string) => {
         return name
@@ -152,8 +185,8 @@ export default function ProfilePage() {
             {/* Account Info */}
             <Card className="bg-white/5 border-white/10">
                 <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                        <User className="h-5 w-5" />
+                    <CardTitle className="text-white flex items-center gap-2 text-lg">
+                        <User className="h-5 w-5 text-gray-400" />
                         Hesap Bilgileri
                     </CardTitle>
                 </CardHeader>
@@ -167,10 +200,56 @@ export default function ProfilePage() {
                         <span className="text-gray-400">Kullanıcı Adı</span>
                         <span className="text-white">@{session.user.username}</span>
                     </div>
-                    <Separator className="bg-white/10" />
+                </CardContent>
+            </Card>
+
+            {/* Account and Privacy */}
+            <Card className="bg-white/5 border-white/10">
+                <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2 text-lg">
+                        <Shield className="h-5 w-5 text-purple-400" />
+                        Hesap ve Gizlilik
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
                     <div className="flex justify-between items-center">
-                        <span className="text-gray-400">Görünen Ad</span>
-                        <span className="text-white">{session.user.name}</span>
+                        <div className="space-y-0.5">
+                            <div className="text-white flex items-center gap-2">
+                                <Lock className="h-4 w-4 text-gray-400" />
+                                <span>Şifre</span>
+                            </div>
+                            <p className="text-xs text-gray-500">Güvenliğiniz için şifrenizi düzenli aralıklarla değiştirin.</p>
+                        </div>
+                        <Link href="/settings/change-password">
+                            <Button variant="outline" size="sm" className="border-white/10 bg-white/5 text-white hover:bg-white/10">
+                                Şifre Değiştir
+                            </Button>
+                        </Link>
+                    </div>
+
+                    <Separator className="bg-white/10" />
+
+                    <div className="flex justify-between items-center">
+                        <div className="space-y-0.5">
+                            <div className="text-white flex items-center gap-2">
+                                {isPrivate ? <EyeOff className="h-4 w-4 text-red-400" /> : <Eye className="h-4 w-4 text-green-400" />}
+                                <span>Hesabı Gizle</span>
+                            </div>
+                            <p className="text-xs text-gray-500">
+                                {isPrivate
+                                    ? "Hesabınız gizli. Portfolyonuzu sadece siz görebilirsiniz."
+                                    : "Hesabınız herkese açık. Portfolyonuzu herkes görebilir."}
+                            </p>
+                        </div>
+                        <Button
+                            variant={isPrivate ? "destructive" : "secondary"}
+                            size="sm"
+                            disabled={isUpdating || isPrivate === null}
+                            onClick={togglePrivacy}
+                            className={!isPrivate ? "bg-white/5 border border-white/10 text-white hover:bg-white/10" : ""}
+                        >
+                            {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : (isPrivate ? "Gizli" : "Açık")}
+                        </Button>
                     </div>
                 </CardContent>
             </Card>

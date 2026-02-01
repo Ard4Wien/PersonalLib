@@ -4,9 +4,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { BookOpen, Check, Film, Star, Tv } from "lucide-react";
+import { BookOpen, Check, Film, Star, Tv, Lock } from "lucide-react";
 import { getInitials, BACKGROUND_GRADIENT, getOptimizedImageUrl } from "@/lib/utils";
 import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+
 
 interface PortfolioPageProps {
     params: Promise<{ username: string }>;
@@ -27,7 +30,12 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
 
     const user = await prisma.user.findUnique({
         where: { username },
-        include: {
+        select: {
+            id: true,
+            username: true,
+            displayName: true,
+            isPrivate: true,
+
             books: {
                 where: { status: "COMPLETED" },
                 include: { book: true },
@@ -48,6 +56,29 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
 
     if (!user) {
         notFound();
+    }
+
+    if (user.isPrivate) {
+        return (
+            <div className={BACKGROUND_GRADIENT}>
+                <div className="container mx-auto px-4 py-max flex flex-col items-center justify-center min-h-screen text-center">
+                    <div className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl max-w-md w-full">
+                        <div className="h-20 w-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Lock className="h-10 w-10 text-red-400" />
+                        </div>
+                        <h1 className="text-2xl font-bold text-white mb-2">Bu Profil Gizlidir</h1>
+                        <p className="text-gray-400">
+                            Bu kullanıcı profilini gizli tutmayı tercih etti.
+                        </p>
+                        <Link href="/">
+                            <Button className="mt-8 w-full bg-gradient-to-r from-purple-600 to-pink-600">
+                                Ana Sayfaya Dön
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
 
