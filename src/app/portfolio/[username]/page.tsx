@@ -37,17 +37,17 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
             isPrivate: true,
 
             books: {
-                where: { status: "COMPLETED" },
+                where: { status: { in: ["READING", "COMPLETED"] } },
                 include: { book: true },
                 orderBy: { updatedAt: "desc" },
             },
             movies: {
-                where: { status: "COMPLETED" },
+                where: { status: { in: ["WATCHING", "COMPLETED"] } },
                 include: { movie: true },
                 orderBy: { updatedAt: "desc" },
             },
             series: {
-                where: { overallStatus: "COMPLETED" },
+                where: { overallStatus: { in: ["WATCHING", "COMPLETED"] } },
                 include: { series: true },
                 orderBy: { updatedAt: "desc" },
             },
@@ -173,7 +173,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                         <CardHeader>
                             <CardTitle className="text-white flex items-center gap-2">
                                 <BookOpen className="h-5 w-5 text-purple-400" />
-                                Okunan Kitaplar
+                                Okunan & Okunmakta Olan Kitaplar
                                 <Badge variant="secondary" className="ml-auto bg-purple-500/20 text-purple-400">
                                     {totalBooks}
                                 </Badge>
@@ -223,7 +223,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                         <CardHeader>
                             <CardTitle className="text-white flex items-center gap-2">
                                 <Film className="h-5 w-5 text-blue-400" />
-                                İzlenen Filmler
+                                İzlenen & İzlenmekte Olan Filmler
                                 <Badge variant="secondary" className="ml-auto bg-blue-500/20 text-blue-400">
                                     {totalMovies}
                                 </Badge>
@@ -273,7 +273,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                         <CardHeader>
                             <CardTitle className="text-white flex items-center gap-2">
                                 <Tv className="h-5 w-5 text-cyan-400" />
-                                İzlenen Diziler
+                                İzlenen & İzlenmekte Olan Diziler
                                 <Badge variant="secondary" className="ml-auto bg-cyan-500/20 text-cyan-400">
                                     {totalSeries}
                                 </Badge>
