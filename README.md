@@ -1,4 +1,4 @@
-# [Personal Media Library](https://personal-lib.vercel.app/)
+# [Personal Library](https://personal-lib.vercel.app/)
 
 **PersonalLib**, okuduğunuz kitapları, izlediğiniz filmleri ve dizileri takip etmenizi sağlayan; modern, güvenli ve kişiselleştirilebilir bir dijital kütüphane uygulamasıdır.
 
