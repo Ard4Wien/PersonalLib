@@ -38,7 +38,7 @@ export async function validateEmailDomain(email: string): Promise<{ valid: boole
         return { valid: false, reason: "Geçersiz e-posta formatı" };
     }
 
-    // 1. Yazım hatası kontrolü
+    // 1. Yazım hatası kontrolü (Yerel)
     if (!POPULAR_DOMAINS.includes(domain)) {
         for (const popular of POPULAR_DOMAINS) {
             const distance = getLevenshteinDistance(domain, popular);
@@ -48,13 +48,52 @@ export async function validateEmailDomain(email: string): Promise<{ valid: boole
         }
     }
 
-    // 2. Geçici mail kontrolü
+    // 2. Geçici mail kontrolü (Yerel)
     if (DISPOSABLE_DOMAINS.includes(domain)) {
         return { valid: false, reason: "Geçici e-posta adresleri güvenlik nedeniyle kabul edilmemektedir" };
     }
 
+    // 3. Çoklu API Key ile Abstract API Kontrolü
+    const apiKeys = (process.env.ABSTRACT_EMAIL_VERIFY_KEYS || "").split(",").filter(Boolean);
+
+    if (apiKeys.length > 0) {
+        for (const key of apiKeys) {
+            try {
+                const response = await fetch(
+                    `https://emailreputation.abstractapi.com/v1/?api_key=${key.trim()}&email=${encodeURIComponent(email)}`
+                );
+
+                if (response.status === 429 || response.status === 422) {
+                    continue; // Kota dolmuş veya geçersiz anahtar, bir sonrakini dene
+                }
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // SMTP geçerli değilse veya teslim edilebilir değilse engelle
+                    if (data.email_deliverability) {
+                        const isDeliverable = data.email_deliverability.status === "deliverable";
+                        const isSmtpValid = data.email_deliverability.is_smtp_valid;
+
+                        if (!isDeliverable || !isSmtpValid) {
+                            return {
+                                valid: false,
+                                reason: "Bu e-posta adresi ulaşılamaz görünüyor. Lütfen geçerli bir adres giriniz."
+                            };
+                        }
+
+                        return { valid: true };
+                    }
+                }
+            } catch (error) {
+                console.error("Abstract API error:", error);
+                continue; // Hata durumunda diğer anahtarı dene
+            }
+        }
+    }
+
+    // 4. Fallback: API'ler biterse veya hata alırsa DNS Kontrolü
     try {
-        // 3. DNS Kontrolleri
         const mxRecords = await resolveMx(domain).catch(() => []);
         if (mxRecords.length > 0) return { valid: true };
 
@@ -63,6 +102,6 @@ export async function validateEmailDomain(email: string): Promise<{ valid: boole
 
         return { valid: false, reason: "Bu e-posta sunucusu mevcut değil görünüyor" };
     } catch (error) {
-        return { valid: true }; // DNS hatası durumunda kullanıcıyı engelleme
+        return { valid: true };
     }
 }
