@@ -4,10 +4,10 @@
 
 ##  Özellikler
 
-- ** Medya Takibi:** Kitap, Film ve Dizi koleksiyonlarınızı ayrı ayrı yönetin.
-- ** Durum Yönetimi:** "Okunacak", "Okunuyor", "Tamamlandı" gibi durumlarla ilerlemenizi takip edin.
-- ** Modern Arayüz:** Tailwind CSS ve shadcn/ui ile tasarlanmış, Responsive ve Karanlık Mod (Dark Mode) destekli şık tasarım.
-- ** Gelişmiş Güvenlik.**
+- **Medya Takibi:** Kitap, Film ve Dizi koleksiyonlarınızı ayrı ayrı yönetin.
+- **Durum Yönetimi:** "Okunacak", "Okunuyor", "Tamamlandı" gibi durumlarla ilerlemenizi takip edin.
+- **Modern Arayüz:** Tailwind CSS ve shadcn/ui ile tasarlanmış, Responsive ve Karanlık Mod (Dark Mode) destekli şık tasarım.
+- **Gelişmiş Güvenlik.**
 
 ##  Ön İzleme
 
