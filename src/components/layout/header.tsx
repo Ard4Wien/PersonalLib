@@ -58,7 +58,7 @@ export default function Header() {
 
 
     return (
-        <header className="sticky top-0 z-50 w-full bg-slate-900 dark:bg-[#09090b] md:bg-transparent md:bg-gradient-to-r md:from-slate-900/90 md:to-purple-900/30 md:dark:bg-none md:dark:bg-[#09090b]/90 md:backdrop-blur-xl transition-colors duration-300">
+        <header className="sticky top-0 z-50 w-full bg-white dark:bg-[#09090b] border-b border-black/5 dark:border-white/5 md:bg-white/80 md:dark:bg-[#09090b]/80 md:backdrop-blur-xl transition-all duration-300 shadow-sm">
             <div className="container mx-auto px-4">
                 <div className="flex h-16 items-center justify-between gap-4">
                     {/* Logo */}
@@ -71,7 +71,7 @@ export default function Header() {
                                 <Film className="h-4 w-4 text-white" />
                             </div>
                         </div>
-                        <span className="hidden sm:block font-bold text-white">
+                        <span className="hidden sm:block font-bold text-foreground">
                             PersonalLib
                         </span>
                     </Link>
@@ -91,8 +91,8 @@ export default function Header() {
                                     key={item.href}
                                     href={item.href}
                                     className={`p-2 rounded-lg transition-colors ${isActive
-                                        ? "bg-white/10 text-white"
-                                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                                        ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
                                         }`}
                                 >
                                     <Icon className="h-5 w-5" />
@@ -110,9 +110,9 @@ export default function Header() {
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isActive
-                                        ? "bg-white/10 text-white"
-                                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${isActive
+                                        ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
                                         }`}
                                 >
                                     <Icon className="h-4 w-4" />
@@ -134,7 +134,7 @@ export default function Header() {
                                 placeholder={getSearchPlaceholder()}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500"
+                                className="w-full pl-10 bg-black/5 dark:bg-white/5 border-transparent dark:border-white/10 text-foreground placeholder:text-muted-foreground focus:bg-white dark:focus:bg-zinc-900 transition-all"
                             />
                         </div>
                     </form>
@@ -156,23 +156,23 @@ export default function Header() {
                                         variant="ghost"
                                         className="relative h-9 w-9 rounded-full"
                                     >
-                                        <Avatar className="h-9 w-9 border-2 border-purple-500/50">
-                                            <AvatarImage src="/default-avatar.png" alt="Profile" />
+                                        <Avatar className="h-9 w-9 border-2 border-purple-500/30">
+                                            {session.user.image && <AvatarImage src={session.user.image} alt="Profile" />}
                                             <AvatarFallback className="bg-gradient-to-br from-purple-600 to-pink-600 text-white text-sm">
-                                                {getInitials(session.user.name || "U")}
+                                                <User className="h-4 w-4" />
                                             </AvatarFallback>
                                         </Avatar>
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent
                                     align="end"
-                                    className="w-56 bg-slate-950 md:bg-slate-950/95 md:backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10"
+                                    className="w-56 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl"
                                 >
                                     <div className="flex flex-col gap-1 p-2">
-                                        <p className="text-sm font-medium text-white">
+                                        <p className="text-sm font-semibold text-foreground">
                                             {session.user.name}
                                         </p>
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-xs text-muted-foreground">
                                             @{session.user.username}
                                         </p>
                                     </div>
@@ -180,7 +180,7 @@ export default function Header() {
                                     <DropdownMenuItem asChild>
                                         <Link
                                             href="/profile"
-                                            className="flex items-center gap-2 text-gray-300 hover:text-white cursor-pointer"
+                                            className="flex items-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer focus:bg-purple-50 dark:focus:bg-purple-900/20"
                                         >
                                             <User className="h-4 w-4" />
                                             <span>Profil</span>
@@ -189,7 +189,7 @@ export default function Header() {
                                     <DropdownMenuItem asChild>
                                         <Link
                                             href={`/portfolio/${session.user.username}`}
-                                            className="flex items-center gap-2 text-gray-300 hover:text-white cursor-pointer"
+                                            className="flex items-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer focus:bg-purple-50 dark:focus:bg-purple-900/20"
                                         >
                                             <BookOpen className="h-4 w-4" />
                                             <span>Portfolyo</span>
@@ -198,7 +198,7 @@ export default function Header() {
                                     <DropdownMenuItem asChild>
                                         <Link
                                             href="/settings/change-password"
-                                            className="flex items-center gap-2 text-gray-300 hover:text-white cursor-pointer"
+                                            className="flex items-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer focus:bg-purple-50 dark:focus:bg-purple-900/20"
                                         >
                                             <Lock className="h-4 w-4" />
                                             <span>Şifre Değiştir</span>
@@ -206,7 +206,7 @@ export default function Header() {
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         onClick={toggleViewMode}
-                                        className="flex items-center gap-2 text-gray-300 hover:text-white cursor-pointer"
+                                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer focus:bg-purple-50 dark:focus:bg-purple-900/20"
                                     >
                                         {viewMode === "compact" ? (
                                             <>

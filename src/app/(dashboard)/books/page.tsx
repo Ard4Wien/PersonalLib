@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MediaGrid, MediaSearch } from "@/components/media";
+import { MediaGrid, MediaSearch, DeleteConfirmDialog } from "@/components/media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,6 +59,9 @@ export default function BooksPage() {
     const [editingBook, setEditingBook] = useState<UserBook | null>(null);
     const [addStatus, setAddStatus] = useState("WISHLIST");
     const [editStatus, setEditStatus] = useState("WISHLIST");
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [idToDelete, setIdToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const { searchQuery } = useSearch();
 
     useEffect(() => {
@@ -227,18 +230,29 @@ export default function BooksPage() {
         }
     };
 
-    const handleDelete = async (userBookId: string) => {
+    const handleDelete = (userBookId: string) => {
+        setIdToDelete(userBookId);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!idToDelete) return;
+        setIsDeleting(true);
         try {
-            const response = await fetch(`/api/books?id=${userBookId}`, {
+            const response = await fetch(`/api/books?id=${idToDelete}`, {
                 method: "DELETE",
             });
 
             if (response.ok) {
-                setBooks((prev) => prev.filter((b) => b.id !== userBookId));
+                setBooks((prev) => prev.filter((b) => b.id !== idToDelete));
                 toast.success("Kitap kaldırıldı");
+                setIsDeleteDialogOpen(false);
+                setIdToDelete(null);
             }
         } catch {
             toast.error("Kitap kaldırılamadı");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -301,8 +315,8 @@ export default function BooksPage() {
                         <BookOpen className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-white line-clamp-1">Kitaplarım</h1>
-                        <p className="text-gray-400 text-xs md:text-sm">
+                        <h1 className="text-xl md:text-2xl font-bold text-foreground line-clamp-1">Kitaplarım</h1>
+                        <p className="text-muted-foreground text-xs md:text-sm">
                             {books.length} kitap kütüphanenizde
                         </p>
                     </div>
@@ -315,9 +329,9 @@ export default function BooksPage() {
                             Kitap Ekle
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                    <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                         <DialogHeader>
-                            <DialogTitle className="text-white">Yeni Kitap Ekle</DialogTitle>
+                            <DialogTitle className="text-foreground dark:text-white">Yeni Kitap Ekle</DialogTitle>
                             <DialogDescription className="sr-only">
                                 Kütüphanenize eklemek için yeni bir kitap arayın veya manuel olarak ekleyin.
                             </DialogDescription>
@@ -341,36 +355,36 @@ export default function BooksPage() {
                         <form id="add-book-form" onSubmit={handleAddBook} className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="title" className="text-gray-300">Kitap Adı *</Label>
-                                    <Input id="title" name="title" required placeholder="Örn: Suç ve Ceza" className="bg-white/5 border-white/10 text-white" />
+                                    <Label htmlFor="title" className="text-muted-foreground">Kitap Adı *</Label>
+                                    <Input id="title" name="title" required placeholder="Örn: Suç ve Ceza" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="author" className="text-gray-300">Yazar *</Label>
-                                    <Input id="author" name="author" required placeholder="Örn: Fyodor Dostoyevski" className="bg-white/5 border-white/10 text-white" />
+                                    <Label htmlFor="author" className="text-muted-foreground">Yazar *</Label>
+                                    <Input id="author" name="author" required placeholder="Örn: Fyodor Dostoyevski" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="coverImage" className="text-gray-300">Kapak Görseli URL</Label>
-                                <Input id="coverImage" name="coverImage" type="url" placeholder="https://..." className="bg-white/5 border-white/10 text-white" />
+                                <Label htmlFor="coverImage" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                <Input id="coverImage" name="coverImage" type="url" placeholder="https://..." className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="genre" className="text-gray-300">Tür</Label>
-                                <Input id="genre" name="genre" placeholder="Örn: Roman" className="bg-white/5 border-white/10 text-white" />
+                                <Label htmlFor="genre" className="text-muted-foreground">Tür</Label>
+                                <Input id="genre" name="genre" placeholder="Örn: Roman" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-gray-300">Durum</Label>
+                                <Label className="text-muted-foreground">Durum</Label>
                                 <Select value={addStatus} onValueChange={setAddStatus}>
-                                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                                    <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                                    <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                                         {statusOptions.slice(0, 3).map((option) => {
                                             const Icon = option.icon;
                                             return (
                                                 <SelectItem
                                                     key={option.value}
                                                     value={option.value}
-                                                    className="text-white hover:bg-white/10 focus:bg-white/10"
+                                                    className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10"
                                                 >
                                                     <div className="flex items-center gap-2">
                                                         <Icon className={`h-4 w-4 ${option.color}`} />
@@ -394,9 +408,9 @@ export default function BooksPage() {
 
             {/* Edit Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={(open) => { setIsEditDialogOpen(open); if (!open) setEditingBook(null); }}>
-                <DialogContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-white">Kitabı Düzenle</DialogTitle>
+                        <DialogTitle className="text-foreground dark:text-white">Kitabı Düzenle</DialogTitle>
                         <DialogDescription className="sr-only">
                             Seçili kitabın bilgilerini ve okuma durumunu güncelleyin.
                         </DialogDescription>
@@ -404,35 +418,35 @@ export default function BooksPage() {
                     {editingBook && (
                         <form onSubmit={handleEditBook} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="edit-title" className="text-gray-300">Kitap Adı *</Label>
-                                <Input id="edit-title" name="title" required defaultValue={editingBook.title} className="bg-white/5 border-white/10 text-white" />
+                                <Label htmlFor="edit-title" className="text-muted-foreground">Kitap Adı *</Label>
+                                <Input id="edit-title" name="title" required defaultValue={editingBook.title} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-author" className="text-gray-300">Yazar *</Label>
-                                <Input id="edit-author" name="author" required defaultValue={editingBook.subtitle} className="bg-white/5 border-white/10 text-white" />
+                                <Label htmlFor="edit-author" className="text-muted-foreground">Yazar *</Label>
+                                <Input id="edit-author" name="author" required defaultValue={editingBook.subtitle} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-coverImage" className="text-gray-300">Kapak Görseli URL</Label>
-                                <Input id="edit-coverImage" name="coverImage" type="url" defaultValue={editingBook.image || editingBook.coverImage || ""} className="bg-white/5 border-white/10 text-white" />
+                                <Label htmlFor="edit-coverImage" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                <Input id="edit-coverImage" name="coverImage" type="url" defaultValue={editingBook.image || editingBook.coverImage || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-genre" className="text-gray-300">Tür</Label>
-                                <Input id="edit-genre" name="genre" defaultValue={editingBook.genre || editingBook.book?.genre || ""} className="bg-white/5 border-white/10 text-white" />
+                                <Label htmlFor="edit-genre" className="text-muted-foreground">Tür</Label>
+                                <Input id="edit-genre" name="genre" defaultValue={editingBook.genre || editingBook.book?.genre || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-gray-300">Durum</Label>
+                                <Label className="text-muted-foreground">Durum</Label>
                                 <Select value={editStatus} onValueChange={setEditStatus}>
-                                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                                    <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                                    <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                                         {statusOptions.map((option) => {
                                             const Icon = option.icon;
                                             return (
                                                 <SelectItem
                                                     key={option.value}
                                                     value={option.value}
-                                                    className="text-white hover:bg-white/10 focus:bg-white/10"
+                                                    className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10"
                                                 >
                                                     <div className="flex items-center gap-2">
                                                         <Icon className={`h-4 w-4 ${option.color}`} />
@@ -457,11 +471,11 @@ export default function BooksPage() {
             {/* Tabs & Controls */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <TabsList className="bg-white/5 border border-white/10 w-full sm:w-auto justify-start overflow-x-auto">
-                        <TabsTrigger value="all" className="flex-1 sm:flex-none data-[state=active]:bg-purple-600 text-xs md:text-sm text-gray-300 data-[state=active]:text-white hover:text-white">Tümü</TabsTrigger>
-                        <TabsTrigger value="reading" className="flex-1 sm:flex-none data-[state=active]:bg-blue-600 text-xs md:text-sm text-gray-300 data-[state=active]:text-white hover:text-white">Okunuyor</TabsTrigger>
-                        <TabsTrigger value="completed" className="flex-1 sm:flex-none data-[state=active]:bg-green-600 text-xs md:text-sm text-gray-300 data-[state=active]:text-white hover:text-white">Okundu</TabsTrigger>
-                        <TabsTrigger value="wishlist" className="flex-1 sm:flex-none data-[state=active]:bg-purple-600 text-xs md:text-sm text-gray-300 data-[state=active]:text-white hover:text-white">İstek</TabsTrigger>
+                    <TabsList className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 w-full sm:w-auto justify-start overflow-x-auto">
+                        <TabsTrigger value="all" className="flex-1 sm:flex-none data-[state=active]:bg-purple-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">Tümü</TabsTrigger>
+                        <TabsTrigger value="reading" className="flex-1 sm:flex-none data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">Okunuyor</TabsTrigger>
+                        <TabsTrigger value="completed" className="flex-1 sm:flex-none data-[state=active]:bg-green-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">Okundu</TabsTrigger>
+                        <TabsTrigger value="wishlist" className="flex-1 sm:flex-none data-[state=active]:bg-purple-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">İstek</TabsTrigger>
                     </TabsList>
                 </div>
 
@@ -476,6 +490,15 @@ export default function BooksPage() {
                     />
                 </TabsContent>
             </Tabs>
+
+            <DeleteConfirmDialog
+                isOpen={isDeleteDialogOpen}
+                onClose={() => setIsDeleteDialogOpen(false)}
+                onConfirm={confirmDelete}
+                title="Kitabı Kaldır"
+                description="Bu kitabı kütüphanenizden kaldırmak istediğinize emin misiniz? Bu işlem geri alınamaz."
+                isLoading={isDeleting}
+            />
         </AnimatedPage>
     );
 }

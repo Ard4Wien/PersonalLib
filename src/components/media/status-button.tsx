@@ -65,7 +65,7 @@ export default function StatusButton({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 md:h-8 md:w-8 bg-black/40 hover:bg-black/60 text-white backdrop-blur-md shadow-lg border border-white/10"
+                        className="h-10 w-10 md:h-8 md:w-8 bg-black/40 dark:bg-black/40 hover:bg-black/60 dark:hover:bg-black/60 text-white backdrop-blur-md shadow-lg border border-white/10"
                     >
                         <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
                     </Button>
@@ -73,7 +73,7 @@ export default function StatusButton({
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="end"
-                className="w-40 bg-slate-950/95 backdrop-blur-lg border-white/10 shadow-2xl shadow-purple-500/10"
+                className="w-40 bg-white dark:bg-slate-950/95 backdrop-blur-lg border-black/5 dark:border-white/10 shadow-2xl"
             >
                 <AnimatePresence mode="wait">
                     {statusOptions.map((option, index) => {
@@ -88,7 +88,7 @@ export default function StatusButton({
                             >
                                 <DropdownMenuItem
                                     onClick={() => handleStatusChange(option.value, option.label)}
-                                    className={`flex items-center gap-2 cursor-pointer transition-all duration-200 ${isActive ? option.color + " bg-white/5" : "text-gray-300 hover:text-white"
+                                    className={`flex items-center gap-2 cursor-pointer transition-all duration-200 ${isActive ? option.color + " bg-black/5 dark:bg-white/5" : "text-muted-foreground hover:text-foreground dark:text-gray-300 dark:hover:text-white"
                                         }`}
                                 >
                                     <Icon className="h-4 w-4" />
@@ -107,20 +107,20 @@ export default function StatusButton({
                         );
                     })}
                 </AnimatePresence>
-                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuSeparator className="bg-black/5 dark:bg-white/10" />
                 {onFavoriteToggle && (
                     <DropdownMenuItem
                         onClick={onFavoriteToggle}
-                        className={`flex items-center gap-2 cursor-pointer transition-colors ${isFavorite ? "text-yellow-400 hover:text-yellow-300" : "text-gray-300 hover:text-white"}`}
+                        className={`flex items-center gap-2 cursor-pointer transition-colors ${isFavorite ? "text-yellow-600 dark:text-yellow-400 hover:text-yellow-500 dark:hover:text-yellow-300" : "text-muted-foreground hover:text-foreground dark:text-gray-300 dark:hover:text-white"}`}
                     >
-                        <Star className={`h-4 w-4 ${isFavorite ? "fill-yellow-400" : ""}`} />
+                        <Star className={`h-4 w-4 ${isFavorite ? "fill-yellow-600 dark:fill-yellow-400" : ""}`} />
                         <span>{isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}</span>
                     </DropdownMenuItem>
                 )}
                 {onEdit && (
                     <DropdownMenuItem
                         onClick={onEdit}
-                        className="flex items-center gap-2 cursor-pointer text-blue-400 hover:text-blue-300"
+                        className="flex items-center gap-2 cursor-pointer text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
                     >
                         <Edit className="h-4 w-4" />
                         <span>Düzenle</span>
@@ -129,7 +129,7 @@ export default function StatusButton({
                 {onDelete && (
                     <DropdownMenuItem
                         onClick={onDelete}
-                        className="flex items-center gap-2 cursor-pointer text-red-400 hover:text-red-300"
+                        className="flex items-center gap-2 cursor-pointer text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300"
                     >
                         <Trash2 className="h-4 w-4" />
                         <span>Kaldır</span>

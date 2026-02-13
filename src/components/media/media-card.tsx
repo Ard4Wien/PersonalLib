@@ -114,18 +114,18 @@ export default function MediaCard({
                 whileHover={isMobile ? {} : { x: 5 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-                <Card className="group relative flex items-center p-3 bg-white/5 border-white/10 hover:border-purple-500/40 hover:bg-white/[0.08] transition-all duration-300 overflow-hidden">
+                <Card className="group relative flex items-center p-3 bg-white/50 dark:bg-white/5 border-black/5 dark:border-white/10 hover:border-purple-500/40 hover:bg-white/80 dark:hover:bg-white/[0.08] transition-all duration-300 overflow-hidden shadow-sm hover:shadow-md">
                     <MediaCardContent href={href} className="flex-1 flex items-center w-full min-w-0 pr-4">
                         <div className="flex flex-col items-start text-left min-w-0 w-full">
                             <div className="flex items-center gap-2 w-full">
-                                <h3 className="font-bold text-white text-base md:text-lg line-clamp-1 group-hover:text-purple-300 transition-colors truncate w-fit">
+                                <h3 className="font-bold text-foreground text-base md:text-lg line-clamp-1 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors truncate w-fit">
                                     {title}
                                 </h3>
                                 {isFavorite && (
                                     <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 shrink-0" />
                                 )}
                             </div>
-                            <p className="text-sm text-gray-400 font-medium line-clamp-1 truncate w-full">{subtitle}</p>
+                            <p className="text-sm text-muted-foreground font-medium line-clamp-1 truncate w-full">{subtitle}</p>
                         </div>
                     </MediaCardContent>
 
@@ -166,7 +166,7 @@ export default function MediaCard({
             whileHover={isMobile ? {} : { y: -5 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-            <Card className="group h-full relative overflow-hidden bg-zinc-900 md:bg-white/5 border-white/10 md:hover:border-purple-500/40 transition-colors duration-300 md:hover:shadow-2xl md:hover:shadow-purple-500/10 p-0 gap-0">
+            <Card className="group h-full relative overflow-hidden bg-white dark:bg-zinc-900 md:bg-white/50 md:dark:bg-white/5 border-black/5 dark:border-white/10 md:hover:border-purple-500/40 transition-all duration-300 md:hover:shadow-2xl md:hover:shadow-purple-500/10 p-0 gap-0 shadow-sm">
                 <Link href={href} className="block">
                     <div className="relative aspect-[2/3] overflow-hidden bg-zinc-900 border-b border-white/5">
                         {coverImage ? (
@@ -230,11 +230,11 @@ export default function MediaCard({
                     </div>
                     <div className="p-3 md:p-4 space-y-1.5 md:space-y-2">
                         <div className="flex items-center gap-1.5">
-                            <h3 className="font-bold text-white text-[15px] md:text-base line-clamp-1 group-hover:text-purple-300 transition-colors">
+                            <h3 className="font-bold text-foreground text-[15px] md:text-base line-clamp-1 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors">
                                 {title}
                             </h3>
                         </div>
-                        <p className="text-[13px] md:text-sm text-gray-400 italic line-clamp-1">{subtitle}</p>
+                        <p className="text-[13px] md:text-sm text-muted-foreground italic line-clamp-1">{subtitle}</p>
                     </div>
                 </Link>
                 <div className="absolute bottom-3 md:bottom-5 right-2 flex flex-col gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0">

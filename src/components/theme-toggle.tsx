@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 
 export function ThemeToggle() {
-    const { theme, setTheme } = useTheme();
+    const { theme, resolvedTheme, setTheme } = useTheme();
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {
@@ -17,7 +17,7 @@ export function ThemeToggle() {
         return <div className="w-14 h-7 rounded-full bg-white/10" />;
     }
 
-    const isDark = theme === "dark";
+    const isDark = resolvedTheme === "dark";
 
     const toggleTheme = () => {
         setTheme(isDark ? "light" : "dark");

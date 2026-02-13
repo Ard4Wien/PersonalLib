@@ -48,6 +48,18 @@ export async function POST(request: Request) {
             );
         }
 
+        if (domainValidation.suggestion) {
+            return NextResponse.json(
+                {
+                    error: {
+                        email: ["E-posta adresinizde yazım hatası olabilir mi?"],
+                        suggestion: domainValidation.suggestion
+                    }
+                },
+                { status: 400 }
+            );
+        }
+
 
         const [existingUserByEmail, existingUserByUsername] = await Promise.all([
             prisma.user.findUnique({ where: { email } }),

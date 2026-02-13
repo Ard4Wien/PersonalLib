@@ -74,12 +74,12 @@ export function MediaSearch({ type, onSelect }: MediaSearchProps) {
         <div className="space-y-4">
             <form onSubmit={handleSearch} className="flex gap-2">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder={`İnternette ${typeLabels[type]} ara...`}
-                        className="pl-9 bg-white/5 border-white/10 text-white focus:ring-purple-500"
+                        className="pl-9 bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white focus:ring-purple-500"
                     />
                 </div>
                 <Button
@@ -101,9 +101,9 @@ export function MediaSearch({ type, onSelect }: MediaSearchProps) {
                                 setResults([]);
                                 setQuery("");
                             }}
-                            className="flex items-start gap-3 p-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 cursor-pointer transition-colors group"
+                            className="flex items-start gap-3 p-2 rounded-lg bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer transition-colors group"
                         >
-                            <div className="relative h-16 w-12 flex-shrink-0 rounded bg-slate-800 overflow-hidden">
+                            <div className="relative h-16 w-12 flex-shrink-0 rounded bg-black/5 dark:bg-slate-800 overflow-hidden">
                                 {result.coverImage ? (
                                     <Image
                                         src={getOptimizedImageUrl(result.coverImage, 200)}
@@ -114,15 +114,15 @@ export function MediaSearch({ type, onSelect }: MediaSearchProps) {
                                     />
                                 ) : (
                                     <div className="h-full w-full flex items-center justify-center">
-                                        <ImageIcon className="h-6 w-6 text-gray-600" />
+                                        <ImageIcon className="h-6 w-6 text-muted-foreground" />
                                     </div>
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-semibold text-white truncate group-hover:text-purple-400">
+                                <h4 className="text-sm font-semibold text-foreground dark:text-white truncate group-hover:text-purple-600 dark:group-hover:text-purple-400">
                                     {result.title}
                                 </h4>
-                                <p className="text-xs text-gray-400 truncate">
+                                <p className="text-xs text-muted-foreground truncate">
                                     {result.author || result.director || result.creator || ""}
                                     {(result.publishedYear || result.releaseYear || result.startYear) &&
                                         ` • ${result.publishedYear || result.releaseYear || result.startYear}`}
@@ -130,7 +130,7 @@ export function MediaSearch({ type, onSelect }: MediaSearchProps) {
                                     {type === "series" && result.totalSeasons && ` • ${result.totalSeasons} Sezon`}
                                 </p>
                             </div>
-                            <Plus className="h-4 w-4 text-gray-500 group-hover:text-white self-center" />
+                            <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground dark:group-hover:text-white self-center" />
                         </div>
                     ))}
                 </div>

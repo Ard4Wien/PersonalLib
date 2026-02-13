@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Film, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BACKGROUND_GRADIENT } from "@/lib/utils";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -22,8 +23,8 @@ export default function HomePage() {
 
   if (status === "loading" || status === "authenticated") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-black dark:via-zinc-950 dark:to-black flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
+      <div className={BACKGROUND_GRADIENT + " items-center justify-center"}>
+        <Loader2 className="h-8 w-8 animate-spin text-purple-600 dark:text-purple-500" />
       </div>
     );
   }
@@ -45,7 +46,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-black dark:via-zinc-950 dark:to-black flex flex-col items-center justify-center p-4 transition-colors duration-500 w-full max-w-full relative overflow-x-hidden">
+    <div className={BACKGROUND_GRADIENT + " items-center justify-center p-4 transition-colors duration-500 w-full max-w-full relative overflow-x-hidden"}>
       <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
 
       <motion.div
@@ -85,28 +86,28 @@ export default function HomePage() {
         </motion.div>
 
 
-        <motion.h1 variants={item} className="text-5xl md:text-7xl font-bold text-white mb-4">
-          Personal<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Lib</span>
+        <motion.h1 variants={item} className="text-5xl md:text-7xl font-bold text-foreground mb-4">
+          Personal<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400">Lib</span>
         </motion.h1>
 
 
-        <motion.p variants={item} className="text-xl text-gray-400 mb-8 max-w-xl mx-auto">
+        <motion.p variants={item} className="text-xl text-muted-foreground mb-8 max-w-xl mx-auto">
           Kitaplarınızı, filmlerinizi ve dizilerinizi tek bir yerde takip edin.
           Kişisel medya kütüphanenizi oluşturun ve paylaşın.
         </motion.p>
 
 
         <motion.div variants={item} className="flex flex-wrap justify-center gap-4 mb-10">
-          <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 dark:bg-zinc-900/50 border border-white/10 dark:border-zinc-800 text-gray-300">
-            <Sparkles className="h-4 w-4 text-purple-400" />
+          <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 text-foreground dark:text-gray-300 shadow-sm">
+            <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
             <span>Okuma & İzleme Takibi</span>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 dark:bg-zinc-900/50 border border-white/10 dark:border-zinc-800 text-gray-300">
-            <Sparkles className="h-4 w-4 text-blue-400" />
+          <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 text-foreground dark:text-gray-300 shadow-sm">
+            <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             <span>İstek Listesi</span>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 dark:bg-zinc-900/50 border border-white/10 dark:border-zinc-800 text-gray-300">
-            <Sparkles className="h-4 w-4 text-pink-400" />
+          <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 text-foreground dark:text-gray-300 shadow-sm">
+            <Sparkles className="h-4 w-4 text-pink-600 dark:text-pink-400" />
             <span>Paylaşılabilir Portfolyo</span>
           </motion.div>
         </motion.div>
@@ -123,7 +124,7 @@ export default function HomePage() {
           </Link>
           <Link href="/login">
             <motion.div whileTap={{ scale: 0.95 }}>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-white/20 text-white hover:bg-white/10 dark:hover:bg-zinc-800 text-lg px-8 transition-all hover:scale-105">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white/50 dark:bg-transparent border-zinc-200 dark:border-white/20 text-foreground dark:text-white hover:bg-zinc-100 dark:hover:bg-white/10 text-lg px-8 transition-all hover:scale-105">
                 Giriş Yap
               </Button>
             </motion.div>

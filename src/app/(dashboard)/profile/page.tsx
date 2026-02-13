@@ -67,16 +67,6 @@ export default function ProfilePage() {
     };
 
 
-    const getInitials = (name: string) => {
-        return name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2);
-    };
-
-    const DEFAULT_AVATAR = "/default-avatar.png";
 
     const handleSharePortfolio = () => {
         if (session?.user?.username) {
@@ -97,7 +87,7 @@ export default function ProfilePage() {
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-400 hover:text-white hover:bg-white/5"
+                    className="text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
                     onClick={() => router.back()}
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
@@ -106,24 +96,24 @@ export default function ProfilePage() {
             </div>
 
             {/* Profile Header */}
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-sm transition-all duration-300">
                 <CardContent className="pt-6">
                     <div className="flex flex-col sm:flex-row items-center gap-6">
                         <div className="relative">
-                            <Avatar className="h-24 w-24 border-4 border-purple-500/50">
-                                <AvatarImage src={DEFAULT_AVATAR} alt="Profile" />
+                            <Avatar className="h-24 w-24 border-4 border-purple-500/30">
+                                {session.user.image && <AvatarImage src={session.user.image} alt="Profile" />}
                                 <AvatarFallback className="bg-gradient-to-br from-purple-600 to-pink-600 text-white text-2xl">
-                                    {getInitials(session.user.name || "U")}
+                                    <User className="h-10 w-10" />
                                 </AvatarFallback>
                             </Avatar>
                         </div>
 
                         <div className="flex-1 text-center sm:text-left">
-                            <h1 className="text-2xl font-bold text-white">
+                            <h1 className="text-2xl font-bold text-foreground">
                                 {session.user.name}
                             </h1>
-                            <p className="text-gray-400">@{session.user.username}</p>
-                            <p className="text-gray-500 text-sm mt-1">{session.user.email}</p>
+                            <p className="text-muted-foreground">@{session.user.username}</p>
+                            <p className="text-muted-foreground/60 text-sm mt-1">{session.user.email}</p>
                         </div>
 
                         <div className="flex flex-col gap-2">
@@ -135,7 +125,7 @@ export default function ProfilePage() {
                                 Portfolyoyu Paylaş
                             </Button>
                             <Link href={`/portfolio/${session.user.username}`}>
-                                <Button variant="outline" className="w-full border-white/10 bg-transparent text-white hover:bg-white/5 hover:text-white">
+                                <Button variant="outline" className="w-full border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-foreground hover:bg-black/10 dark:hover:bg-white/10">
                                     <ExternalLink className="h-4 w-4 mr-2" />
                                     Portfolyoyu Görüntüle
                                 </Button>
@@ -147,9 +137,9 @@ export default function ProfilePage() {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 gap-4">
-                <Card className="bg-white/5 border-white/10">
+                <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                             <BookOpen className="h-4 w-4" />
                             Kitaplar
                         </CardTitle>
@@ -157,16 +147,16 @@ export default function ProfilePage() {
                     <CardContent>
                         <Link
                             href="/books"
-                            className="text-2xl font-bold text-white hover:text-purple-400 transition-colors"
+                            className="text-2xl font-bold text-foreground hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                         >
                             Görüntüle →
                         </Link>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white/5 border-white/10">
+                <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-gray-400 flex items-center gap-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                             <Film className="h-4 w-4" />
                             Filmler & Diziler
                         </CardTitle>
@@ -174,7 +164,7 @@ export default function ProfilePage() {
                     <CardContent>
                         <Link
                             href="/movies"
-                            className="text-2xl font-bold text-white hover:text-blue-400 transition-colors"
+                            className="text-2xl font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                         >
                             Görüntüle →
                         </Link>
@@ -183,70 +173,70 @@ export default function ProfilePage() {
             </div>
 
             {/* Account Info */}
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-sm">
                 <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2 text-lg">
-                        <User className="h-5 w-5 text-gray-400" />
+                    <CardTitle className="text-foreground flex items-center gap-2 text-lg">
+                        <User className="h-5 w-5 text-muted-foreground" />
                         Hesap Bilgileri
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="flex justify-between items-center">
-                        <span className="text-gray-400">E-posta</span>
-                        <span className="text-white">{session.user.email}</span>
+                        <span className="text-muted-foreground">E-posta</span>
+                        <span className="text-foreground font-medium">{session.user.email}</span>
                     </div>
-                    <Separator className="bg-white/10" />
+                    <Separator className="bg-black/5 dark:bg-white/10" />
                     <div className="flex justify-between items-center">
-                        <span className="text-gray-400">Kullanıcı Adı</span>
-                        <span className="text-white">@{session.user.username}</span>
+                        <span className="text-muted-foreground">Kullanıcı Adı</span>
+                        <span className="text-foreground font-medium">@{session.user.username}</span>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Account and Privacy */}
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-sm">
                 <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2 text-lg">
-                        <Shield className="h-5 w-5 text-purple-400" />
+                    <CardTitle className="text-foreground flex items-center gap-2 text-lg">
+                        <Shield className="h-5 w-5 text-purple-500" />
                         Hesap ve Gizlilik
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="flex justify-between items-center">
                         <div className="space-y-0.5">
-                            <div className="text-white flex items-center gap-2">
-                                <Lock className="h-4 w-4 text-gray-400" />
+                            <div className="text-foreground flex items-center gap-2">
+                                <Lock className="h-4 w-4 text-muted-foreground" />
                                 <span>Şifre</span>
                             </div>
-                            <p className="text-xs text-gray-500">Güvenliğiniz için şifrenizi düzenli aralıklarla değiştirin.</p>
+                            <p className="text-xs text-muted-foreground">Güvenliğiniz için şifrenizi düzenli aralıklarla değiştirin.</p>
                         </div>
                         <Link href="/settings/change-password">
-                            <Button variant="outline" size="sm" className="border-white/10 bg-white/5 text-white hover:bg-white/10">
+                            <Button variant="outline" size="sm" className="border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-foreground hover:bg-black/10 dark:hover:bg-white/10">
                                 Şifre Değiştir
                             </Button>
                         </Link>
                     </div>
 
-                    <Separator className="bg-white/10" />
+                    <Separator className="bg-black/5 dark:bg-white/10" />
 
                     <div className="flex justify-between items-center">
                         <div className="space-y-0.5">
-                            <div className="text-white flex items-center gap-2">
-                                {isPrivate ? <EyeOff className="h-4 w-4 text-red-400" /> : <Eye className="h-4 w-4 text-green-400" />}
+                            <div className="text-foreground flex items-center gap-2">
+                                {isPrivate ? <EyeOff className="h-4 w-4 text-red-500" /> : <Eye className="h-4 w-4 text-green-500" />}
                                 <span>Hesabı Gizle</span>
                             </div>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted-foreground">
                                 {isPrivate
                                     ? "Hesabınız gizli. Portfolyonuzu sadece siz görebilirsiniz."
                                     : "Hesabınız herkese açık. Portfolyonuzu herkes görebilir."}
                             </p>
                         </div>
                         <Button
-                            variant={isPrivate ? "destructive" : "secondary"}
+                            variant={isPrivate ? "destructive" : "outline"}
                             size="sm"
                             disabled={isUpdating || isPrivate === null}
                             onClick={togglePrivacy}
-                            className={!isPrivate ? "bg-white/5 border border-white/10 text-white hover:bg-white/10" : ""}
+                            className={!isPrivate ? "border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-foreground hover:bg-black/10" : ""}
                         >
                             {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : (isPrivate ? "Gizli" : "Açık")}
                         </Button>

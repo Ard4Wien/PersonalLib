@@ -6,16 +6,22 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-interface PasswordInputProps extends React.ComponentProps<typeof Input> { }
+interface PasswordInputProps extends React.ComponentProps<typeof Input> {
+    showPassword?: boolean;
+    onTogglePassword?: () => void;
+}
 
 const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
-    ({ className, ...props }, ref) => {
-        const [showPassword, setShowPassword] = React.useState(false);
+    ({ className, showPassword: controlledShowPassword, onTogglePassword, ...props }, ref) => {
+        const [localShowPassword, setLocalShowPassword] = React.useState(false);
+
+        const isPasswordVisible = controlledShowPassword !== undefined ? controlledShowPassword : localShowPassword;
+        const toggleVisibility = onTogglePassword || (() => setLocalShowPassword((prev) => !prev));
 
         return (
             <div className="relative">
                 <Input
-                    type={showPassword ? "text" : "password"}
+                    type={isPasswordVisible ? "text" : "password"}
                     className={cn("pr-10", className)}
                     ref={ref}
                     {...props}
@@ -25,16 +31,16 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-gray-400 hover:text-white transition-colors"
-                    onClick={() => setShowPassword((prev) => !prev)}
+                    onClick={toggleVisibility}
                     tabIndex={-1}
                 >
-                    {showPassword ? (
+                    {isPasswordVisible ? (
                         <EyeOff className="h-4 w-4" />
                     ) : (
                         <Eye className="h-4 w-4" />
                     )}
                     <span className="sr-only">
-                        {showPassword ? "Şifreyi gizle" : "Şifreyi göster"}
+                        {isPasswordVisible ? "Şifreyi gizle" : "Şifre göster"}
                     </span>
                 </Button>
             </div>

@@ -15,7 +15,7 @@ export function getInitials(name: string) {
     .slice(0, 2);
 }
 
-export const BACKGROUND_GRADIENT = "min-h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-black dark:via-zinc-950 dark:to-black transition-colors duration-300";
+export const BACKGROUND_GRADIENT = "min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-black dark:via-zinc-950 dark:to-black transition-colors duration-300";
 
 export function getOptimizedImageUrl(url: string | null | undefined, width = 600) {
   if (!url) return "";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MediaGrid, MediaSearch } from "@/components/media";
+import { MediaGrid, MediaSearch, DeleteConfirmDialog } from "@/components/media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -98,6 +98,9 @@ export default function MoviesPage() {
     const [seriesStatus, setSeriesStatus] = useState("WISHLIST");
     const [seriesSeason, setSeriesSeason] = useState("1");
     const [seriesEpisode, setSeriesEpisode] = useState("1");
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<{ id: string; type: "movie" | "series" } | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Edit states
     const [isMovieEditDialogOpen, setIsMovieEditDialogOpen] = useState(false);
@@ -435,31 +438,40 @@ export default function MoviesPage() {
         }
     };
 
-    const handleMovieDelete = async (userMovieId: string) => {
-        try {
-            const response = await fetch(`/api/movies?id=${userMovieId}`, {
-                method: "DELETE",
-            });
-            if (response.ok) {
-                setMovies((prev) => prev.filter((m) => m.id !== userMovieId));
-                toast.success("Film kaldırıldı");
-            }
-        } catch {
-            toast.error("Film kaldırılamadı");
-        }
+    const handleMovieDelete = (userMovieId: string) => {
+        setItemToDelete({ id: userMovieId, type: "movie" });
+        setIsDeleteDialogOpen(true);
     };
 
-    const handleSeriesDelete = async (userSeriesId: string) => {
+    const handleSeriesDelete = (userSeriesId: string) => {
+        setItemToDelete({ id: userSeriesId, type: "series" });
+        setIsDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!itemToDelete) return;
+        setIsDeleting(true);
         try {
-            const response = await fetch(`/api/series?id=${userSeriesId}`, {
+            const endpoint = itemToDelete.type === "movie" ? "movies" : "series";
+            const response = await fetch(`/api/${endpoint}?id=${itemToDelete.id}`, {
                 method: "DELETE",
             });
+
             if (response.ok) {
-                setSeries((prev) => prev.filter((s) => s.id !== userSeriesId));
-                toast.success("Dizi kaldırıldı");
+                if (itemToDelete.type === "movie") {
+                    setMovies((prev) => prev.filter((m) => m.id !== itemToDelete.id));
+                    toast.success("Film kaldırıldı");
+                } else {
+                    setSeries((prev) => prev.filter((s) => s.id !== itemToDelete.id));
+                    toast.success("Dizi kaldırıldı");
+                }
+                setIsDeleteDialogOpen(false);
+                setItemToDelete(null);
             }
         } catch {
-            toast.error("Dizi kaldırılamadı");
+            toast.error(`${itemToDelete.type === "movie" ? "Film" : "Dizi"} kaldırılamadı`);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -540,8 +552,8 @@ export default function MoviesPage() {
                         <Film className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-white line-clamp-1">Filmler & Diziler</h1>
-                        <p className="text-gray-400 text-xs md:text-sm">
+                        <h1 className="text-xl md:text-2xl font-bold text-foreground line-clamp-1">Filmler & Diziler</h1>
+                        <p className="text-muted-foreground text-xs md:text-sm">
                             {movies.length} film, {series.length} dizi
                         </p>
                     </div>
@@ -556,9 +568,9 @@ export default function MoviesPage() {
                                 Film Ekle
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                        <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                             <DialogHeader>
-                                <DialogTitle className="text-white">Yeni Film Ekle</DialogTitle>
+                                <DialogTitle className="text-foreground dark:text-white">Yeni Film Ekle</DialogTitle>
                                 <DialogDescription className="sr-only">
                                     Kütüphanenize eklemek için yeni bir film arayın veya manuel olarak ekleyin.
                                 </DialogDescription>
@@ -582,33 +594,33 @@ export default function MoviesPage() {
                             <form id="add-movie-form" onSubmit={handleAddMovie} className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="movie-title" className="text-gray-300">Film Adı *</Label>
-                                        <Input id="movie-title" name="title" required placeholder="Örn: Inception" className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="movie-title" className="text-muted-foreground">Film Adı *</Label>
+                                        <Input id="movie-title" name="title" required placeholder="Örn: Inception" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="movie-director" className="text-gray-300">Yönetmen *</Label>
-                                        <Input id="movie-director" name="director" required placeholder="Örn: Christopher Nolan" className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="movie-director" className="text-muted-foreground">Yönetmen *</Label>
+                                        <Input id="movie-director" name="director" required placeholder="Örn: Christopher Nolan" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="movie-cover" className="text-gray-300">Kapak Görseli URL</Label>
-                                    <Input id="movie-cover" name="coverImage" type="url" placeholder="https://..." className="bg-white/5 border-white/10 text-white" />
+                                    <Label htmlFor="movie-cover" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                    <Input id="movie-cover" name="coverImage" type="url" placeholder="https://..." className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="movie-genre" className="text-gray-300">Tür</Label>
-                                    <Input id="movie-genre" name="genre" placeholder="Örn: Bilim Kurgu" className="bg-white/5 border-white/10 text-white" />
+                                    <Label htmlFor="movie-genre" className="text-muted-foreground">Tür</Label>
+                                    <Input id="movie-genre" name="genre" placeholder="Örn: Bilim Kurgu" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-gray-300">Durum</Label>
+                                    <Label className="text-muted-foreground">Durum</Label>
                                     <Select value={movieStatus} onValueChange={setMovieStatus}>
-                                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                                        <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                                        <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                                             {statusOptions.slice(0, 3).map((option) => {
                                                 const Icon = option.icon;
                                                 return (
-                                                    <SelectItem key={option.value} value={option.value} className="text-white hover:bg-white/10 focus:bg-white/10">
+                                                    <SelectItem key={option.value} value={option.value} className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10">
                                                         <div className="flex items-center gap-2">
                                                             <Icon className={`h-4 w-4 ${option.color}`} />
                                                             <span>{option.label}</span>
@@ -636,9 +648,9 @@ export default function MoviesPage() {
                                 Dizi Ekle
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                        <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                             <DialogHeader>
-                                <DialogTitle className="text-white">Yeni Dizi Ekle</DialogTitle>
+                                <DialogTitle className="text-foreground dark:text-white">Yeni Dizi Ekle</DialogTitle>
                                 <DialogDescription className="sr-only">
                                     Kütüphanenize eklemek için yeni bir dizi arayın veya manuel olarak ekleyin.
                                 </DialogDescription>
@@ -663,39 +675,39 @@ export default function MoviesPage() {
                             <form id="add-series-form" onSubmit={handleAddSeries} className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="series-title" className="text-gray-300">Dizi Adı *</Label>
-                                        <Input id="series-title" name="title" required placeholder="Örn: Breaking Bad" className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="series-title" className="text-muted-foreground">Dizi Adı *</Label>
+                                        <Input id="series-title" name="title" required placeholder="Örn: Breaking Bad" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="series-creator" className="text-gray-300">Yapımcı *</Label>
-                                        <Input id="series-creator" name="creator" required placeholder="Örn: Vince Gilligan" className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="series-creator" className="text-muted-foreground">Yapımcı *</Label>
+                                        <Input id="series-creator" name="creator" required placeholder="Örn: Vince Gilligan" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="series-cover" className="text-gray-300">Kapak Görseli URL</Label>
-                                    <Input id="series-cover" name="coverImage" type="url" placeholder="https://..." className="bg-white/5 border-white/10 text-white" />
+                                    <Label htmlFor="series-cover" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                    <Input id="series-cover" name="coverImage" type="url" placeholder="https://..." className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="series-genre" className="text-gray-300">Tür</Label>
-                                        <Input id="series-genre" name="genre" placeholder="Örn: Dram" className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="series-genre" className="text-muted-foreground">Tür</Label>
+                                        <Input id="series-genre" name="genre" placeholder="Örn: Dram" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="series-seasons" className="text-gray-300">Sezon Sayısı</Label>
-                                        <Input id="series-seasons" name="totalSeasons" type="number" min="1" defaultValue="1" className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="series-seasons" className="text-muted-foreground">Sezon Sayısı</Label>
+                                        <Input id="series-seasons" name="totalSeasons" type="number" min="1" defaultValue="1" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-gray-300">Durum</Label>
+                                    <Label className="text-muted-foreground">Durum</Label>
                                     <Select value={seriesStatus} onValueChange={setSeriesStatus}>
-                                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                                        <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                                        <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                                             {statusOptions.slice(0, 3).map((option) => {
                                                 const Icon = option.icon;
                                                 return (
-                                                    <SelectItem key={option.value} value={option.value} className="text-white hover:bg-white/10 focus:bg-white/10">
+                                                    <SelectItem key={option.value} value={option.value} className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10">
                                                         <div className="flex items-center gap-2">
                                                             <Icon className={`h-4 w-4 ${option.color}`} />
                                                             <span>{option.label}</span>
@@ -710,25 +722,25 @@ export default function MoviesPage() {
                                 {(seriesStatus === "WATCHING" || seriesStatus === "DROPPED") && (
                                     <div className="grid grid-cols-2 gap-4 pt-2">
                                         <div className="space-y-2">
-                                            <Label htmlFor="series-last-season" className="text-gray-300">Kaldığım Sezon</Label>
+                                            <Label htmlFor="series-last-season" className="text-muted-foreground">Kaldığım Sezon</Label>
                                             <Input
                                                 id="series-last-season"
                                                 type="number"
                                                 min="1"
                                                 value={seriesSeason}
                                                 onChange={(e) => setSeriesSeason(e.target.value)}
-                                                className="bg-white/5 border-white/10 text-white"
+                                                className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="series-last-episode" className="text-gray-300">Kaldığım Bölüm</Label>
+                                            <Label htmlFor="series-last-episode" className="text-muted-foreground">Kaldığım Bölüm</Label>
                                             <Input
                                                 id="series-last-episode"
                                                 type="number"
                                                 min="1"
                                                 value={seriesEpisode}
                                                 onChange={(e) => setSeriesEpisode(e.target.value)}
-                                                className="bg-white/5 border-white/10 text-white"
+                                                className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white"
                                             />
                                         </div>
                                     </div>
@@ -744,9 +756,9 @@ export default function MoviesPage() {
 
                     {/* Film Düzenle Dialog */}
                     <Dialog open={isMovieEditDialogOpen} onOpenChange={(open) => { setIsMovieEditDialogOpen(open); if (!open) setEditingMovie(null); }}>
-                        <DialogContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                        <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                             <DialogHeader>
-                                <DialogTitle className="text-white">Filmi Düzenle</DialogTitle>
+                                <DialogTitle className="text-foreground dark:text-white">Filmi Düzenle</DialogTitle>
                                 <DialogDescription className="sr-only">
                                     Seçili filmin bilgilerini ve izleme durumunu güncelleyin.
                                 </DialogDescription>
@@ -754,32 +766,32 @@ export default function MoviesPage() {
                             {editingMovie && (
                                 <form onSubmit={handleEditMovie} className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-movie-title" className="text-gray-300">Film Adı *</Label>
-                                        <Input id="edit-movie-title" name="title" required defaultValue={editingMovie.title} className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="edit-movie-title" className="text-muted-foreground">Film Adı *</Label>
+                                        <Input id="edit-movie-title" name="title" required defaultValue={editingMovie.title} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-movie-director" className="text-gray-300">Yönetmen</Label>
-                                        <Input id="edit-movie-director" name="director" defaultValue={editingMovie.subtitle} className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="edit-movie-director" className="text-muted-foreground">Yönetmen</Label>
+                                        <Input id="edit-movie-director" name="director" defaultValue={editingMovie.subtitle} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-movie-cover" className="text-gray-300">Kapak Görseli URL</Label>
-                                        <Input id="edit-movie-cover" name="coverImage" type="url" defaultValue={editingMovie.image || editingMovie.coverImage || ""} className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="edit-movie-cover" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                        <Input id="edit-movie-cover" name="coverImage" type="url" defaultValue={editingMovie.image || editingMovie.coverImage || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-movie-genre" className="text-gray-300">Tür</Label>
-                                        <Input id="edit-movie-genre" name="genre" defaultValue={editingMovie.genre || editingMovie.movie?.genre || ""} className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="edit-movie-genre" className="text-muted-foreground">Tür</Label>
+                                        <Input id="edit-movie-genre" name="genre" defaultValue={editingMovie.genre || editingMovie.movie?.genre || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-gray-300">Durum</Label>
+                                        <Label className="text-muted-foreground">Durum</Label>
                                         <Select value={editMovieStatus} onValueChange={setEditMovieStatus}>
-                                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                                            <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                                 <SelectValue />
                                             </SelectTrigger>
-                                            <SelectContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                                            <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                                                 {statusOptions.slice(0, 3).map((option) => {
                                                     const Icon = option.icon;
                                                     return (
-                                                        <SelectItem key={option.value} value={option.value} className="text-white hover:bg-white/10 focus:bg-white/10">
+                                                        <SelectItem key={option.value} value={option.value} className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10">
                                                             <div className="flex items-center gap-2">
                                                                 <Icon className={`h-4 w-4 ${option.color}`} />
                                                                 <span>{option.label}</span>
@@ -991,6 +1003,15 @@ export default function MoviesPage() {
                     />
                 </TabsContent>
             </Tabs>
+
+            <DeleteConfirmDialog
+                isOpen={isDeleteDialogOpen}
+                onClose={() => setIsDeleteDialogOpen(false)}
+                onConfirm={confirmDelete}
+                title={`${itemToDelete?.type === "movie" ? "Filmi" : "Diziyi"} Kaldır`}
+                description={`Bu ${itemToDelete?.type === "movie" ? "filmi" : "diziyi"} kütüphanenizden kaldırmak istediğinize emin misiniz? Bu işlem geri alınamaz.`}
+                isLoading={isDeleting}
+            />
         </AnimatedPage>
     );
 }

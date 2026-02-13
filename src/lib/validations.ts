@@ -6,13 +6,16 @@ export const registerSchema = z.object({
     email: z.string().email("Geçerli bir e-posta adresi giriniz"),
     username: z
         .string()
-        .min(3, "Kullanıcı adı en az 3 karakter olmalıdır")
-        .max(20, "Kullanıcı adı en fazla 20 karakter olabilir")
+        .min(4, "Kullanıcı adı en az 4 karakter olmalıdır")
+        .max(10, "Kullanıcı adı en fazla 10 karakter olabilir")
         .regex(
             /^[a-z0-9_]+$/,
             "Kullanıcı adı sadece küçük harf, rakam ve alt çizgi içerebilir"
         )
         .transform((val) => val.toLowerCase())
+        .refine((val) => !/^\d+$/.test(val), {
+            message: "Kullanıcı adı sadece rakamlardan oluşamaz",
+        })
         .refine((val) => isValidUsername(val), {
             message: "Bu kullanıcı adı kullanılamaz veya uygunsuz içerik barındırıyor",
         }),
@@ -24,6 +27,9 @@ export const registerSchema = z.object({
             /^[a-zA-ZğüşıöçĞÜŞİÖÇ0-9\s]+$/,
             "Görünen ad sadece harf, rakam ve boşluk içerebilir"
         )
+        .refine((val) => !/^\d+$/.test(val), {
+            message: "Görünen ad sadece rakamlardan oluşamaz",
+        })
         .refine((val) => !containsProfanity(val), {
             message: "Görünen ad uygunsuz içerik barındıramaz",
         }),

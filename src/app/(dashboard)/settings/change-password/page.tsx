@@ -17,6 +17,7 @@ import { changePasswordSchema, type ChangePasswordInput } from "@/lib/validation
 export default function ChangePasswordPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const [showPasswords, setShowPasswords] = useState(false);
 
     const {
         register,
@@ -96,6 +97,8 @@ export default function ChangePasswordPage() {
                                     id="currentPassword"
                                     placeholder="••••••••"
                                     className="bg-white/5 border-white/10 text-white focus:border-purple-500"
+                                    showPassword={showPasswords}
+                                    onTogglePassword={() => setShowPasswords(!showPasswords)}
                                     {...register("currentPassword")}
                                 />
                                 {errors.currentPassword && (
@@ -111,6 +114,8 @@ export default function ChangePasswordPage() {
                                     id="newPassword"
                                     placeholder="••••••••"
                                     className="bg-white/5 border-white/10 text-white focus:border-purple-500"
+                                    showPassword={showPasswords}
+                                    onTogglePassword={() => setShowPasswords(!showPasswords)}
                                     {...register("newPassword")}
                                 />
                                 <div className="flex items-center gap-2 mt-1">
@@ -130,6 +135,8 @@ export default function ChangePasswordPage() {
                                     id="confirmPassword"
                                     placeholder="••••••••"
                                     className="bg-white/5 border-white/10 text-white focus:border-purple-500"
+                                    showPassword={showPasswords}
+                                    onTogglePassword={() => setShowPasswords(!showPasswords)}
                                     {...register("confirmPassword")}
                                 />
                                 {errors.confirmPassword && (
