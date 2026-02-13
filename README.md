@@ -11,11 +11,15 @@
 
 ##  Ön İzleme
 
-![Ana Sayfa](public/screenshots/landing.png)
-![Dashboard](public/screenshots/dashboard.png)
-![Portfolyo](public/screenshots/portfolio.png)
-![Kitaplar](public/screenshots/books.png)
-![Filmler](public/screenshots/movies.png)
+<details>
+  <summary>📸 Ekran Görüntülerini Görüntüle (Genişletmek için tıkla)</summary>
+  <br />
+  <img src="public/screenshots/landing.png" width="800" alt="Ana Sayfa" />
+  <img src="public/screenshots/dashboard.png" width="800" alt="Dashboard" />
+  <img src="public/screenshots/portfolio.png" width="800" alt="Portfolyo" />
+  <img src="public/screenshots/books.png" width="800" alt="Kitaplar" />
+  <img src="public/screenshots/movies.png" width="800" alt="Filmler" />
+</details>
 
 ##  Teknolojiler
 
