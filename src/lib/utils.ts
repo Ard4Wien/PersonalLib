@@ -24,5 +24,12 @@ export function getOptimizedImageUrl(url: string | null | undefined, width = 600
 
   if (url.includes("myanimelist.net")) return url;
 
-  return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=${width}&q=90&output=webp`;
+  let decodedUrl = url;
+  try {
+    decodedUrl = decodeURIComponent(url);
+  } catch (e) {
+    decodedUrl = url;
+  }
+
+  return `https://wsrv.nl/?url=${encodeURIComponent(decodedUrl)}&w=${width}&q=90&output=webp`;
 }
