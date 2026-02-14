@@ -1,42 +1,129 @@
-# [Personal Library](https://personal-lib.vercel.app/)
+<p align="center">
+  <img src="public/screenshots/landing.png" width="200" alt="PersonalLib Logo" />
+</p>
 
-**PersonalLib**, okuduğunuz kitapları, izlediğiniz filmleri ve dizileri takip etmenizi sağlayan; modern, güvenli ve kişiselleştirilebilir bir dijital kütüphane uygulamasıdır.
+<h1 align="center">PersonalLib</h1>
 
-##  Özellikler
+<p align="center">
+  <sub>A comprehensive digital library and portfolio system for managing and sharing your collection of TV series, movies, books, manga, comics, and anime.</sub>
+</p>
 
-- **Medya Takibi:** Kitap, Film ve Dizi koleksiyonlarınızı ayrı ayrı yönetin.
-- **Durum Yönetimi:** "Okunacak", "Okunuyor", "Tamamlandı" gibi durumlarla ilerlemenizi takip edin.
-- **Modern Arayüz:** Tailwind CSS ve shadcn/ui ile tasarlanmış, Responsive ve Karanlık Mod (Dark Mode) destekli şık tasarım.
-- **Gelişmiş Güvenlik.**
-
-##  Ön İzleme
-
-<details>
-  <summary>📸 Ekran Görüntülerini Görüntüle (Genişletmek için tıkla)</summary>
-  <br />
-  <img src="public/screenshots/landing.png" width="800" alt="Ana Sayfa" />
-  <img src="public/screenshots/dashboard.png" width="800" alt="Dashboard" />
-  <img src="public/screenshots/portfolio.png" width="800" alt="Portfolyo" />
-  <img src="public/screenshots/books.png" width="800" alt="Kitaplar" />
-  <img src="public/screenshots/movies.png" width="800" alt="Filmler" />
-</details>
-
-##  Teknolojiler
-
-- **Frontend:** [Next.js 15+](https://nextjs.org/), React 19, Tailwind CSS, Framer Motion
-- **Backend:** Next.js API Routes (Serverless)
-- **Database:** [Neon (PostgreSQL)](https://neon.tech/), Prisma ORM
-- **Auth:** [Auth.js (NextAuth)](https://authjs.dev/)
-- **Deploy:** [Vercel](https://vercel.com/)
-
-##  Lisans
-
-Bu proje **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** ile lisanslanmıştır.
--  Kişisel ve eğitim amaçlı kullanabilir, değiştirebilir ve paylaşabilirsiniz.
--  **Ticari amaçla KULLANILAMAZ.**
--  Paylaşırken atıf yapılması zorunludur.
-
-Detaylar için [LICENSE](LICENSE) dosyasına bakınız.
+<p align="center">
+  <img src="https://img.shields.io/github/license/Ard4Wien/personal-media-library?style=flat-square" alt="License" />
+  <img src="https://img.shields.io/github/v/release/Ard4Wien/personal-media-library?style=flat-square" alt="Release" />
+  <img src="https://img.shields.io/badge/platform-Web%20%7C%20Mobile-blue?style=flat-square" alt="Platform" />
+  <img src="https://img.shields.io/github/watchers/Ard4Wien/personal-media-library?style=flat-square" alt="Views" />
+</p>
 
 ---
-Made with ❤️ by [ArdaWien](https://github.com/Ard4Wien)
+
+PersonalLib is a minimalist and secure platform designed to consolidate your consumption of various media types into a single, unified interface. It serves as both a private tracking tool and a public portfolio to showcase your library to the world.
+
+## Features
+
+- **Multi-Media Tracking**: Dedicated sections for movies, TV series, books, manga, and anime.
+- **Progress Management**: Track your current status with granular labels such as Reading, Watching, Completed, or Wishlist.
+- **Advanced Validation**: Real-time SMTP email verification via Abstract API and debounced username availability checks.
+- **Adaptive Interface**: Native support for dark and light modes with a consistent, premium design language.
+- **Public Portfolios**: Generate shareable profiles to showcase your curated collections with privacy controls.
+- **Security Hardening**: Implementation of Content Security Policy (CSP), JWT algorithm verification, and XSS prevention.
+
+## Tech Stack
+
+PersonalLib is built with a modern, type-safe stack for maximum performance and reliability:
+
+- **Frontend**: Next.js 15 (App Router), React 19, Tailwind CSS, Framer Motion.
+- **Backend**: Next.js API Routes (Serverless), Prisma ORM.
+- **Database**: PostgreSQL hosted on Neon.
+- **Authentication**: Auth.js (NextAuth) with secure session management.
+- **Validation**: Zod schema validation and Abstract API integration.
+
+## Screenshots
+
+<p align="center">
+  <img src="public/screenshots/landing.png" width="800" alt="Landing Page" />
+  <br />
+  <img src="public/screenshots/dashboard.png" width="800" alt="Dashboard" />
+  <br />
+  <img src="public/screenshots/portfolio.png" width="800" alt="User Portfolio" />
+</p>
+
+## Project Structure
+
+```text
+src/
+├── app/               # Next.js App Router (Pages and API Routes)
+│   ├── api/           # Serverless backend endpoints
+│   ├── (dashboard)/   # Authenticated user dashboard
+│   └── portfolio/     # Public/Private user profiles
+├── components/        # Reusable UI and layout components
+│   ├── layout/        # Navigation, header, and wrappers
+│   ├── media/         # Media-specific cards and grids
+│   └── ui/            # Base Tailwind-styled components
+├── lib/               # Utility functions, validators, and clients
+├── context/           # React Context providers
+└── types/             # Shared TypeScript interfaces and DTOs
+```
+
+## Getting Started
+
+To set up a local development environment:
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Ard4Wien/personal-media-library.git
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure environment variables in a `.env` file (Database URL, Auth secrets, API keys).
+
+4. Initialize the database:
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
+
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Security
+
+PersonalLib prioritizes data integrity and user safety:
+- **Sanitization**: All user inputs are validated via Zod schemas to prevent injection.
+- **Content Security Policy**: Custom CSP headers are enforced to mitigate XSS risks.
+- **JWT Protection**: Strict HS256 algorithm verification is implemented for session tokens.
+- **Rate Limiting**: Protection against brute-force attacks on authentication endpoints.
+
+## Help
+
+For troubleshooting or questions regarding the setup:
+- Review the [documentation](https://github.com/Ard4Wien/personal-media-library/wiki).
+- Open a [technical issue](https://github.com/Ard4Wien/personal-media-library/issues) with detailed logs.
+- Join our community discussions.
+
+## Contributing
+
+Contributions are welcome to enhance PersonalLib:
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
+
+## License
+
+This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**.
+- You are free to share and adapt the material for non-commercial purposes.
+- Attribution to the original author is required.
+
+---
+
+<p align="center">
+  Developed by <a href="https://github.com/Ard4Wien">ArdaWien</a>
+</p>
