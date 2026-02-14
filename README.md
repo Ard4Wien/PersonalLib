@@ -9,8 +9,6 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Ard4Wien/PersonalLib/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Ard4Wien/PersonalLib?style=flat-square" alt="Lisans" /></a>
-  <a href="https://github.com/Ard4Wien/PersonalLib/releases"><img src="https://img.shields.io/github/v/release/Ard4Wien/PersonalLib?style=flat-square" alt="Sürüm" /></a>
   <img src="https://img.shields.io/badge/platform-Web%20%7C%20Mobile-blue?style=flat-square" alt="Platform" />
   <img src="https://img.shields.io/github/watchers/Ard4Wien/PersonalLib?style=flat-square" alt="İzleyenler" />
 </p>
