@@ -5,11 +5,7 @@
 <h1 align="center">PersonalLib</h1>
 
 <p align="center">
-  <b>English</b> • <a href="./README.tr.md">Türkçe</a>
-</p>
-
-<p align="center">
-  <sub>A comprehensive digital library and portfolio system for managing and sharing your collections of TV Series, Movies, Books, Manga, Comics, and Anime.</sub>
+  <b>English Version</b> • <a href="./README.tr.md">Türkçe Versiyon</a>
 </p>
 
 <p align="center">

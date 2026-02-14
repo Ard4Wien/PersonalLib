@@ -5,11 +5,7 @@
 <h1 align="center">PersonalLib</h1>
 
 <p align="center">
-  <a href="./README.md">English</a> • <b>Türkçe</b>
-</p>
-
-<p align="center">
-  <sub>Dizi, Film, Kitap, Manga, Çizgi Roman ve Anime koleksiyonlarınızı yönetmek ve paylaşmak için kapsamlı bir dijital kütüphane ve portfolyo sistemi.</sub>
+  <a href="./README.md">English Version</a> • <b>Türkçe Versiyon</b>
 </p>
 
 <p align="center">
