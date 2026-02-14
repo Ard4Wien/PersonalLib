@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Ard4Wien/PersonalLib/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey?style=flat-square" alt="Lisans" /></a>
   <img src="https://img.shields.io/badge/platform-Web%20%7C%20Mobile-blue?style=flat-square" alt="Platform" />
-  <img src="https://img.shields.io/github/watchers/Ard4Wien/PersonalLib?style=flat-square" alt="İzleyenler" />
 </p>
 
 ---
@@ -63,7 +63,9 @@ src/
 └── types/             # Paylaşılan TypeScript arayüzleri ve DTO'lar
 ```
 
-## Başlangıç
+<details>
+<summary><b>🛠️ Başlangıç (Kurulum Adımları)</b></summary>
+<br />
 
 Yerel bir geliştirme ortamı kurmak için:
 
@@ -89,6 +91,8 @@ Yerel bir geliştirme ortamı kurmak için:
    ```bash
    npm run dev
    ```
+
+</details>
 
 ## Güvenlik
 
