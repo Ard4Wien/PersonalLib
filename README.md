@@ -22,7 +22,6 @@ PersonalLib; farklı medya türlerini tek bir arayüzde toplamak için tasarlanm
 
 - **Çoklu Medya Takibi**: Film, dizi, kitap, manga ve anime için özel bölümler.
 - **İlerleme Yönetimi**: "Okunuyor", "İzleniyor", "Tamamlandı" veya "İstek Listesi" gibi seçeneklerle durumunuzu takip edin.
-- **Gelişmiş Doğrulama**: Abstract API ile gerçek SMTP e-posta doğrulaması ve anlık kullanıcı adı müsaitlik kontrolü.
 - **Adaptif Arayüz**: Karanlık ve aydınlık mod desteği ile her cihazda tutarlı, premium tasarım dili.
 - **Genel Portfolyolar**: Koleksiyonlarınızı paylaşabileceğiniz, gizlilik kontrollü profil sayfaları.
 - **Güvenlik Sertleştirme**: İçerik Güvenliği Politikası (CSP), JWT algoritma doğrulaması ve XSS koruması.
