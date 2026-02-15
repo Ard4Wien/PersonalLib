@@ -13,7 +13,6 @@ export async function GET(
         const user = await prisma.user.findUnique({
             where: { username },
             select: {
-                id: true,
                 username: true,
                 displayName: true,
                 isPrivate: true,
@@ -56,7 +55,6 @@ export async function GET(
 
         // Standardize data for mobile (flat structure)
         const standardizedData = {
-            id: user.id,
             username: user.username,
             displayName: user.displayName,
             isPrivate: false,

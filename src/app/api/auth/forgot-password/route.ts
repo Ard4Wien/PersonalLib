@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 
@@ -20,6 +20,11 @@ export async function POST(request: Request) {
 
 
         const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+        // Cleanup: remove expired attempts older than 24h to prevent table bloat
+        await prisma.passwordResetAttempt.deleteMany({
+            where: { createdAt: { lt: last24Hours } }
+        });
 
 
         const ipAttempts = await prisma.passwordResetAttempt.count({

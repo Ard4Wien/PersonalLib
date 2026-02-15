@@ -133,8 +133,11 @@ export async function GET(request: Request) {
 
         const [detailedTMDB, detailedOMDb, detailedTVm] = await Promise.all([
             Promise.all(topTMDB.map(async (show: any) => {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 3000);
                 try {
-                    const res = await fetch(`${TMDB_BASE_URL}/tv/${show.id.replace("tmdb-", "")}?api_key=${TMDB_API_KEY}&language=tr-TR`);
+                    const res = await fetch(`${TMDB_BASE_URL}/tv/${show.id.replace("tmdb-", "")}?language=tr-TR`, { headers, signal: controller.signal });
+                    clearTimeout(timeout);
                     if (!res.ok) return show;
                     const details = await res.json();
                     return {
@@ -143,20 +146,23 @@ export async function GET(request: Request) {
                         genre: details.genres?.[0]?.name || "",
                         totalSeasons: details.number_of_seasons || 1
                     };
-                } catch { return show; }
+                } catch { clearTimeout(timeout); return show; }
             })),
             Promise.all(topOMDb.map(async (show: any) => {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 3000);
                 try {
-                    const res = await fetch(`https://www.omdbapi.com/?i=${show.id.replace("omdb-", "")}&apikey=${OMDB_API_KEY}`);
+                    const res = await fetch(`https://www.omdbapi.com/?i=${show.id.replace("omdb-", "")}&apikey=${OMDB_API_KEY}`, { signal: controller.signal });
+                    clearTimeout(timeout);
                     if (!res.ok) return show;
                     const details = await res.json();
                     return {
                         ...show,
                         creator: details.Writer !== "N/A" ? details.Writer.split(",")[0] : "Bilinmiyor",
                         genre: details.Genre !== "N/A" ? details.Genre.split(",")[0] : "",
-                        totalSeasons: parseInt(details.totalSeasons) || 1
+                        totalSeasons: Number(details.totalSeasons) || 1
                     };
-                } catch { return show; }
+                } catch { clearTimeout(timeout); return show; }
             })),
             Promise.all(topTVm.map(async (show: any) => {
                 try {

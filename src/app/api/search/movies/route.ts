@@ -96,8 +96,11 @@ export async function GET(request: Request) {
 
 
         const fetchTMDBDetails = async (movie: any) => {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 3000);
             try {
-                const res = await fetch(`${TMDB_BASE_URL}/movie/${movie.id.replace("tmdb-", "")}?api_key=${TMDB_API_KEY}&append_to_response=credits&language=tr-TR`);
+                const res = await fetch(`${TMDB_BASE_URL}/movie/${movie.id.replace("tmdb-", "")}?append_to_response=credits&language=tr-TR`, { headers, signal: controller.signal });
+                clearTimeout(timeout);
                 if (!res.ok) return movie;
                 const details = await res.json();
                 return {
@@ -105,12 +108,15 @@ export async function GET(request: Request) {
                     director: details.credits?.crew?.find((p: any) => p.job === "Director")?.name || "Bilinmiyor",
                     genre: details.genres?.[0]?.name || ""
                 };
-            } catch { return movie; }
+            } catch { clearTimeout(timeout); return movie; }
         };
 
         const fetchOMDbDetails = async (movie: any) => {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 3000);
             try {
-                const res = await fetch(`https://www.omdbapi.com/?i=${movie.id.replace("omdb-", "")}&apikey=${OMDB_API_KEY}`);
+                const res = await fetch(`https://www.omdbapi.com/?i=${movie.id.replace("omdb-", "")}&apikey=${OMDB_API_KEY}`, { signal: controller.signal });
+                clearTimeout(timeout);
                 if (!res.ok) return movie;
                 const details = await res.json();
                 return {
@@ -118,7 +124,7 @@ export async function GET(request: Request) {
                     director: details.Director !== "N/A" ? details.Director : "Bilinmiyor",
                     genre: details.Genre !== "N/A" ? details.Genre.split(",")[0] : ""
                 };
-            } catch { return movie; }
+            } catch { clearTimeout(timeout); return movie; }
         };
 
         const [detailedTMDB, detailedOMDb] = await Promise.all([
