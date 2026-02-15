@@ -7,6 +7,7 @@ import { Search, Loader2, Plus, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { getOptimizedImageUrl } from "@/lib/utils";
+import { ClientImage } from "./client-image";
 
 interface MediaSearchResult {
     id: string | number;
@@ -104,19 +105,14 @@ export function MediaSearch({ type, onSelect }: MediaSearchProps) {
                             className="flex items-start gap-3 p-2 rounded-lg bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer transition-colors group"
                         >
                             <div className="relative h-16 w-12 flex-shrink-0 rounded bg-black/5 dark:bg-slate-800 overflow-hidden">
-                                {result.coverImage ? (
-                                    <Image
-                                        src={getOptimizedImageUrl(result.coverImage, 200)}
-                                        alt={result.title}
-                                        fill
-                                        unoptimized={true}
-                                        className="object-cover"
-                                    />
-                                ) : (
-                                    <div className="h-full w-full flex items-center justify-center">
-                                        <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                                    </div>
-                                )}
+                                <ClientImage
+                                    src={getOptimizedImageUrl(result.coverImage || "", 200)}
+                                    alt={result.title}
+                                    fill
+                                    unoptimized={true}
+                                    className="object-cover"
+                                    fallbackText={result.title}
+                                />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <h4 className="text-sm font-semibold text-foreground dark:text-white truncate group-hover:text-purple-600 dark:group-hover:text-purple-400">

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,6 +9,7 @@ import { useViewMode } from "@/contexts/view-mode-context";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { Star } from "lucide-react";
+import { ClientImage } from "./client-image";
 
 export interface MediaCardProps {
     id: string;
@@ -104,7 +106,6 @@ export default function MediaCard({
 }: MediaCardProps) {
     const { viewMode } = useViewMode();
     const isMobile = useIsMobile();
-
     const variants = isMobile ? mobileItemVariants : itemVariants;
 
     if (viewMode === "list") {
@@ -169,21 +170,14 @@ export default function MediaCard({
             <Card className="group h-full relative overflow-hidden bg-white dark:bg-zinc-900 md:bg-white/50 md:dark:bg-white/5 border-black/5 dark:border-white/10 md:hover:border-purple-500/40 transition-all duration-300 md:hover:shadow-2xl md:hover:shadow-purple-500/10 p-0 gap-0 shadow-sm">
                 <Link href={href} className="block">
                     <div className="relative aspect-[2/3] overflow-hidden bg-zinc-900 border-b border-white/5">
-                        {coverImage ? (
-                            <Image
-                                src={getOptimizedImageUrl(coverImage, 600)}
-                                alt={title}
-                                fill
-                                unoptimized={true}
-                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                        ) : (
-                            <div className="absolute inset-0 flex items-center justify-center p-4 text-center">
-                                <div className="text-white/60 font-black text-xl md:text-2xl uppercase tracking-tighter leading-tight line-clamp-4 select-none">
-                                    {title}
-                                </div>
-                            </div>
-                        )}
+                        <ClientImage
+                            src={getOptimizedImageUrl(coverImage || "", 600)}
+                            alt={title}
+                            fill
+                            unoptimized={true}
+                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            fallbackText={title}
+                        />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                         <motion.div

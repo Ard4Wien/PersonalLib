@@ -10,6 +10,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/ui/back-button";
+import { ClientImage } from "@/components/media/client-image";
 
 
 interface PortfolioPageProps {
@@ -154,13 +155,14 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                                 const data = item.book || item.movie || item.series;
                                 return (
                                     <div key={item.id} className="group relative aspect-[2/3] rounded-xl overflow-hidden bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 hover:border-yellow-500/50 transition-all duration-300 shadow-md hover:shadow-yellow-500/10">
-                                        {data.coverImage ? (
-                                            <Image src={getOptimizedImageUrl(data.coverImage, 400)} alt={data.title} fill unoptimized={true} className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-4xl">
-                                                {item.type === 'book' ? '📚' : item.type === 'movie' ? '🎬' : '📺'}
-                                            </div>
-                                        )}
+                                        <ClientImage
+                                            src={getOptimizedImageUrl(data.coverImage, 400)}
+                                            alt={data.title}
+                                            fill
+                                            unoptimized={true}
+                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                            fallbackText={data.title}
+                                        />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-100 flex flex-col justify-end p-4">
                                             <p className="text-white font-bold text-sm md:text-base line-clamp-2 leading-tight mb-1">{data.title}</p>
                                             <p className="text-zinc-300 text-xs italic line-clamp-1">{data.author || data.director || data.creator}</p>
@@ -193,19 +195,14 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                                         key={userBook.id}
                                         className="group relative aspect-[2/3] rounded-lg overflow-hidden bg-white/5"
                                     >
-                                        {userBook.book.coverImage ? (
-                                            <Image
-                                                src={getOptimizedImageUrl(userBook.book.coverImage, 400)}
-                                                alt={userBook.book.title}
-                                                fill
-                                                unoptimized={true}
-                                                className="object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-4xl">
-                                                📚
-                                            </div>
-                                        )}
+                                        <ClientImage
+                                            src={getOptimizedImageUrl(userBook.book.coverImage, 400)}
+                                            alt={userBook.book.title}
+                                            fill
+                                            unoptimized={true}
+                                            className="object-cover"
+                                            fallbackText={userBook.book.title}
+                                        />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
                                             <p className="text-white font-medium text-sm line-clamp-2">
                                                 {userBook.book.title}
@@ -243,19 +240,14 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                                         key={userMovie.id}
                                         className="group relative aspect-[2/3] rounded-lg overflow-hidden bg-white/5"
                                     >
-                                        {userMovie.movie.coverImage ? (
-                                            <Image
-                                                src={getOptimizedImageUrl(userMovie.movie.coverImage, 400)}
-                                                alt={userMovie.movie.title}
-                                                fill
-                                                unoptimized={true}
-                                                className="object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-4xl">
-                                                🎬
-                                            </div>
-                                        )}
+                                        <ClientImage
+                                            src={getOptimizedImageUrl(userMovie.movie.coverImage, 400)}
+                                            alt={userMovie.movie.title}
+                                            fill
+                                            unoptimized={true}
+                                            className="object-cover"
+                                            fallbackText={userMovie.movie.title}
+                                        />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
                                             <p className="text-white font-medium text-sm line-clamp-2">
                                                 {userMovie.movie.title}
@@ -293,19 +285,14 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                                         key={userSeries.id}
                                         className="group relative aspect-[2/3] rounded-lg overflow-hidden bg-white/5"
                                     >
-                                        {userSeries.series.coverImage ? (
-                                            <Image
-                                                src={getOptimizedImageUrl(userSeries.series.coverImage, 400)}
-                                                alt={userSeries.series.title}
-                                                fill
-                                                unoptimized={true}
-                                                className="object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-4xl">
-                                                📺
-                                            </div>
-                                        )}
+                                        <ClientImage
+                                            src={getOptimizedImageUrl(userSeries.series.coverImage, 400)}
+                                            alt={userSeries.series.title}
+                                            fill
+                                            unoptimized={true}
+                                            className="object-cover"
+                                            fallbackText={userSeries.series.title}
+                                        />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
                                             <p className="text-white font-medium text-sm line-clamp-2">
                                                 {userSeries.series.title}
