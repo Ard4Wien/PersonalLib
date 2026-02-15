@@ -152,7 +152,6 @@ export async function GET(request: Request) {
         return NextResponse.json(cleanResults);
     } catch (error: any) {
         let errorMessage = error?.message || "Filmler aranırken bir hata oluştu";
-        // Mask API keys in error logs
         if (TMDB_API_KEY) errorMessage = errorMessage.replace(TMDB_API_KEY, "[MASKELENDİ]");
         const OMDB_API_KEY = process.env.OMDB_API_KEY;
         if (OMDB_API_KEY) errorMessage = errorMessage.replace(OMDB_API_KEY, "[MASKELENDİ]");

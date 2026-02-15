@@ -344,7 +344,7 @@ export async function PATCH(request: Request) {
                 ...(rating !== undefined && { rating }),
                 ...(notes !== undefined && { notes }),
                 ...(isFavorite !== undefined && { isFavorite }),
-                // Logic: Clear episode tracking if completed or wishlist, otherwise update if provided
+
                 ...(status === "COMPLETED" || status === "WISHLIST" ? {
                     lastSeason: null,
                     lastEpisode: null

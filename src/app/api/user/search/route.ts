@@ -25,7 +25,7 @@ export async function GET(request: Request) {
                     { username: { contains: query, mode: 'insensitive' } },
                     { displayName: { contains: query, mode: 'insensitive' } }
                 ],
-                NOT: { id: userId } // Kendi profilini arama sonuçlarında gizle
+                NOT: { id: userId }
             },
             select: {
                 id: true,

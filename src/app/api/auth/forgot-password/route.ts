@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
         const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-        // Cleanup: remove expired attempts older than 24h to prevent table bloat
+        // 24 saatten eski sıfırlama denemelerini temizle
         await prisma.passwordResetAttempt.deleteMany({
             where: { createdAt: { lt: last24Hours } }
         });
@@ -67,8 +67,7 @@ export async function POST(request: Request) {
 
 
         if (!user) {
-            // Timing normalization: simulate the same work as a valid request
-            // to prevent email enumeration via response timing differences
+            // Zamanlama normalizasyonu: e-posta ifşasını önlemek için sabit gecikme
             await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 100));
             return NextResponse.json({ message: "Sıfırlama bağlantısı gönderildi" });
         }
@@ -81,7 +80,7 @@ export async function POST(request: Request) {
 
         const rawToken = crypto.randomBytes(32).toString("hex");
         const hashedToken = crypto.createHash("sha256").update(rawToken).digest("hex");
-        const expiresAt = new Date(Date.now() + 3600000); // 1 hour from now
+        const expiresAt = new Date(Date.now() + 3600000);
 
 
         await prisma.passwordResetToken.create({

@@ -7,7 +7,7 @@ const BAD_WORDS = [
     "kaka", "çiş", "porno", "porn", "p0rn", "seks", "sek", "sex", "s3x", "s3ks", "sik", "sapık", "sapik", "sık", "sikis", "sikiş", "s!k", "am", "amcık", "amcik"
 ];
 
-// Pre-compile regex patterns for word boundary matching
+// Kelime sınırı eşleşmesi için önceden derlenmiş regex kalıpları
 const BAD_WORD_PATTERNS = BAD_WORDS.map(word => {
     const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return new RegExp(`(^|[^a-zA-ZğüşöçıİĞÜŞÖÇ])${escaped}([^a-zA-ZğüşöçıİĞÜŞÖÇ]|$)`, 'i');

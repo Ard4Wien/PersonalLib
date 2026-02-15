@@ -106,7 +106,7 @@ export const changePasswordSchema = z.object({
     path: ["confirmPassword"],
 });
 
-// Shared field schemas for PUT/PATCH validation
+
 export const mediaStatusSchema = z.enum(
     ["READING", "WATCHING", "COMPLETED", "WISHLIST", "DROPPED"],
     { error: "Geçersiz durum değeri" }

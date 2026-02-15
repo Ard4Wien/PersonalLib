@@ -53,7 +53,7 @@ export async function GET(
             });
         }
 
-        // Standardize data for mobile (flat structure)
+
         const standardizedData = {
             username: user.username,
             displayName: user.displayName,

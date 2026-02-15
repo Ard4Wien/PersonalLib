@@ -41,7 +41,7 @@ export default function ChangePasswordPage() {
             const result = await response.json();
 
             if (!response.ok) {
-                // Sunucu taraflı hata mesajlarını form alanlarına yayabiliriz
+
                 if (typeof result.error === "object") {
                     Object.entries(result.error).forEach(([field, messages]) => {
                         toast.error((messages as string[])[0]);
@@ -167,7 +167,7 @@ export default function ChangePasswordPage() {
     );
 }
 
-// Helper component for separator
+
 function DropdownMenuSeparator({ className }: { className?: string }) {
     return <div className={`h-[1px] w-full ${className}`} />;
 }

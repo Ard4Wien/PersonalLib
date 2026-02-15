@@ -57,7 +57,7 @@ interface UserSeries {
     coverImage?: string | null;
     type: "series";
     status: string;
-    overallStatus: string; // Compatibility
+    overallStatus: string;
     isFavorite: boolean;
     genre?: string | null;
     updatedAt: string;
@@ -102,7 +102,7 @@ export default function MoviesPage() {
     const [itemToDelete, setItemToDelete] = useState<{ id: string; type: "movie" | "series" } | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    // Edit states
+
     const [isMovieEditDialogOpen, setIsMovieEditDialogOpen] = useState(false);
     const [isSeriesEditDialogOpen, setIsSeriesEditDialogOpen] = useState(false);
     const [editingMovie, setEditingMovie] = useState<UserMovie | null>(null);

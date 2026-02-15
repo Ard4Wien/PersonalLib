@@ -33,13 +33,13 @@ interface UserBook {
     title: string;
     subtitle: string;
     image: string | null;
-    coverImage?: string | null; // Compatibility
+    coverImage?: string | null;
     type: "book";
     status: string;
     isFavorite: boolean;
     genre?: string | null;
     updatedAt: string;
-    // For backward compatibility during transition
+
     book?: {
         id: string;
         title: string;
@@ -257,7 +257,7 @@ export default function BooksPage() {
     };
 
     const filteredBooks = books.filter((b) => {
-        // Search filter
+
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             const matchesSearch =
@@ -266,7 +266,7 @@ export default function BooksPage() {
             if (!matchesSearch) return false;
         }
 
-        // Tab filter
+
         if (activeTab === "all") return true;
         if (activeTab === "reading") return b.status === "READING";
         if (activeTab === "completed") return b.status === "COMPLETED";

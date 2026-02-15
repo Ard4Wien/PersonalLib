@@ -19,15 +19,15 @@ import { Share2, User, BookOpen, Film, ExternalLink, ArrowLeft, Shield, Lock, Ey
 import { toast } from "sonner";
 import AnimatedPage from "@/components/layout/animated-page";
 
-// Security: Allowed file types and max size
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-// Magic number signatures for file validation
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+
 const FILE_SIGNATURES: Record<string, number[]> = {
     "image/jpeg": [0xFF, 0xD8, 0xFF],
     "image/png": [0x89, 0x50, 0x4E, 0x47],
-    "image/webp": [0x52, 0x49, 0x46, 0x46], // RIFF header
+    "image/webp": [0x52, 0x49, 0x46, 0x46],
 };
 
 export default function ProfilePage() {

@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
         const { token, password } = validatedFields.data;
 
-        // Hash the incoming token to compare with stored hash
+        // Gelen token'ı DB'deki hash ile karşılaştırmak için hash'le
         const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
         const resetToken = await prisma.passwordResetToken.findUnique({

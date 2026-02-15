@@ -64,13 +64,13 @@ export async function validateEmailDomain(email: string): Promise<{ valid: boole
                 );
 
                 if (response.status === 429 || response.status === 422) {
-                    continue; // Kota dolmuş veya geçersiz anahtar, bir sonrakini dene
+                    continue;
                 }
 
                 if (response.ok) {
                     const data = await response.json();
 
-                    // SMTP geçerli değilse veya teslim edilebilir değilse engelle
+
                     if (data.email_deliverability) {
                         const isDeliverable = data.email_deliverability.status === "deliverable";
                         const isSmtpValid = data.email_deliverability.is_smtp_valid;
@@ -87,7 +87,7 @@ export async function validateEmailDomain(email: string): Promise<{ valid: boole
                 }
             } catch (error) {
                 console.error("Abstract API error:", error);
-                continue; // Hata durumunda diğer anahtarı dene
+                continue;
             }
         }
     }

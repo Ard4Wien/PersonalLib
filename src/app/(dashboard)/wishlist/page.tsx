@@ -52,7 +52,7 @@ export default function WishlistPage() {
     const [activeTab, setActiveTab] = useState("all");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Edit states
+
     const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editStatus, setEditStatus] = useState("WISHLIST");
@@ -177,7 +177,7 @@ export default function WishlistPage() {
                 toast.success("Kitap güncellendi!");
                 setIsEditDialogOpen(false);
                 setEditingItem(null);
-                fetchWishlist(); // Refresh list to get updated data
+                fetchWishlist();
             } else {
                 const error = await response.json();
                 toast.error(error.error || "Kitap güncellenemedi");
@@ -299,7 +299,7 @@ export default function WishlistPage() {
     };
 
     const filteredItems = items.filter((item) => {
-        // Search filter
+
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             const matchesSearch =
@@ -308,7 +308,7 @@ export default function WishlistPage() {
             if (!matchesSearch) return false;
         }
 
-        // Tab filter
+
         if (activeTab === "all") return true;
         if (activeTab === "books") return item.type === "book";
         if (activeTab === "movies") return item.type === "movie" || item.type === "series";

@@ -203,7 +203,7 @@ export async function GET(request: Request) {
                 genre: item.genre || "",
                 totalSeasons: item.totalSeasons || 1
             }))
-            .slice(0, 40); // slightly more results since we have more sources
+            .slice(0, 40);
 
         return NextResponse.json(cleanResults);
     } catch (error: any) {
