@@ -87,7 +87,7 @@ export default function WishlistPage() {
                             subtitle: b.book.author,
                             coverImage: b.book.coverImage,
                             genre: b.book.genre,
-                            href: `/books/${b.book.id}`,
+                            href: "#",
                             status: "WISHLIST",
                             originalData: b,
                         });
@@ -106,7 +106,7 @@ export default function WishlistPage() {
                             subtitle: m.movie.director,
                             coverImage: m.movie.coverImage,
                             genre: m.movie.genre,
-                            href: `/movies/${m.movie.id}`,
+                            href: "#",
                             status: "WISHLIST",
                             originalData: m,
                         });
@@ -125,7 +125,7 @@ export default function WishlistPage() {
                             subtitle: s.series.creator,
                             coverImage: s.series.coverImage,
                             genre: s.series.genre,
-                            href: `/series/${s.series.id}`,
+                            href: "#",
                             status: "WISHLIST",
                             originalData: s,
                         });

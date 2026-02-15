@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Share2, User, BookOpen, Film, ExternalLink, ArrowLeft, Shield, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Share2, User, BookOpen, Film, ExternalLink, ArrowLeft, Shield, Lock, Eye, EyeOff, Loader2, Tv } from "lucide-react";
 import { toast } from "sonner";
 import AnimatedPage from "@/components/layout/animated-page";
 
@@ -35,12 +35,20 @@ export default function ProfilePage() {
     const router = useRouter();
     const [isPrivate, setIsPrivate] = useState<boolean | null>(null);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [stats, setStats] = useState<{ books: number; movies: number; series: number } | null>(null);
 
     useState(() => {
+        // Gizlilik durumunu getir
         fetch("/api/user/privacy")
             .then(res => res.json())
             .then(data => setIsPrivate(data.isPrivate))
             .catch(() => setIsPrivate(false));
+
+        // İstatistikleri getir
+        fetch("/api/user/stats")
+            .then(res => res.json())
+            .then(data => setStats(data))
+            .catch(() => setStats({ books: 0, movies: 0, series: 0 }));
     });
 
     const togglePrivacy = async () => {
@@ -136,39 +144,83 @@ export default function ProfilePage() {
             </Card>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 gap-4">
-                <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                            <BookOpen className="h-4 w-4" />
-                            Kitaplar
-                        </CardTitle>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Card className="group relative overflow-hidden bg-purple-600/10 border-purple-500/20 shadow-sm hover:shadow-purple-500/10 transition-all duration-300">
+                    <CardHeader className="pt-0 pb-0">
+                        <div className="flex justify-between items-center">
+                            <CardTitle className="text-[13px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest">
+                                Kitaplar
+                            </CardTitle>
+                            <Link
+                                href="/books"
+                                className="h-8 w-8 rounded-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center transition-all duration-300 hover:scale-110 shrink-0 shadow-sm border border-purple-500/10 relative z-20"
+                            >
+                                <ArrowLeft className="h-4 w-4 rotate-180" />
+                            </Link>
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <Link
-                            href="/books"
-                            className="text-2xl font-bold text-foreground hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                        >
-                            Görüntüle →
-                        </Link>
+                        <div className="relative z-10">
+                            <div className="text-4xl font-black text-foreground tracking-tighter leading-none">
+                                {stats?.books ?? "..."}
+                            </div>
+                        </div>
                     </CardContent>
+                    <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                        <BookOpen className="h-24 w-24 text-purple-600" />
+                    </div>
                 </Card>
 
-                <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-sm hover:shadow-md transition-all">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                            <Film className="h-4 w-4" />
-                            Filmler & Diziler
-                        </CardTitle>
+                <Card className="group relative overflow-hidden bg-blue-600/10 border-blue-500/20 shadow-sm hover:shadow-blue-500/10 transition-all duration-300">
+                    <CardHeader className="pt-0 pb-0">
+                        <div className="flex justify-between items-center">
+                            <CardTitle className="text-[13px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+                                Filmler
+                            </CardTitle>
+                            <Link
+                                href="/movies"
+                                className="h-8 w-8 rounded-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-600 dark:text-blue-400 flex items-center justify-center transition-all duration-300 hover:scale-110 shrink-0 shadow-sm border border-blue-500/10 relative z-20"
+                            >
+                                <ArrowLeft className="h-4 w-4 rotate-180" />
+                            </Link>
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <Link
-                            href="/movies"
-                            className="text-2xl font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                        >
-                            Görüntüle →
-                        </Link>
+                        <div className="relative z-10">
+                            <div className="text-4xl font-black text-foreground tracking-tighter leading-none">
+                                {stats?.movies ?? "..."}
+                            </div>
+                        </div>
                     </CardContent>
+                    <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                        <Film className="h-24 w-24 text-blue-600" />
+                    </div>
+                </Card>
+
+                <Card className="group relative overflow-hidden bg-cyan-600/10 border-cyan-500/20 shadow-sm hover:shadow-cyan-500/10 transition-all duration-300">
+                    <CardHeader className="pt-0 pb-0">
+                        <div className="flex justify-between items-center">
+                            <CardTitle className="text-[13px] font-black text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">
+                                Diziler
+                            </CardTitle>
+                            <Link
+                                href="/movies"
+                                className="h-8 w-8 rounded-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center transition-all duration-300 hover:scale-110 shrink-0 shadow-sm border border-cyan-500/10 relative z-20"
+                            >
+                                <ArrowLeft className="h-4 w-4 rotate-180" />
+                            </Link>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="relative z-10">
+                            <div className="text-4xl font-black text-foreground tracking-tighter leading-none">
+                                {stats?.series ?? "..."}
+                            </div>
+                        </div>
+                    </CardContent>
+                    <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                        <Tv className="h-24 w-24 text-cyan-600" />
+                    </div>
                 </Card>
             </div>
 

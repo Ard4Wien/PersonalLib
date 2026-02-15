@@ -168,7 +168,7 @@ export default function MediaCard({
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
             <Card className="group h-full relative overflow-hidden bg-white dark:bg-zinc-900 md:bg-white/50 md:dark:bg-white/5 border-black/5 dark:border-white/10 md:hover:border-purple-500/40 transition-all duration-300 md:hover:shadow-2xl md:hover:shadow-purple-500/10 p-0 gap-0 shadow-sm">
-                <Link href={href} className="block">
+                <MediaCardContent href={href} className="block">
                     <div className="relative aspect-[2/3] overflow-hidden bg-zinc-900 border-b border-white/5">
                         <ClientImage
                             src={getOptimizedImageUrl(coverImage || "", 600)}
@@ -230,7 +230,7 @@ export default function MediaCard({
                         </div>
                         <p className="text-[13px] md:text-sm text-muted-foreground italic line-clamp-1">{subtitle}</p>
                     </div>
-                </Link>
+                </MediaCardContent>
                 <div className="absolute bottom-3 md:bottom-5 right-2 flex flex-col gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0">
                     <StatusButton
                         type={type}
