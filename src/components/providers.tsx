@@ -5,12 +5,14 @@ import { ReactNode, useEffect } from "react";
 import { ThemeProvider } from "next-themes";
 import { ViewModeProvider } from "@/contexts/view-mode-context";
 import { SearchProvider } from "@/contexts/search-context";
+import { Session } from "next-auth";
 
 interface ProvidersProps {
     children: ReactNode;
+    session?: Session | null;
 }
 
-export default function Providers({ children }: ProvidersProps) {
+export default function Providers({ children, session }: ProvidersProps) {
     useEffect(() => {
         const handleContextMenu = (e: MouseEvent) => {
             e.preventDefault();
@@ -24,7 +26,7 @@ export default function Providers({ children }: ProvidersProps) {
     }, []);
 
     return (
-        <SessionProvider>
+        <SessionProvider session={session}>
             <ThemeProvider
                 attribute="class"
                 defaultTheme="system"

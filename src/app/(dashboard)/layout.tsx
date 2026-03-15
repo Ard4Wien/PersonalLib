@@ -16,7 +16,7 @@ export default async function DashboardLayout({
     }
 
     return (
-        <Providers>
+        <Providers session={session}>
             <div className={BACKGROUND_GRADIENT}>
                 <Header />
                 <main className="container mx-auto px-4 py-8">{children}</main>

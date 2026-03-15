@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import Providers from "@/components/providers";
+import { auth } from "@/lib/auth";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -46,6 +47,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
   const nonce = (await headers()).get('x-nonce') || '';
 
   return (
@@ -70,7 +72,7 @@ export default async function RootLayout({
             })
           }}
         />
-        <Providers>
+        <Providers session={session}>
           {children}
           <Toaster position="top-right" richColors />
         </Providers>
