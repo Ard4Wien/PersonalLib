@@ -190,7 +190,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                {books.slice(0, 12).map((userBook) => (
+                                {books.map((userBook) => (
                                     <div
                                         key={userBook.id}
                                         className="group relative aspect-[2/3] rounded-lg overflow-hidden bg-white/5"
@@ -235,7 +235,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                {movies.slice(0, 12).map((userMovie) => (
+                                {movies.map((userMovie) => (
                                     <div
                                         key={userMovie.id}
                                         className="group relative aspect-[2/3] rounded-lg overflow-hidden bg-white/5"
@@ -280,7 +280,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                {series.slice(0, 12).map((userSeries) => (
+                                {series.map((userSeries) => (
                                     <div
                                         key={userSeries.id}
                                         className="group relative aspect-[2/3] rounded-lg overflow-hidden bg-white/5"
