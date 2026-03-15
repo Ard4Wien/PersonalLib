@@ -44,7 +44,8 @@ export default function ProfilePage() {
     const router = useRouter();
     const [isPrivate, setIsPrivate] = useState<boolean | null>(null);
     const [language, setLanguage] = useState("tr");
-    const [isUpdating, setIsUpdating] = useState(false);
+    const [isPrivacyUpdating, setIsPrivacyUpdating] = useState(false);
+    const [isLangUpdating, setIsLangUpdating] = useState(false);
     const [stats, setStats] = useState<{ books: number; movies: number; series: number } | null>(null);
 
     useEffect(() => {
@@ -80,8 +81,8 @@ export default function ProfilePage() {
     }, []);
 
     const togglePrivacy = async () => {
-        if (isUpdating) return;
-        setIsUpdating(true);
+        if (isPrivacyUpdating) return;
+        setIsPrivacyUpdating(true);
         const newValue = !isPrivate;
         try {
             const res = await fetch("/api/user/privacy", {
@@ -98,13 +99,13 @@ export default function ProfilePage() {
         } catch {
             toast.error("Bir hata oluştu");
         } finally {
-            setIsUpdating(false);
+            setIsPrivacyUpdating(false);
         }
     };
 
     const handleLanguageChange = async (val: string) => {
-        if (isUpdating) return;
-        setIsUpdating(true);
+        if (isLangUpdating) return;
+        setIsLangUpdating(true);
         try {
             const res = await fetch("/api/user/language", {
                 method: "PATCH",
@@ -120,7 +121,7 @@ export default function ProfilePage() {
         } catch {
             toast.error("Bir hata oluştu");
         } finally {
-            setIsUpdating(false);
+            setIsLangUpdating(false);
         }
     };
 
@@ -360,11 +361,11 @@ export default function ProfilePage() {
                         <Button
                             variant={isPrivate ? "destructive" : "outline"}
                             size="sm"
-                            disabled={isUpdating || isPrivate === null}
+                            disabled={isPrivacyUpdating || isPrivate === null}
                             onClick={togglePrivacy}
                             className={!isPrivate ? "border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-foreground hover:bg-black/10" : ""}
                         >
-                            {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : (isPrivate ? "Gizli" : "Açık")}
+                            {isPrivacyUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : (isPrivate ? "Gizli" : "Açık")}
                         </Button>
                     </div>
                 </CardContent>
