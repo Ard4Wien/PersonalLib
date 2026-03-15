@@ -5,17 +5,17 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Share2, User, BookOpen, Film, ExternalLink, ArrowLeft, Shield, Lock, Eye, EyeOff, Loader2, Tv } from "lucide-react";
+import { Share2, User, BookOpen, Film, ExternalLink, ArrowLeft, Shield, Lock, Eye, EyeOff, Loader2, Tv, Languages } from "lucide-react";
 import { toast } from "sonner";
 import AnimatedPage from "@/components/layout/animated-page";
 
@@ -32,10 +32,18 @@ const FILE_SIGNATURES: Record<string, number[]> = {
     "image/webp": [0x52, 0x49, 0x46, 0x46],
 };
 
+const LANGUAGES = [
+    { code: "tr", name: "Türkçe" },
+    { code: "en", name: "English" },
+    { code: "fr", name: "Français" },
+    { code: "de", name: "Deutsch" },
+];
+
 export default function ProfilePage() {
     const { data: session } = useSession();
     const router = useRouter();
     const [isPrivate, setIsPrivate] = useState<boolean | null>(null);
+    const [language, setLanguage] = useState("tr");
     const [isUpdating, setIsUpdating] = useState(false);
     const [stats, setStats] = useState<{ books: number; movies: number; series: number } | null>(null);
 
@@ -47,6 +55,14 @@ export default function ProfilePage() {
             })
             .then(data => setIsPrivate(data.isPrivate))
             .catch(() => setIsPrivate(false));
+
+        fetch("/api/user/language")
+            .then(res => {
+                if (!res.ok) throw new Error("Dil bilgisi alınamadı");
+                return res.json();
+            })
+            .then(data => setLanguage(data.language))
+            .catch(() => setLanguage("tr"));
 
         fetch("/api/user/stats")
             .then(res => {
@@ -78,6 +94,28 @@ export default function ProfilePage() {
                 toast.success(newValue ? "Profiliniz gizlendi" : "Profiliniz artık herkese açık");
             } else {
                 toast.error("Gizlilik ayarı güncellenemedi");
+            }
+        } catch {
+            toast.error("Bir hata oluştu");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleLanguageChange = async (val: string) => {
+        if (isUpdating) return;
+        setIsUpdating(true);
+        try {
+            const res = await fetch("/api/user/language", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ language: val })
+            });
+            if (res.ok) {
+                setLanguage(val);
+                toast.success("Dil ayarı güncellendi");
+            } else {
+                toast.error("Dil ayarı güncellenemedi");
             }
         } catch {
             toast.error("Bir hata oluştu");
@@ -279,6 +317,30 @@ export default function ProfilePage() {
                                 Şifre Değiştir
                             </Button>
                         </Link>
+                    </div>
+
+                    <Separator className="bg-black/5 dark:bg-white/10" />
+
+                    <div className="flex justify-between items-center">
+                        <div className="space-y-0.5">
+                            <div className="text-foreground flex items-center gap-2">
+                                <Languages className="h-4 w-4 text-muted-foreground" />
+                                <span>Dil / Language</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">Uygulama dilini buradan seçebilirsiniz.</p>
+                        </div>
+                        <Select value={language} onValueChange={handleLanguageChange}>
+                            <SelectTrigger size="sm" className="w-[120px] bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {LANGUAGES.map((lang) => (
+                                    <SelectItem key={lang.code} value={lang.code}>
+                                        {lang.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <Separator className="bg-black/5 dark:bg-white/10" />

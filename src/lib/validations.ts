@@ -57,35 +57,59 @@ const imageSchema = z.string().url().optional().or(z.literal("")).refine((val) =
 
 
 export const bookSchema = z.object({
-    title: z.string().min(1, "Kitap başlığı gereklidir"),
-    author: z.string().optional(),
+    title: z.string().min(1, "Kitap başlığı gereklidir").refine((val) => !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
+    author: z.string().optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     coverImage: imageSchema,
-    description: z.string().optional(),
+    description: z.string().optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     publishedYear: z.number().optional(),
-    genre: z.string().optional(),
+    genre: z.string().optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     pageCount: z.number().optional(),
     isbn: z.string().optional(),
 });
 
 export const movieSchema = z.object({
-    title: z.string().min(1, "Film başlığı gereklidir"),
-    director: z.string().optional(),
+    title: z.string().min(1, "Film başlığı gereklidir").refine((val) => !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
+    director: z.string().optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     coverImage: imageSchema,
-    description: z.string().optional(),
+    description: z.string().optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     releaseYear: z.number().optional(),
-    genre: z.string().optional(),
+    genre: z.string().optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     duration: z.number().optional(),
     imdbId: z.string().optional(),
 });
 
 export const seriesSchema = z.object({
-    title: z.string().min(1, "Dizi başlığı gereklidir"),
-    creator: z.string().optional(),
+    title: z.string().min(1, "Dizi başlığı gereklidir").refine((val) => !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
+    creator: z.string().optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     coverImage: imageSchema,
-    description: z.string().optional(),
+    description: z.string().optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     startYear: z.number().optional(),
     endYear: z.number().optional(),
-    genre: z.string().optional(),
+    genre: z.string().optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     totalSeasons: z.number().min(1).default(1),
     imdbId: z.string().optional(),
 });
@@ -114,35 +138,55 @@ export const mediaStatusSchema = z.enum(
 
 export const ratingSchema = z.number().int().min(1, "Puan en az 1 olmalıdır").max(10, "Puan en fazla 10 olabilir").nullable();
 
-export const notesSchema = z.string().max(5000, "Notlar en fazla 5000 karakter olabilir").optional();
+export const notesSchema = z.string().max(5000, "Notlar en fazla 5000 karakter olabilir").optional().refine((val) => !val || !containsProfanity(val), {
+    message: "İçerik uygunsuz kelimeler barındırıyor",
+});
 
 export const bookUpdateSchema = z.object({
     userBookId: z.string().min(1),
     bookId: z.string().min(1),
-    title: z.string().min(1, "Kitap başlığı gereklidir").max(500),
-    author: z.string().max(500).optional(),
+    title: z.string().min(1, "Kitap başlığı gereklidir").max(500).refine((val) => !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
+    author: z.string().max(500).optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     coverImage: imageSchema,
-    genre: z.string().max(200).optional(),
+    genre: z.string().max(200).optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     status: mediaStatusSchema,
 });
 
 export const movieUpdateSchema = z.object({
     userMovieId: z.string().min(1),
     movieId: z.string().min(1),
-    title: z.string().min(1, "Film başlığı gereklidir").max(500),
-    director: z.string().max(500).optional(),
+    title: z.string().min(1, "Film başlığı gereklidir").max(500).refine((val) => !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
+    director: z.string().max(500).optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     coverImage: imageSchema,
-    genre: z.string().max(200).optional(),
+    genre: z.string().max(200).optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     status: mediaStatusSchema,
 });
 
 export const seriesUpdateSchema = z.object({
     userSeriesId: z.string().min(1),
     seriesId: z.string().min(1),
-    title: z.string().min(1, "Dizi başlığı gereklidir").max(500),
-    creator: z.string().max(500).optional(),
+    title: z.string().min(1, "Dizi başlığı gereklidir").max(500).refine((val) => !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
+    creator: z.string().max(500).optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     coverImage: imageSchema,
-    genre: z.string().max(200).optional(),
+    genre: z.string().max(200).optional().refine((val) => !val || !containsProfanity(val), {
+        message: "İçerik uygunsuz kelimeler barındırıyor",
+    }),
     totalSeasons: z.string().or(z.number()).optional(),
     status: mediaStatusSchema,
     lastSeason: z.string().or(z.number()).nullable().optional(),
