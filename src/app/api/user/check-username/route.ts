@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limiter";
+import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
     try {
-        const clientIP = request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
-        const rateLimitResult = checkRateLimit(clientIP);
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
 
         if (!rateLimitResult.success) {
             return NextResponse.json(
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ available: !existingUser });
     } catch (error) {
-        console.error("Username check error:", error);
+        console.error("Username check error:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
     }
 }

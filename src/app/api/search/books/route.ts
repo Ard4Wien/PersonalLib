@@ -187,12 +187,8 @@ export async function GET(request: Request) {
 
 
         return NextResponse.json(cleanResults);
-    } catch (error: any) {
-        let errorMessage = error?.message || "Kitaplar aranırken bir hata oluştu";
-        const googleApiKey = process.env.GOOGLE_BOOKS_API_KEY;
-        if (googleApiKey) errorMessage = errorMessage.replace(googleApiKey, "[MASKELENDİ]");
-
-        console.error("Kitap arama hatası:", errorMessage);
+    } catch (error) {
+        console.error("Kitap arama hatası:", error);
         return NextResponse.json(
             { error: "Kitaplar aranırken bir hata oluştu" },
             { status: 500 }

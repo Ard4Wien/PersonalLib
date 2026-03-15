@@ -16,11 +16,6 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "Yetkisiz: Lütfen giriş yapın" }, { status: 401 });
         }
 
-        const headers = {
-            "Authorization": `Bearer ${TMDB_API_KEY}`,
-            "Content-Type": "application/json"
-        };
-
         if (!TMDB_API_KEY) {
             console.error("Film arama hatası: TMDB_API_KEY eksik");
             return NextResponse.json({ error: "TMDb API anahtarı yapılandırılmamış" }, { status: 500 });
@@ -37,7 +32,7 @@ export async function GET(request: Request) {
 
 
         const [tmdbResponse, omdbResponse] = await Promise.all([
-            fetch(`${TMDB_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&language=tr-TR&include_adult=false`, { headers }).catch(() => null),
+            fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR&include_adult=false`).catch(() => null),
             OMDB_API_KEY ? fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&type=movie&apikey=${OMDB_API_KEY}`).catch(() => null) : null
         ]);
 
@@ -96,11 +91,8 @@ export async function GET(request: Request) {
 
 
         const fetchTMDBDetails = async (movie: any) => {
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 3000);
             try {
-                const res = await fetch(`${TMDB_BASE_URL}/movie/${movie.id.replace("tmdb-", "")}?append_to_response=credits&language=tr-TR`, { headers, signal: controller.signal });
-                clearTimeout(timeout);
+                const res = await fetch(`${TMDB_BASE_URL}/movie/${movie.id.replace("tmdb-", "")}?api_key=${TMDB_API_KEY}&append_to_response=credits&language=tr-TR`);
                 if (!res.ok) return movie;
                 const details = await res.json();
                 return {
@@ -108,15 +100,12 @@ export async function GET(request: Request) {
                     director: details.credits?.crew?.find((p: any) => p.job === "Director")?.name || "Bilinmiyor",
                     genre: details.genres?.[0]?.name || ""
                 };
-            } catch { clearTimeout(timeout); return movie; }
+            } catch { return movie; }
         };
 
         const fetchOMDbDetails = async (movie: any) => {
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 3000);
             try {
-                const res = await fetch(`https://www.omdbapi.com/?i=${movie.id.replace("omdb-", "")}&apikey=${OMDB_API_KEY}`, { signal: controller.signal });
-                clearTimeout(timeout);
+                const res = await fetch(`https://www.omdbapi.com/?i=${movie.id.replace("omdb-", "")}&apikey=${OMDB_API_KEY}`);
                 if (!res.ok) return movie;
                 const details = await res.json();
                 return {
@@ -124,7 +113,7 @@ export async function GET(request: Request) {
                     director: details.Director !== "N/A" ? details.Director : "Bilinmiyor",
                     genre: details.Genre !== "N/A" ? details.Genre.split(",")[0] : ""
                 };
-            } catch { clearTimeout(timeout); return movie; }
+            } catch { return movie; }
         };
 
         const [detailedTMDB, detailedOMDb] = await Promise.all([
@@ -137,6 +126,7 @@ export async function GET(request: Request) {
             .map(item => ({ ...item, score: getScore(item, query) }))
             .sort((a, b) => b.score - a.score);
 
+        // Kapak resmi olmayanları filtrele
         const cleanResults = allResults
             .map(({ score, ...item }) => ({
                 ...item,
@@ -152,6 +142,7 @@ export async function GET(request: Request) {
         return NextResponse.json(cleanResults);
     } catch (error: any) {
         let errorMessage = error?.message || "Filmler aranırken bir hata oluştu";
+        // Hata loglarında API anahtarlarını maskele
         if (TMDB_API_KEY) errorMessage = errorMessage.replace(TMDB_API_KEY, "[MASKELENDİ]");
         const OMDB_API_KEY = process.env.OMDB_API_KEY;
         if (OMDB_API_KEY) errorMessage = errorMessage.replace(OMDB_API_KEY, "[MASKELENDİ]");

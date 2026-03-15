@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { bookSchema, bookUpdateSchema, mediaStatusSchema, ratingSchema, notesSchema } from "@/lib/validations";
-import { checkRateLimit } from "@/lib/rate-limiter";
+import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
 export const dynamic = 'force-dynamic';
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(standardizedBooks);
     } catch (error) {
-        console.error("Kitap listesi hatası:", error);
+        console.error("Kitap listesi hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Kitaplar yüklenirken bir hata oluştu" },
             { status: 500 }
@@ -64,8 +64,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Geçersiz durum değeri" }, { status: 400 });
         }
 
-        const clientIP = request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
-        const rateLimitResult = checkRateLimit(clientIP);
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
         if (!rateLimitResult.success) {
             return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
         }
@@ -140,7 +140,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json(standardizedResponse, { status: 201 });
     } catch (error) {
-        console.error("Kitap ekleme hatası:", error);
+        console.error("Kitap ekleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Kitap eklenirken bir hata oluştu" },
             { status: 500 }
@@ -204,7 +204,7 @@ export async function PUT(request: Request) {
 
         return NextResponse.json(userBook);
     } catch (error) {
-        console.error("Kitap güncelleme hatası:", error);
+        console.error("Kitap güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Kitap güncellenirken bir hata oluştu" },
             { status: 500 }
@@ -222,6 +222,10 @@ export async function PATCH(request: Request) {
 
         const body = await request.json();
         const { userBookId, status, rating, notes, isFavorite } = body;
+
+        if (!userBookId || typeof userBookId !== "string") {
+            return NextResponse.json({ error: "Geçerli bir kayıt ID'si gereklidir" }, { status: 400 });
+        }
 
         if (status !== undefined) {
             const sv = mediaStatusSchema.safeParse(status);
@@ -254,7 +258,7 @@ export async function PATCH(request: Request) {
 
         return NextResponse.json(userBook);
     } catch (error) {
-        console.error("Kitap güncelleme hatası:", error);
+        console.error("Kitap güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Kitap güncellenirken bir hata oluştu" },
             { status: 500 }
@@ -286,7 +290,7 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error("Kitap silme hatası:", error);
+        console.error("Kitap silme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Kitap silinirken bir hata oluştu" },
             { status: 500 }

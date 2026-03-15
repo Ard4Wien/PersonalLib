@@ -20,7 +20,7 @@ export async function POST(request: Request) {
         const { email: rawEmail, password } = validatedFields.data;
         const email = rawEmail.toLowerCase();
 
-        const lockoutStatus = checkLoginAttempt(email);
+        const lockoutStatus = await checkLoginAttempt(email);
         if (lockoutStatus.locked) {
             return NextResponse.json(
                 { error: lockoutStatus.message },
@@ -35,25 +35,23 @@ export async function POST(request: Request) {
             where: { email },
         });
 
-        if (!user || !user.passwordHash) {
-            recordFailedLogin(email);
+        // Timing Attack önlemi: Kullanıcı bulunamasa bile bcrypt.compare çalıştırılarak
+        // yanıt süresi sabitlenir. Bu, saldırganların zamanlama farkından
+        // e-posta adreslerinin sistemde kayıtlı olup olmadığını tespit etmesini engeller.
+        const DUMMY_HASH = "$2b$10$tnwJkrdRvkJ49DvEzHFM..AQmt3BmTjccjU2Hx/CmWp8ALvMkkWwd6";
+        const hashToCompare = user?.passwordHash || DUMMY_HASH;
+        const passwordsMatch = await compare(password, hashToCompare);
+
+        if (!user || !user.passwordHash || !passwordsMatch) {
+            await recordFailedLogin(email);
             return NextResponse.json(
                 { error: "Geçersiz e-posta veya şifre" },
                 { status: 401 }
             );
         }
 
-        const passwordsMatch = await compare(password, user.passwordHash);
 
-        if (!passwordsMatch) {
-            recordFailedLogin(email);
-            return NextResponse.json(
-                { error: "Geçersiz e-posta veya şifre" },
-                { status: 401 }
-            );
-        }
-
-        resetLoginAttempts(email);
+        await resetLoginAttempts(email);
 
         const JWT_SECRET = process.env.JWT_SECRET || process.env.AUTH_SECRET;
 
@@ -85,7 +83,7 @@ export async function POST(request: Request) {
             },
         });
     } catch (error) {
-        console.error("Mobile login error:", error);
+        console.error("Mobile login error:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Giriş işlemi sırasında bir hata oluştu" },
             { status: 500 }

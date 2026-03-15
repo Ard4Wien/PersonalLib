@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     try {
 
         const clientIP = getClientIP(request);
-        const rateLimitResult = checkRateLimit(clientIP);
+        const rateLimitResult = await checkRateLimit(clientIP);
 
         if (!rateLimitResult.success) {
             return NextResponse.json(
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
             { status: 201 }
         );
     } catch (error) {
-        console.error("Kayıt hatası:", error);
+        console.error("Kayıt hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Kayıt işlemi sırasında bir hata oluştu" },
             { status: 500 }

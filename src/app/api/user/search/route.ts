@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(users);
     } catch (error) {
-        console.error("Kullanıcı arama hatası:", error);
+        console.error("Kullanıcı arama hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json({ error: "Arama yapılırken bir hata oluştu" }, { status: 500 });
     }
 }

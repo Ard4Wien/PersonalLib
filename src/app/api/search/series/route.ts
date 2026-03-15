@@ -16,11 +16,6 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "Yetkisiz: Lütfen giriş yapın" }, { status: 401 });
         }
 
-        const headers = {
-            "Authorization": `Bearer ${TMDB_API_KEY}`,
-            "Content-Type": "application/json"
-        };
-
         if (!TMDB_API_KEY) {
             console.error("Dizi arama hatası: TMDB_API_KEY eksik");
             return NextResponse.json({ error: "TMDb API anahtarı yapılandırılmamış" }, { status: 500 });
@@ -37,7 +32,7 @@ export async function GET(request: Request) {
 
 
         const [tmdbResponse, tvmazeResponse, omdbResponse, jikanResponse] = await Promise.all([
-            fetch(`${TMDB_BASE_URL}/search/tv?query=${encodeURIComponent(query)}&language=tr-TR&include_adult=false`, { headers }).catch(() => null),
+            fetch(`${TMDB_BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=tr-TR&include_adult=false`).catch(() => null),
             fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`).catch(() => null),
             OMDB_API_KEY ? fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(query)}&type=series&apikey=${OMDB_API_KEY}`).catch(() => null) : null,
             fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&limit=10`).catch(() => null)
@@ -133,11 +128,8 @@ export async function GET(request: Request) {
 
         const [detailedTMDB, detailedOMDb, detailedTVm] = await Promise.all([
             Promise.all(topTMDB.map(async (show: any) => {
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 3000);
                 try {
-                    const res = await fetch(`${TMDB_BASE_URL}/tv/${show.id.replace("tmdb-", "")}?language=tr-TR`, { headers, signal: controller.signal });
-                    clearTimeout(timeout);
+                    const res = await fetch(`${TMDB_BASE_URL}/tv/${show.id.replace("tmdb-", "")}?api_key=${TMDB_API_KEY}&language=tr-TR`);
                     if (!res.ok) return show;
                     const details = await res.json();
                     return {
@@ -146,14 +138,11 @@ export async function GET(request: Request) {
                         genre: details.genres?.[0]?.name || "",
                         totalSeasons: details.number_of_seasons || 1
                     };
-                } catch { clearTimeout(timeout); return show; }
+                } catch { return show; }
             })),
             Promise.all(topOMDb.map(async (show: any) => {
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 3000);
                 try {
-                    const res = await fetch(`https://www.omdbapi.com/?i=${show.id.replace("omdb-", "")}&apikey=${OMDB_API_KEY}`, { signal: controller.signal });
-                    clearTimeout(timeout);
+                    const res = await fetch(`https://www.omdbapi.com/?i=${show.id.replace("omdb-", "")}&apikey=${OMDB_API_KEY}`);
                     if (!res.ok) return show;
                     const details = await res.json();
                     return {
@@ -162,7 +151,7 @@ export async function GET(request: Request) {
                         genre: details.Genre !== "N/A" ? details.Genre.split(",")[0] : "",
                         totalSeasons: Number(details.totalSeasons) || 1
                     };
-                } catch { clearTimeout(timeout); return show; }
+                } catch { return show; }
             })),
             Promise.all(topTVm.map(async (show: any) => {
                 try {
@@ -192,6 +181,7 @@ export async function GET(request: Request) {
             .map(item => ({ ...item, score: getScore(item, query) }))
             .sort((a, b) => b.score - a.score);
 
+        // Kapak resmi olmayanları filtrele
         const cleanResults = allResults
             .map(({ score, ...item }) => ({
                 ...item,

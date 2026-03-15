@@ -103,7 +103,7 @@ export async function GET(
 
         return NextResponse.json(standardizedData);
     } catch (error) {
-        console.error("Portfolyo API hatası:", error);
+        console.error("Portfolyo API hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json({ error: "Veriler alınırken bir hata oluştu" }, { status: 500 });
     }
 }

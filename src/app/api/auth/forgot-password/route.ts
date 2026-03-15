@@ -125,7 +125,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ message: "Sıfırlama bağlantısı gönderildi" });
     } catch (error) {
-        console.error("Forgot password error:", error);
+        console.error("Forgot password error:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Bir hata oluştu. Lütfen daha sonra tekrar deneyin." },
             { status: 500 }

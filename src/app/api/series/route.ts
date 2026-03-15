@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { seriesSchema, seriesUpdateSchema, mediaStatusSchema, ratingSchema, notesSchema } from "@/lib/validations";
-import { checkRateLimit } from "@/lib/rate-limiter";
+import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
 export const dynamic = 'force-dynamic';
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(standardizedSeries);
     } catch (error) {
-        console.error("Dizi listesi hatası:", error);
+        console.error("Dizi listesi hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Diziler yüklenirken bir hata oluştu" },
             { status: 500 }
@@ -65,8 +65,8 @@ export async function POST(request: Request) {
         }
 
 
-        const clientIP = request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
-        const rateLimitResult = checkRateLimit(clientIP);
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
 
         if (!rateLimitResult.success) {
             return NextResponse.json(
@@ -175,7 +175,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json(standardizedResponse, { status: 201 });
     } catch (error) {
-        console.error("Dizi ekleme hatası:", error);
+        console.error("Dizi ekleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Dizi eklenirken bir hata oluştu" },
             { status: 500 }
@@ -275,7 +275,7 @@ export async function PUT(request: Request) {
 
         return NextResponse.json(standardizedResponse);
     } catch (error) {
-        console.error("Dizi güncelleme hatası:", error);
+        console.error("Dizi güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Dizi güncellenirken bir hata oluştu" },
             { status: 500 }
@@ -293,6 +293,10 @@ export async function PATCH(request: Request) {
 
         const body = await request.json();
         const { userSeriesId, status, rating, notes, seasonId, seasonStatus, isFavorite, lastSeason, lastEpisode } = body;
+
+        if (!userSeriesId || typeof userSeriesId !== "string") {
+            return NextResponse.json({ error: "Geçerli bir kayıt ID'si gereklidir" }, { status: 400 });
+        }
 
         if (status !== undefined) {
             const sv = mediaStatusSchema.safeParse(status);
@@ -379,7 +383,7 @@ export async function PATCH(request: Request) {
 
         return NextResponse.json(standardizedResponse);
     } catch (error) {
-        console.error("Dizi güncelleme hatası:", error);
+        console.error("Dizi güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Dizi güncellenirken bir hata oluştu" },
             { status: 500 }
@@ -411,7 +415,7 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error("Dizi silme hatası:", error);
+        console.error("Dizi silme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json(
             { error: "Dizi silinirken bir hata oluştu" },
             { status: 500 }

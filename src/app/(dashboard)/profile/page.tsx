@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,10 +20,12 @@ import { toast } from "sonner";
 import AnimatedPage from "@/components/layout/animated-page";
 
 
+// İzin verilen dosya tipleri ve maks boyut
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 
+// Dosya tipini magic number ile doğrulama
 const FILE_SIGNATURES: Record<string, number[]> = {
     "image/jpeg": [0xFF, 0xD8, 0xFF],
     "image/png": [0x89, 0x50, 0x4E, 0x47],
@@ -37,19 +39,29 @@ export default function ProfilePage() {
     const [isUpdating, setIsUpdating] = useState(false);
     const [stats, setStats] = useState<{ books: number; movies: number; series: number } | null>(null);
 
-    useState(() => {
-        // Gizlilik durumunu getir
+    useEffect(() => {
         fetch("/api/user/privacy")
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("Gizlilik bilgisi alınamadı");
+                return res.json();
+            })
             .then(data => setIsPrivate(data.isPrivate))
             .catch(() => setIsPrivate(false));
 
-        // İstatistikleri getir
         fetch("/api/user/stats")
-            .then(res => res.json())
-            .then(data => setStats(data))
+            .then(res => {
+                if (!res.ok) throw new Error("İstatistikler alınamadı");
+                return res.json();
+            })
+            .then(data => {
+                if (typeof data.books === "number" && typeof data.movies === "number" && typeof data.series === "number") {
+                    setStats(data);
+                } else {
+                    setStats({ books: 0, movies: 0, series: 0 });
+                }
+            })
             .catch(() => setStats({ books: 0, movies: 0, series: 0 }));
-    });
+    }, []);
 
     const togglePrivacy = async () => {
         if (isUpdating) return;

@@ -24,7 +24,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 const email = rawEmail.toLowerCase();
 
 
-                const lockoutStatus = checkLoginAttempt(email);
+                const lockoutStatus = await checkLoginAttempt(email);
                 if (lockoutStatus.locked) {
 
                     return null;
@@ -41,22 +41,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     }
                 });
 
-                if (!user || !user.passwordHash) {
+                // Timing Attack önlemi: Kullanıcı bulunamasa bile bcrypt.compare
+                // çalıştırılarak yanıt süresi sabitlenir.
+                const DUMMY_HASH = "$2b$10$tnwJkrdRvkJ49DvEzHFM..AQmt3BmTjccjU2Hx/CmWp8ALvMkkWwd6";
+                const hashToCompare = user?.passwordHash || DUMMY_HASH;
+                const passwordsMatch = await bcrypt.compare(password, hashToCompare);
 
-                    recordFailedLogin(email);
+                if (!user || !user.passwordHash || !passwordsMatch) {
+                    await recordFailedLogin(email);
                     return null;
                 }
 
-                const passwordsMatch = await bcrypt.compare(password, user.passwordHash);
 
-                if (!passwordsMatch) {
-
-                    recordFailedLogin(email);
-                    return null;
-                }
-
-
-                resetLoginAttempts(email);
+                await resetLoginAttempts(email);
 
                 return {
                     id: user.id,
