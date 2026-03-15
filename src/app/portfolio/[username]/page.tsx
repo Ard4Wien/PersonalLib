@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { BookOpen, Check, Film, Star, Tv, Lock, User } from "lucide-react";
+import { BookOpen, Check, Clock, Film, Star, Tv, Lock, User } from "lucide-react";
 import { getInitials, BACKGROUND_GRADIENT, getOptimizedImageUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -91,10 +91,10 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
     const movies = user.movies as any[];
     const series = user.series as any[];
 
-    const totalBooks = books.length;
-    const totalMovies = movies.length;
-    const totalSeries = series.length;
-    const totalContent = totalBooks + totalMovies + totalSeries;
+    const completedBooks = books.filter(b => b.status === "COMPLETED").length;
+    const completedMovies = movies.filter(m => m.status === "COMPLETED").length;
+    const completedSeries = series.filter(s => s.overallStatus === "COMPLETED").length;
+    const totalCompleted = completedBooks + completedMovies + completedSeries;
 
     const allFavorites = [
         ...books.filter(b => b.isFavorite).map(b => ({ ...b, type: 'book' as const })),
@@ -122,22 +122,22 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                     {/* Stats */}
                     <div className="flex justify-center gap-8 mt-6">
                         <div className="text-center">
-                            <div className="text-2xl font-bold text-foreground">{totalContent}</div>
+                            <div className="text-2xl font-bold text-foreground">{totalCompleted}</div>
                             <div className="text-sm text-muted-foreground">Tamamlanan</div>
                         </div>
                         <Separator orientation="vertical" className="h-12 bg-black/5 dark:bg-white/10" />
                         <div className="text-center">
-                            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalBooks}</div>
+                            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{completedBooks}</div>
                             <div className="text-sm text-muted-foreground">Kitap</div>
                         </div>
                         <Separator orientation="vertical" className="h-12 bg-black/5 dark:bg-white/10" />
                         <div className="text-center">
-                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{totalMovies}</div>
+                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{completedMovies}</div>
                             <div className="text-sm text-muted-foreground">Film</div>
                         </div>
                         <Separator orientation="vertical" className="h-12 bg-black/5 dark:bg-white/10" />
                         <div className="text-center">
-                            <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{totalSeries}</div>
+                            <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{completedSeries}</div>
                             <div className="text-sm text-muted-foreground">Dizi</div>
                         </div>
                     </div>
@@ -177,14 +177,14 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                         <Separator className="mt-12 bg-black/5 dark:bg-white/5" />
                     </div>
                 )}
-                {totalBooks > 0 && (
+                {books.length > 0 && (
                     <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 mb-8 shadow-sm">
                         <CardHeader>
                             <CardTitle className="text-foreground flex items-center gap-2">
                                 <BookOpen className="h-5 w-5 text-purple-500 dark:text-purple-400" />
                                 Okunan & Okunmakta Olan Kitaplar
                                 <Badge variant="secondary" className="ml-auto bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                                    {totalBooks}
+                                    {books.length}
                                 </Badge>
                             </CardTitle>
                         </CardHeader>
@@ -211,8 +211,8 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                                                 {userBook.book.author}
                                             </p>
                                         </div>
-                                        <Badge className={`absolute top-2 right-2 ${userBook.isFavorite ? 'bg-yellow-400 text-black' : 'bg-green-500/80 text-white'}`}>
-                                            {userBook.isFavorite ? <Star className="h-3 w-3 fill-current" /> : <Check className="h-3 w-3" />}
+                                        <Badge className={`absolute top-2 right-2 ${userBook.isFavorite ? 'bg-yellow-400 text-black' : userBook.status === 'READING' ? 'bg-blue-500/90 text-white' : 'bg-green-500/80 text-white'}`}>
+                                            {userBook.isFavorite ? <Star className="h-3 w-3 fill-current" /> : userBook.status === 'READING' ? <Clock className="h-3 w-3" /> : <Check className="h-3 w-3" />}
                                         </Badge>
                                     </div>
                                 ))}
@@ -222,14 +222,14 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                 )}
 
                 {/* Movies Section */}
-                {totalMovies > 0 && (
+                {movies.length > 0 && (
                     <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 mb-8 shadow-sm">
                         <CardHeader>
                             <CardTitle className="text-foreground flex items-center gap-2">
                                 <Film className="h-5 w-5 text-blue-500 dark:text-blue-400" />
                                 İzlenen & İzlenmekte Olan Filmler
                                 <Badge variant="secondary" className="ml-auto bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                    {totalMovies}
+                                    {movies.length}
                                 </Badge>
                             </CardTitle>
                         </CardHeader>
@@ -256,8 +256,8 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                                                 {userMovie.movie.director}
                                             </p>
                                         </div>
-                                        <Badge className={`absolute top-2 right-2 ${userMovie.isFavorite ? 'bg-yellow-400 text-black' : 'bg-green-500/80 text-white'}`}>
-                                            {userMovie.isFavorite ? <Star className="h-3 w-3 fill-current" /> : <Check className="h-3 w-3" />}
+                                        <Badge className={`absolute top-2 right-2 ${userMovie.isFavorite ? 'bg-yellow-400 text-black' : userMovie.status === 'WATCHING' ? 'bg-blue-500/90 text-white' : 'bg-green-500/80 text-white'}`}>
+                                            {userMovie.isFavorite ? <Star className="h-3 w-3 fill-current" /> : userMovie.status === 'WATCHING' ? <Clock className="h-3 w-3" /> : <Check className="h-3 w-3" />}
                                         </Badge>
                                     </div>
                                 ))}
@@ -267,14 +267,14 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                 )}
 
                 {/* Series Section */}
-                {totalSeries > 0 && (
+                {series.length > 0 && (
                     <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-sm">
                         <CardHeader>
                             <CardTitle className="text-foreground flex items-center gap-2">
                                 <Tv className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
                                 İzlenen & İzlenmekte Olan Diziler
                                 <Badge variant="secondary" className="ml-auto bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
-                                    {totalSeries}
+                                    {series.length}
                                 </Badge>
                             </CardTitle>
                         </CardHeader>
@@ -301,8 +301,8 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                                                 {userSeries.series.creator}
                                             </p>
                                         </div>
-                                        <Badge className={`absolute top-2 right-2 ${userSeries.isFavorite ? 'bg-yellow-400 text-black' : 'bg-green-500/80 text-white'}`}>
-                                            {userSeries.isFavorite ? <Star className="h-3 w-3 fill-current" /> : <Check className="h-3 w-3" />}
+                                        <Badge className={`absolute top-2 right-2 ${userSeries.isFavorite ? 'bg-yellow-400 text-black' : userSeries.overallStatus === 'WATCHING' ? 'bg-blue-500/90 text-white' : 'bg-green-500/80 text-white'}`}>
+                                            {userSeries.isFavorite ? <Star className="h-3 w-3 fill-current" /> : userSeries.overallStatus === 'WATCHING' ? <Clock className="h-3 w-3" /> : <Check className="h-3 w-3" />}
                                         </Badge>
                                     </div>
                                 ))}
@@ -312,7 +312,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                 )}
 
                 {/* Empty State */}
-                {totalContent === 0 && (
+                {(books.length + movies.length + series.length) === 0 && (
                     <div className="text-center py-20">
                         <div className="text-6xl mb-4">📭</div>
                         <p className="text-muted-foreground text-lg">
