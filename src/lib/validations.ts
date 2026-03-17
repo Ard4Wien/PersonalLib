@@ -38,8 +38,8 @@ export const registerSchema = z.object({
         .min(8, "Şifre en az 8 karakter olmalıdır")
         .max(100, "Şifre en fazla 100 karakter olabilir")
         .regex(
-            /^(?=.*[a-zA-Z])(?=.*\d)/,
-            "Şifre en az bir harf ve bir rakam içermelidir"
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d])/,
+            "Şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir"
         ),
 });
 
@@ -121,8 +121,8 @@ export const changePasswordSchema = z.object({
         .min(8, "Yeni şifre en az 8 karakter olmalıdır")
         .max(100, "Yeni şifre en fazla 100 karakter olabilir")
         .regex(
-            /^(?=.*[a-zA-Z])(?=.*\d)/,
-            "Yeni şifre en az bir harf ve bir rakam içermelidir"
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d])/,
+            "Yeni şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir"
         ),
     confirmPassword: z.string().min(1, "Şifre onayı gereklidir"),
 }).refine((data) => data.newPassword === data.confirmPassword, {

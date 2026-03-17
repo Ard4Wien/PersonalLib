@@ -139,6 +139,14 @@ export default function RegisterPage() {
         };
 
         const confirmPassword = formData.get("confirmPassword") as string;
+        const password = data.password;
+
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d])/;
+        if (!passwordRegex.test(password)) {
+            setError("Şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir.");
+            setIsLoading(false);
+            return;
+        }
 
         if (data.username.length < 4 || data.username.length > 12) {
             setError("Kullanıcı adı 4 ile 12 karakter arasında olmalıdır");
@@ -393,8 +401,8 @@ export default function RegisterPage() {
                                     onTogglePassword={() => setShowPasswords(!showPasswords)}
                                     className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
                                 />
-                                <p className="text-[10px] text-gray-500 mt-1 pl-1">
-                                    En az 8 karakter olmalıdır.
+                                <p className="text-[10px] text-gray-500 mt-1 pl-1 leading-relaxed">
+                                    En az 8 karakter, bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir.
                                 </p>
                             </div>
 
