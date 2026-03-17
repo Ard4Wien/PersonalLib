@@ -65,7 +65,7 @@ export default function StatusButton({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-10 w-10 md:h-8 md:w-8 bg-black/40 dark:bg-black/40 hover:bg-black/60 dark:hover:bg-black/60 text-white backdrop-blur-md shadow-lg border border-white/10"
+                        className="h-10 w-10 md:h-8 md:w-8 bg-black/10 dark:bg-black/40 hover:bg-black/20 dark:hover:bg-black/60 text-foreground dark:text-white backdrop-blur-md shadow-lg border border-black/5 dark:border-white/10"
                     >
                         <MoreVertical className="h-5 w-5 md:h-4 md:w-4" />
                     </Button>

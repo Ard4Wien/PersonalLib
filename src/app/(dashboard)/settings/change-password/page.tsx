@@ -69,7 +69,7 @@ export default function ChangePasswordPage() {
                     variant="ghost"
                     size="sm"
                     asChild
-                    className="mb-6 text-gray-400 hover:text-white"
+                    className="mb-6 text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 >
                     <Link href="/books">
                         <ChevronLeft className="mr-2 h-4 w-4" />
@@ -77,26 +77,26 @@ export default function ChangePasswordPage() {
                     </Link>
                 </Button>
 
-                <Card className="bg-slate-900/50 border-white/10 backdrop-blur-xl">
+                <Card className="bg-white dark:bg-slate-950/50 border-black/5 dark:border-white/10 backdrop-blur-xl shadow-xl">
                     <CardHeader className="space-y-1">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400">
                                 <Lock className="h-5 w-5" />
                             </div>
-                            <CardTitle className="text-2xl text-white">Şifre Değiştir</CardTitle>
+                            <CardTitle className="text-2xl text-foreground">Şifre Değiştir</CardTitle>
                         </div>
-                        <CardDescription className="text-gray-400">
+                        <CardDescription className="text-muted-foreground">
                             Hesabınızın güvenliği için şifrenizi buradan güncelleyebilirsiniz.
                         </CardDescription>
                     </CardHeader>
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="currentPassword" title="Mevcut Şifre" className="text-gray-300">Mevcut Şifre</Label>
+                                <Label htmlFor="currentPassword" title="Mevcut Şifre" className="text-foreground/80">Mevcut Şifre</Label>
                                 <PasswordInput
                                     id="currentPassword"
                                     placeholder="••••••••"
-                                    className="bg-white/5 border-white/10 text-white focus:border-purple-500"
+                                    className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-foreground dark:text-white focus:border-purple-500"
                                     showPassword={showPasswords}
                                     onTogglePassword={() => setShowPasswords(!showPasswords)}
                                     {...register("currentPassword")}
@@ -106,14 +106,14 @@ export default function ChangePasswordPage() {
                                 )}
                             </div>
 
-                            <DropdownMenuSeparator className="bg-white/5 !my-6" />
+                            <DropdownMenuSeparator className="bg-black/5 dark:bg-white/5 !my-6" />
 
                             <div className="space-y-2">
-                                <Label htmlFor="newPassword" title="Yeni Şifre" className="text-gray-300">Yeni Şifre</Label>
+                                <Label htmlFor="newPassword" title="Yeni Şifre" className="text-foreground/80">Yeni Şifre</Label>
                                 <PasswordInput
                                     id="newPassword"
                                     placeholder="••••••••"
-                                    className="bg-white/5 border-white/10 text-white focus:border-purple-500"
+                                    className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-foreground dark:text-white focus:border-purple-500"
                                     showPassword={showPasswords}
                                     onTogglePassword={() => setShowPasswords(!showPasswords)}
                                     {...register("newPassword")}
@@ -130,11 +130,11 @@ export default function ChangePasswordPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="confirmPassword" title="Yeni Şifre (Tekrar)" className="text-gray-300">Yeni Şifre (Tekrar)</Label>
+                                <Label htmlFor="confirmPassword" title="Yeni Şifre (Tekrar)" className="text-foreground/80">Yeni Şifre (Tekrar)</Label>
                                 <PasswordInput
                                     id="confirmPassword"
                                     placeholder="••••••••"
-                                    className="bg-white/5 border-white/10 text-white focus:border-purple-500"
+                                    className="bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-foreground dark:text-white focus:border-purple-500"
                                     showPassword={showPasswords}
                                     onTogglePassword={() => setShowPasswords(!showPasswords)}
                                     {...register("confirmPassword")}

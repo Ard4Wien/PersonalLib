@@ -754,7 +754,6 @@ export default function MoviesPage() {
                         </DialogContent>
                     </Dialog>
 
-                    {/* Film Düzenle Dialog */}
                     <Dialog open={isMovieEditDialogOpen} onOpenChange={(open) => { setIsMovieEditDialogOpen(open); if (!open) setEditingMovie(null); }}>
                         <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                             <DialogHeader>
@@ -814,9 +813,9 @@ export default function MoviesPage() {
 
                     {/* Dizi Düzenle Dialog */}
                     <Dialog open={isSeriesEditDialogOpen} onOpenChange={(open) => { setIsSeriesEditDialogOpen(open); if (!open) setEditingSeries(null); }}>
-                        <DialogContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                        <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                             <DialogHeader>
-                                <DialogTitle className="text-white">Diziyi Düzenle</DialogTitle>
+                                <DialogTitle className="text-foreground dark:text-white">Diziyi Düzenle</DialogTitle>
                                 <DialogDescription className="sr-only">
                                     Seçili dizinin bilgilerini ve izleme durumunu güncelleyin.
                                 </DialogDescription>
@@ -824,38 +823,38 @@ export default function MoviesPage() {
                             {editingSeries && (
                                 <form onSubmit={handleEditSeries} className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-series-title" className="text-gray-300">Dizi Adı *</Label>
-                                        <Input id="edit-series-title" name="title" required defaultValue={editingSeries.title} className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="edit-series-title" className="text-muted-foreground">Dizi Adı *</Label>
+                                        <Input id="edit-series-title" name="title" required defaultValue={editingSeries.title} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-series-creator" className="text-gray-300">Yapımcı</Label>
-                                        <Input id="edit-series-creator" name="creator" defaultValue={editingSeries.subtitle} className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="edit-series-creator" className="text-muted-foreground">Yapımcı</Label>
+                                        <Input id="edit-series-creator" name="creator" defaultValue={editingSeries.subtitle} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-series-cover" className="text-gray-300">Kapak Görseli URL</Label>
-                                        <Input id="edit-series-cover" name="coverImage" type="url" defaultValue={editingSeries.image || editingSeries.coverImage || ""} className="bg-white/5 border-white/10 text-white" />
+                                        <Label htmlFor="edit-series-cover" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                        <Input id="edit-series-cover" name="coverImage" type="url" defaultValue={editingSeries.image || editingSeries.coverImage || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="edit-series-genre" className="text-gray-300">Tür</Label>
-                                            <Input id="edit-series-genre" name="genre" defaultValue={editingSeries.genre || editingSeries.series?.genre || ""} className="bg-white/5 border-white/10 text-white" />
+                                            <Label htmlFor="edit-series-genre" className="text-muted-foreground">Tür</Label>
+                                            <Input id="edit-series-genre" name="genre" defaultValue={editingSeries.genre || editingSeries.series?.genre || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="edit-series-seasons" className="text-gray-300">Sezon Sayısı</Label>
-                                            <Input id="edit-series-seasons" name="totalSeasons" type="number" min="1" defaultValue={editingSeries.series?.totalSeasons || 1} className="bg-white/5 border-white/10 text-white" />
+                                            <Label htmlFor="edit-series-seasons" className="text-muted-foreground">Sezon Sayısı</Label>
+                                            <Input id="edit-series-seasons" name="totalSeasons" type="number" min="1" defaultValue={editingSeries.series?.totalSeasons || 1} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-gray-300">Durum</Label>
+                                        <Label className="text-muted-foreground">Durum</Label>
                                         <Select value={editSeriesStatus} onValueChange={setEditSeriesStatus}>
-                                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                                            <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                                 <SelectValue />
                                             </SelectTrigger>
-                                            <SelectContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                                            <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                                                 {statusOptions.slice(0, 3).map((option) => {
                                                     const Icon = option.icon;
                                                     return (
-                                                        <SelectItem key={option.value} value={option.value} className="text-white hover:bg-white/10 focus:bg-white/10">
+                                                        <SelectItem key={option.value} value={option.value} className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10">
                                                             <div className="flex items-center gap-2">
                                                                 <Icon className={`h-4 w-4 ${option.color}`} />
                                                                 <span>{option.label}</span>
@@ -870,25 +869,25 @@ export default function MoviesPage() {
                                     {(editSeriesStatus === "WATCHING" || editSeriesStatus === "DROPPED") && (
                                         <div className="grid grid-cols-2 gap-4 pt-2">
                                             <div className="space-y-2">
-                                                <Label htmlFor="edit-series-last-season" className="text-gray-300">Kaldığım Sezon</Label>
+                                                <Label htmlFor="edit-series-last-season" className="text-muted-foreground">Kaldığım Sezon</Label>
                                                 <Input
                                                     id="edit-series-last-season"
                                                     type="number"
                                                     min="1"
                                                     value={editSeriesSeason}
                                                     onChange={(e) => setEditSeriesSeason(e.target.value)}
-                                                    className="bg-white/5 border-white/10 text-white"
+                                                    className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="edit-series-last-episode" className="text-gray-300">Kaldığım Bölüm</Label>
+                                                <Label htmlFor="edit-series-last-episode" className="text-muted-foreground">Kaldığım Bölüm</Label>
                                                 <Input
                                                     id="edit-series-last-episode"
                                                     type="number"
                                                     min="1"
                                                     value={editSeriesEpisode}
                                                     onChange={(e) => setEditSeriesEpisode(e.target.value)}
-                                                    className="bg-white/5 border-white/10 text-white"
+                                                    className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white"
                                                 />
                                             </div>
                                         </div>
@@ -908,16 +907,16 @@ export default function MoviesPage() {
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                    <TabsList className="bg-white/5 border border-white/10 w-full md:w-auto justify-start overflow-x-auto">
-                        <TabsTrigger value="all" className="flex-1 md:flex-none data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 text-xs md:text-sm text-gray-300 data-[state=active]:text-white hover:text-white">
+                    <TabsList className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 w-full md:w-auto justify-start overflow-x-auto">
+                        <TabsTrigger value="all" className="flex-1 md:flex-none data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 text-xs md:text-sm text-foreground dark:text-white data-[state=active]:text-white hover:text-white">
                             <Film className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
                             Tümü ({movies.length + series.length})
                         </TabsTrigger>
-                        <TabsTrigger value="movies" className="flex-1 md:flex-none data-[state=active]:bg-blue-600 text-xs md:text-sm text-gray-300 data-[state=active]:text-white hover:text-white">
+                        <TabsTrigger value="movies" className="flex-1 md:flex-none data-[state=active]:bg-blue-600 text-xs md:text-sm text-foreground dark:text-white data-[state=active]:text-white hover:text-white">
                             <Clapperboard className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
                             Filmler
                         </TabsTrigger>
-                        <TabsTrigger value="series" className="flex-1 md:flex-none data-[state=active]:bg-purple-600 text-xs md:text-sm text-gray-300 data-[state=active]:text-white hover:text-white">
+                        <TabsTrigger value="series" className="flex-1 md:flex-none data-[state=active]:bg-purple-600 text-xs md:text-sm text-foreground dark:text-white data-[state=active]:text-white hover:text-white">
                             <Tv className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
                             Diziler
                         </TabsTrigger>
@@ -926,14 +925,14 @@ export default function MoviesPage() {
                     {/* Status Filter */}
                     <div className="hidden md:block">
                         <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white text-sm">
+                            <SelectTrigger className="w-[180px] bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-foreground dark:text-white text-sm">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
+                            <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                                 {filterOptions.map((option) => {
                                     const Icon = option.icon;
                                     return (
-                                        <SelectItem key={option.value} value={option.value} className="text-white hover:bg-white/10 focus:bg-white/10">
+                                        <SelectItem key={option.value} value={option.value} className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10">
                                             <div className="flex items-center gap-2">
                                                 <Icon className={`h-4 w-4 ${option.color}`} />
                                                 <span>{option.label}</span>

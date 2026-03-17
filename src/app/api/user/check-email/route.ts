@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
-import { isValidUsername } from "@/lib/profanity";
 
 export const dynamic = 'force-dynamic';
 
@@ -18,28 +17,20 @@ export async function GET(request: Request) {
         }
 
         const { searchParams } = new URL(request.url);
-        const username = searchParams.get("username")?.toLowerCase();
+        const email = searchParams.get("email")?.toLowerCase();
 
-        if (!username || username.length < 4) {
-            return NextResponse.json({ available: false, error: "Geçersiz kullanıcı adı" }, { status: 400 });
-        }
-
-        // Küfür ve rezerve kelime kontrolü
-        if (!isValidUsername(username)) {
-            return NextResponse.json({ 
-                available: false, 
-                error: "Bu kullanıcı adı kullanılamaz veya uygunsuz içerik barındırıyor" 
-            });
+        if (!email) {
+            return NextResponse.json({ available: false, error: "Geçersiz e-posta" }, { status: 400 });
         }
 
         const existingUser = await prisma.user.findUnique({
-            where: { username },
+            where: { email },
             select: { id: true }
         });
 
         return NextResponse.json({ available: !existingUser });
     } catch (error) {
-        console.error("Username check error:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Email check error:", error instanceof Error ? error.message : "Bilinmeyen hata");
         return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
     }
 }

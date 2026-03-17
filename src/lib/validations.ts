@@ -7,7 +7,7 @@ export const registerSchema = z.object({
     username: z
         .string()
         .min(4, "Kullanıcı adı en az 4 karakter olmalıdır")
-        .max(10, "Kullanıcı adı en fazla 10 karakter olabilir")
+        .max(12, "Kullanıcı adı en fazla 12 karakter olabilir")
         .regex(
             /^[a-z0-9_]+$/,
             "Kullanıcı adı sadece küçük harf, rakam ve alt çizgi içerebilir"
@@ -24,8 +24,8 @@ export const registerSchema = z.object({
         .min(2, "Görünen ad en az 2 karakter olmalıdır")
         .max(50, "Görünen ad en fazla 50 karakter olabilir")
         .regex(
-            /^[a-zA-ZğüşıöçĞÜŞİÖÇ0-9\s]+$/,
-            "Görünen ad sadece harf, rakam ve boşluk içerebilir"
+            /^[a-zA-ZğüşıöçĞÜŞİÖÇ\s]+$/,
+            "Görünen ad sadece harf ve boşluk içerebilir"
         )
         .refine((val) => !/^\d+$/.test(val), {
             message: "Görünen ad sadece rakamlardan oluşamaz",

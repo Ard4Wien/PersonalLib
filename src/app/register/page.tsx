@@ -20,21 +20,31 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { BACKGROUND_GRADIENT } from "@/lib/utils";
 
 import { motion } from "framer-motion";
+import { containsProfanity } from "@/lib/profanity";
 
 export default function RegisterPage() {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [showPasswords, setShowPasswords] = useState(false);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [email, setEmail] = useState("");
     const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
     const [username, setUsername] = useState("");
+    const [displayName, setDisplayName] = useState("");
     const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
     const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+    const [usernameCharError, setUsernameCharError] = useState<string | null>(null);
+    const [displayNameCharError, setDisplayNameCharError] = useState<string | null>(null);
+    const [usernameCheckError, setUsernameCheckError] = useState<string | null>(null);
+    const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
+    const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+    const [emailCheckError, setEmailCheckError] = useState<string | null>(null);
 
     useEffect(() => {
         if (username.length < 4) {
             setUsernameAvailable(null);
+            setUsernameCheckError(null);
             return;
         }
 
@@ -44,8 +54,10 @@ export default function RegisterPage() {
                 const res = await fetch(`/api/user/check-username?username=${encodeURIComponent(username)}`);
                 const data = await res.json();
                 setUsernameAvailable(data.available);
+                setUsernameCheckError(data.error || null);
             } catch (err) {
                 console.error("Check username error:", err);
+                setUsernameCheckError("Sunucu hatası");
             } finally {
                 setIsCheckingUsername(false);
             }
@@ -54,10 +66,68 @@ export default function RegisterPage() {
         return () => clearTimeout(timer);
     }, [username]);
 
+    useEffect(() => {
+        // Basit e-posta format kontrolü
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !emailRegex.test(email)) {
+            setEmailAvailable(null);
+            setEmailCheckError(null);
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            setIsCheckingEmail(true);
+            try {
+                const res = await fetch(`/api/user/check-email?email=${encodeURIComponent(email)}`);
+                const data = await res.json();
+                setEmailAvailable(data.available);
+                setEmailCheckError(data.error || null);
+            } catch (err) {
+                console.error("Check email error:", err);
+                setEmailCheckError("Sunucu hatası");
+            } finally {
+                setIsCheckingEmail(false);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [email]);
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(null);
         setEmailSuggestion(null);
+
+        if (!agreedToTerms) {
+            setError("Devam etmek için Kullanım Koşullarını ve Gizlilik Politikasını kabul etmelisiniz.");
+            return;
+        }
+
+        if (/[^a-zA-ZğüşıöçĞÜŞİÖÇ\s]/.test(displayName)) {
+            setError("Görünen adda özel karakter veya sayı bulunamaz.");
+            return;
+        }
+
+        if (containsProfanity(displayName)) {
+            setError("Görünen ad uygunsuz içerik barındıramaz.");
+            return;
+        }
+
+        if (/[^a-z0-9_]/.test(username)) {
+            setError("Kullanıcı adında özel karakter bulunamaz.");
+            return;
+        }
+
+        if (emailAvailable === false) {
+            setError("Bu e-posta adresi zaten kullanımda.");
+            return;
+        }
+
+        if (usernameAvailable === false) {
+            setError("Bu kullanıcı adı zaten alınmış.");
+            return;
+        }
+
         setIsLoading(true);
 
         const formData = new FormData(e.currentTarget);
@@ -70,8 +140,8 @@ export default function RegisterPage() {
 
         const confirmPassword = formData.get("confirmPassword") as string;
 
-        if (data.username.length < 4 || data.username.length > 10) {
-            setError("Kullanıcı adı 4 ile 10 karakter arasında olmalıdır");
+        if (data.username.length < 4 || data.username.length > 12) {
+            setError("Kullanıcı adı 4 ile 12 karakter arasında olmalıdır");
             setIsLoading(false);
             return;
         }
@@ -188,8 +258,23 @@ export default function RegisterPage() {
                                         type="text"
                                         placeholder="Adınız Soyadınız"
                                         required
+                                        value={displayName}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setDisplayName(val);
+                                            if (/[^a-zA-ZğüşıöçĞÜŞİÖÇ\s]/.test(val)) {
+                                                setDisplayNameCharError("Özel karakter veya sayı kullanılamaz.");
+                                            } else if (containsProfanity(val)) {
+                                                setDisplayNameCharError("Görünen ad uygunsuz içerik barındıramaz.");
+                                            } else {
+                                                setDisplayNameCharError(null);
+                                            }
+                                        }}
                                         className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
                                     />
+                                    {displayNameCharError && (
+                                        <p className="text-[10px] text-red-500 mt-1 pl-1">{displayNameCharError}</p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -207,28 +292,35 @@ export default function RegisterPage() {
                                             autoCorrect="off"
                                             spellCheck="false"
                                             value={username}
-                                            onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                                            onChange={(e) => {
+                                                const val = e.target.value.toLowerCase();
+                                                setUsername(val);
+                                                if (/[^a-z0-9_]/.test(val)) {
+                                                    setUsernameCharError("Sadece küçük harf, rakam ve _ kullanılabilir");
+                                                } else {
+                                                    setUsernameCharError(null);
+                                                }
+                                            }}
                                             className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
                                         />
                                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                            {isCheckingUsername ? (
+                                            {isCheckingUsername && (
                                                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                            ) : usernameAvailable === true ? (
-                                                <span className="text-green-500 text-xs font-bold">✓</span>
-                                            ) : usernameAvailable === false ? (
-                                                <span className="text-red-500 text-xs font-bold">✕</span>
-                                            ) : null}
+                                            )}
                                         </div>
                                     </div>
-                                    {usernameAvailable === false && (
+                                    {!usernameCharError && usernameCheckError && (
                                         <p className="text-[10px] text-red-500 mt-1 pl-1">
-                                            Bu kullanıcı adı zaten alınmış.
+                                            {usernameCheckError}
                                         </p>
                                     )}
-                                    {usernameAvailable === true && (
+                                    {!usernameCharError && !usernameCheckError && usernameAvailable === true && (
                                         <p className="text-[10px] text-green-500 mt-1 pl-1">
                                             Bu kullanıcı adı müsait!
                                         </p>
+                                    )}
+                                    {usernameCharError && (
+                                        <p className="text-[10px] text-red-500 mt-1 pl-1">{usernameCharError}</p>
                                     )}
                                 </div>
                             </div>
@@ -237,22 +329,39 @@ export default function RegisterPage() {
                                 <Label htmlFor="email" className="text-muted-foreground">
                                     E-posta
                                 </Label>
-                                <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    placeholder="ornek@email.com"
-                                    required
-                                    autoCapitalize="none"
-                                    autoCorrect="off"
-                                    spellCheck="false"
-                                    value={email}
-                                    onChange={(e) => {
-                                        setEmail(e.target.value);
-                                        setEmailSuggestion(null);
-                                    }}
-                                    className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
-                                />
+                                    <div className="relative">
+                                        <Input
+                                            id="email"
+                                            name="email"
+                                            type="email"
+                                            placeholder="ornek@email.com"
+                                            required
+                                            autoCapitalize="none"
+                                            autoCorrect="off"
+                                            spellCheck="false"
+                                            value={email}
+                                            onChange={(e) => {
+                                                setEmail(e.target.value);
+                                                setEmailSuggestion(null);
+                                            }}
+                                            className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
+                                        />
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                            {isCheckingEmail && (
+                                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                            )}
+                                        </div>
+                                    </div>
+                                    {emailCheckError && (
+                                        <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                            {emailCheckError}
+                                        </p>
+                                    )}
+                                    {emailAvailable === false && !emailCheckError && (
+                                        <p className="text-[10px] text-red-500 mt-1 pl-1">
+                                            Bu e-posta adresi zaten kullanımda.
+                                        </p>
+                                    )}
                                 {emailSuggestion && (
                                     <div className="mt-2 p-2 rounded bg-purple-500/10 border border-purple-500/20 text-[11px]">
                                         <span className="text-muted-foreground">Bunu mu demek istediniz? </span>
@@ -304,6 +413,21 @@ export default function RegisterPage() {
                                     className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
                                 />
                             </div>
+                            <div className="flex items-start gap-2 pt-2">
+                                <input
+                                    type="checkbox"
+                                    id="terms"
+                                    checked={agreedToTerms}
+                                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                                    className="mt-1 h-4 w-4 rounded border-zinc-300 dark:border-zinc-600 text-purple-600 focus:ring-purple-500 cursor-pointer accent-purple-600"
+                                />
+                                <label htmlFor="terms" className="text-xs text-muted-foreground cursor-pointer select-none leading-relaxed">
+                                    <Link href="/terms" target="_blank" className="text-purple-600 dark:text-purple-400 hover:underline">Kullanım Koşullarını</Link>
+                                    {" "}ve{" "}
+                                    <Link href="/privacy" target="_blank" className="text-purple-600 dark:text-purple-400 hover:underline">Gizlilik Politikasını</Link>
+                                    {" "}okudum ve kabul ediyorum.
+                                </label>
+                            </div>
                         </CardContent>
 
                         <CardFooter className="flex flex-col gap-4 pt-6">
@@ -336,8 +460,13 @@ export default function RegisterPage() {
                 </Card>
             </motion.div>
 
-            <footer className="mt-8 mb-8 relative z-10 text-muted-foreground text-sm">
-                PersonalLib ile oluşturuldu 📚🎬
+            <footer className="mt-8 mb-8 relative z-10 text-center space-y-2">
+                <p className="text-muted-foreground text-sm">PersonalLib ile oluşturuldu 📚🎬</p>
+                <div className="flex justify-center gap-3 text-xs text-muted-foreground/70">
+                    <Link href="/terms" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors hover:underline">Kullanım Koşulları</Link>
+                    <span>•</span>
+                    <Link href="/privacy" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors hover:underline">Gizlilik Politikası</Link>
+                </div>
             </footer>
         </div>
     );

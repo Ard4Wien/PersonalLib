@@ -176,8 +176,13 @@ export default function LoginPage() {
                 </Card>
             </motion.div>
 
-            <footer className="mt-8 relative z-10 text-muted-foreground text-sm">
-                PersonalLib ile oluşturuldu 📚🎬
+            <footer className="mt-8 relative z-10 text-center space-y-2">
+                <p className="text-muted-foreground text-sm">PersonalLib ile oluşturuldu 📚🎬</p>
+                <div className="flex justify-center gap-3 text-xs text-muted-foreground/70">
+                    <Link href="/terms" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors hover:underline">Kullanım Koşulları</Link>
+                    <span>•</span>
+                    <Link href="/privacy" className="hover:text-purple-600 dark:hover:text-purple-400 transition-colors hover:underline">Gizlilik Politikası</Link>
+                </div>
             </footer>
         </div>
     );
