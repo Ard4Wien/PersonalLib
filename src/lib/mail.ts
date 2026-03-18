@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+// Central mail utility using Brevo SMTP relay
 
 const transporter = nodemailer.createTransport({
     host: process.env.BREVO_SMTP_HOST || "smtp-relay.brevo.com",
