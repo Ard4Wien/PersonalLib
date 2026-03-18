@@ -28,6 +28,7 @@ function ResetPasswordForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         if (!token) {
@@ -50,8 +51,27 @@ function ResetPasswordForm() {
             return;
         }
 
-        if (password.length < 6) {
-            setError("Şifre en az 6 karakter olmalıdır");
+        // Şifre Güvenlik Kontrolleri
+        if (password.length < 8) {
+            setError("Şifre en az 8 karakter olmalıdır");
+            setIsLoading(false);
+            return;
+        }
+
+        if (!/[A-Z]/.test(password)) {
+            setError("Şifre en az bir büyük harf içermelidir");
+            setIsLoading(false);
+            return;
+        }
+
+        if (!/[0-9]/.test(password)) {
+            setError("Şifre en az bir rakam içermelidir");
+            setIsLoading(false);
+            return;
+        }
+
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            setError("Şifre en az bir özel karakter içermelidir");
             setIsLoading(false);
             return;
         }
@@ -126,8 +146,13 @@ function ResetPasswordForm() {
                                 name="password"
                                 placeholder="••••••••"
                                 required
+                                showPassword={showPassword}
+                                onTogglePassword={() => setShowPassword(!showPassword)}
                                 className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
                             />
+                            <p className="text-[11px] text-muted-foreground/70 px-1 italic">
+                                * En az 8 karakter, bir büyük harf, bir rakam ve bir özel karakter içermelidir.
+                            </p>
                         </div>
 
                         <div className="space-y-2">
@@ -139,6 +164,8 @@ function ResetPasswordForm() {
                                 name="confirmPassword"
                                 placeholder="••••••••"
                                 required
+                                showPassword={showPassword}
+                                onTogglePassword={() => setShowPassword(!showPassword)}
                                 className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
                             />
                         </div>
