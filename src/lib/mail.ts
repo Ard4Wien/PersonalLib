@@ -1,21 +1,21 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-    host: process.env.BREVO_SMTP_HOST || "smtp-relay.brevo.com",
-    port: parseInt(process.env.BREVO_SMTP_PORT || "587"),
-    secure: false, // true for 465, false for other ports
-    auth: {
-        user: process.env.BREVO_SMTP_USER,
-        pass: process.env.BREVO_SMTP_KEY,
-    },
+  host: process.env.BREVO_SMTP_HOST || "smtp-relay.brevo.com",
+  port: parseInt(process.env.BREVO_SMTP_PORT || "587"),
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.BREVO_SMTP_USER,
+    pass: process.env.BREVO_SMTP_KEY,
+  },
 });
 
 export const sendPasswordResetEmail = async (email: string, resetUrl: string) => {
-    const mailOptions = {
-        from: `"PersonalLib" <${process.env.BREVO_SMTP_USER}>`,
-        to: email,
-        subject: "Şifre Sıfırlama İsteği",
-        html: `
+  const mailOptions = {
+    from: `"PersonalLib" <${process.env.BREVO_SENDER_EMAIL || "personallibinfo@gmail.com"}>`,
+    to: email,
+    subject: "Şifre Sıfırlama İsteği",
+    html: `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: auto; padding: 40px; border-radius: 16px; background-color: #ffffff; color: #1f2937; shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
           <div style="text-align: center; margin-bottom: 32px;">
             <h1 style="color: #8b5cf6; margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.025em;">PersonalLib</h1>
@@ -38,7 +38,7 @@ export const sendPasswordResetEmail = async (email: string, resetUrl: string) =>
           <p style="font-size: 12px; color: #9ca3af; text-align: center; margin: 0;">Bu e-posta otomatik olarak gönderilmiştir, lütfen yanıtlamayın.</p>
         </div>
       `,
-    };
+  };
 
-    return await transporter.sendMail(mailOptions);
+  return await transporter.sendMail(mailOptions);
 };
