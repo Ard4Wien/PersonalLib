@@ -34,9 +34,9 @@ export async function POST(request: Request) {
             }
         });
 
-        if (ipAttempts >= 3) {
+        if (ipAttempts >= 5) {
             return NextResponse.json(
-                { error: "Bu cihazdan günlük sıfırlama limitine ulaştınız (Maks 3). Lütfen yarın tekrar deneyin." },
+                { error: "Bu cihazdan günlük sıfırlama limitine ulaştınız (Maks 5). Lütfen yarın tekrar deneyin." },
                 { status: 429 }
             );
         }
@@ -49,9 +49,9 @@ export async function POST(request: Request) {
             }
         });
 
-        if (emailAttempts >= 3) {
+        if (emailAttempts >= 5) {
             return NextResponse.json(
-                { error: "Bu e-posta adresi için günlük sıfırlama limitine ulaşıldı (Maks 3). Lütfen yarın tekrar deneyin." },
+                { error: "Bu e-posta adresi için günlük sıfırlama limitine ulaşıldı (Maks 5). Lütfen yarın tekrar deneyin." },
                 { status: 429 }
             );
         }
