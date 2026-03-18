@@ -34,9 +34,9 @@ export async function POST(request: Request) {
             }
         });
 
-        if (ipAttempts >= 3) {
+        if (ipAttempts >= 999) {
             return NextResponse.json(
-                { error: "Bu cihazdan günlük sıfırlama limitine ulaştınız (Maks 3). Lütfen yarın tekrar deneyin." },
+                { error: "Bu cihazdan günlük sıfırlama limitine ulaştınız. Lütfen yarın tekrar deneyin." },
                 { status: 429 }
             );
         }
@@ -49,9 +49,9 @@ export async function POST(request: Request) {
             }
         });
 
-        if (emailAttempts >= 3) {
+        if (emailAttempts >= 999) {
             return NextResponse.json(
-                { error: "Bu e-posta adresi için günlük sıfırlama limitine ulaşıldı (Maks 3). Lütfen yarın tekrar deneyin." },
+                { error: "Bu e-posta adresi için günlük sıfırlama limitine ulaşıldı. Lütfen yarın tekrar deneyin." },
                 { status: 429 }
             );
         }
@@ -97,9 +97,10 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ message: "Sıfırlama bağlantısı gönderildi" });
     } catch (error) {
-        console.error("Forgot password error:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        const errorMessage = error instanceof Error ? error.message : "Bilinmeyen hata";
+        console.error("Forgot password error:", errorMessage);
         return NextResponse.json(
-            { error: "Bir hata oluştu. Lütfen daha sonra tekrar deneyin." },
+            { error: `Hata: ${errorMessage}` },
             { status: 500 }
         );
     }
