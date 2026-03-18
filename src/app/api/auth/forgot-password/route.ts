@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
+import { sendPasswordResetEmail } from "@/lib/mail";
 
 export async function POST(request: Request) {
     try {
@@ -92,36 +92,8 @@ export async function POST(request: Request) {
         });
 
 
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
-
-        const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${rawToken}`;
-
-        const mailOptions = {
-            from: `"PersonalLib" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: "Şifre Sıfırlama İsteği",
-            html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; background-color: #ffffff; color: #333333;">
-          <h2 style="color: #2563eb; text-align: center;">Şifre Sıfırlama</h2>
-          <p>Merhaba,</p>
-          <p>Hesabınız için bir şifre sıfırlama talebi aldık. Şifrenizi sıfırlamak için aşağıdaki butona tıklayabilirsiniz:</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetUrl}" style="background-color: #2563eb; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Şifremi Sıfırla</a>
-          </div>
-          <p>Bu bağlantı 1 saat boyunca geçerlidir. Eğer bu talebi siz yapmadıysanız, lütfen bu e-postayı dikkate almayın.</p>
-          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="font-size: 12px; color: #777; text-align: center;">PersonalLib - Medya Arşivi</p>
-        </div>
-      `,
-        };
-
-        await transporter.sendMail(mailOptions);
+        const resetUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/reset-password?token=${rawToken}`;
+        await sendPasswordResetEmail(email, resetUrl);
 
         return NextResponse.json({ message: "Sıfırlama bağlantısı gönderildi" });
     } catch (error) {
