@@ -12,11 +12,12 @@ import { getInitials } from '@/lib/utils';
 interface ImageUploadProps {
     currentImage?: string | null;
     userId: string;
+    username: string;
     name?: string | null;
     onUploadSuccess: (url: string) => void;
 }
 
-export default function ImageUpload({ currentImage, userId, name, onUploadSuccess }: ImageUploadProps) {
+export default function ImageUpload({ currentImage, userId, username, name, onUploadSuccess }: ImageUploadProps) {
     const [image, setImage] = useState<string | null>(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
