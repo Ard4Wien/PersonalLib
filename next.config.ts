@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "m.media-amazon.com" },
     ],
   },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false,
+  },
   async headers() {
     return [
       {

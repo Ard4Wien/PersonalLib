@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import prisma from "./prisma";
 import { loginSchema } from "./validations";
 import { checkLoginAttempt, recordFailedLogin, resetLoginAttempts } from "./rate-limiter";
+import { validateTurnstile } from "./turnstile";
+import { validateRecaptcha } from "./recaptcha";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     providers: [
@@ -12,6 +14,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             credentials: {
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
+                turnstileToken: { label: "Turnstile Token", type: "text" },
+                recaptchaToken: { label: "reCaptcha Token", type: "text" },
             },
             async authorize(credentials) {
                 const validatedFields = loginSchema.safeParse(credentials);
@@ -21,7 +25,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 }
 
                 const { email: rawEmail, password } = validatedFields.data;
+                const turnstileToken = credentials?.turnstileToken as string;
+                const recaptchaToken = credentials?.recaptchaToken as string;
                 const email = rawEmail.toLowerCase();
+
+                // reCaptcha Doğrulaması (Birincil)
+                if (process.env.RECAPTCHA_SECRET_KEY) {
+                    const isValid = await validateRecaptcha(recaptchaToken);
+                    if (!isValid) return null;
+                } 
+                // Turnstile Doğrulaması (Yedek/Eski - Sadece reCaptcha yoksa)
+                else if (process.env.TURNSTILE_SECRET_KEY) {
+                    const isValid = await validateTurnstile(turnstileToken);
+                    if (!isValid) return null;
+                }
 
 
                 const lockoutStatus = await checkLoginAttempt(email);
@@ -38,6 +55,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         passwordHash: true,
                         displayName: true,
                         username: true,
+                        image: true,
                     }
                 });
 
@@ -60,18 +78,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     email: user.email,
                     name: user.displayName,
                     username: user.username,
+                    image: user.image,
                 };
             },
         }),
     ],
     callbacks: {
         async jwt({ token, user, trigger, session }) {
+            // 1. İlk Giriş (Initial Sign In)
             if (user) {
                 token.id = user.id as string;
                 token.username = (user as { username: string }).username;
                 token.email = user.email;
+                token.picture = (user as any).image;
             }
-
+            
+            // 2. Dinamik Güncelleme (update() çağrıldığında)
+            if (trigger === "update" && session?.image) {
+                token.picture = session.image;
+            } 
 
             return token;
         },
@@ -80,6 +105,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 session.user.id = token.id as string;
                 session.user.username = token.username as string;
                 session.user.email = token.email as string;
+                session.user.image = token.picture as string;
             }
             return session;
         },

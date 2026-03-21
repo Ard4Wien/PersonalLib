@@ -58,7 +58,7 @@ export function MediaSearch({ type, onSelect }: MediaSearchProps) {
                 toast.error(errorMessage);
             }
         } catch (error) {
-            console.error("Arama hatası:", error);
+            console.error("Arama hatası");
             toast.error("Bir ağ hatası oluştu");
         } finally {
             setIsSearching(false);

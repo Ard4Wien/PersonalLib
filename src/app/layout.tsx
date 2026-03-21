@@ -48,7 +48,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await auth();
-  const nonce = (await headers()).get('x-nonce') || '';
+  const headersList = await headers();
+  const nonce = headersList.get('x-nonce') || '';
 
   return (
     <html lang="tr" suppressHydrationWarning>

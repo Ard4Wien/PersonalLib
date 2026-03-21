@@ -11,8 +11,8 @@ const resetPasswordSchema = z.object({
         .min(8, "Şifre en az 8 karakter olmalıdır")
         .max(100, "Şifre en fazla 100 karakter olabilir")
         .regex(
-            /^(?=.*[a-zA-Z])(?=.*\d)/,
-            "Şifre en az bir harf ve bir rakam içermelidir"
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d])/,
+            "Şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir"
         ),
 });
 
@@ -35,22 +35,11 @@ export async function POST(request: Request) {
 
         const resetToken = await prisma.passwordResetToken.findUnique({
             where: { token: hashedToken },
-            include: { user: true },
         });
 
-        if (!resetToken) {
+        if (!resetToken || resetToken.expiresAt < new Date()) {
             return NextResponse.json(
-                { error: "Geçersiz sıfırlama bağlantısı" },
-                { status: 400 }
-            );
-        }
-
-        if (resetToken.expiresAt < new Date()) {
-            await prisma.passwordResetToken.delete({
-                where: { id: resetToken.id },
-            });
-            return NextResponse.json(
-                { error: "Sıfırlama bağlantısının süresi dolmuş" },
+                { error: "Geçersiz veya süresi dolmuş bağlantı. Lütfen bilgilerinizi kontrol ediniz." },
                 { status: 400 }
             );
         }
@@ -69,7 +58,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ message: "Şifre başarıyla güncellendi" });
     } catch (error) {
-        console.error("Reset password error:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Reset password hatası");
         return NextResponse.json(
             { error: "Bir hata oluştu. Lütfen daha sonra tekrar deneyin." },
             { status: 500 }

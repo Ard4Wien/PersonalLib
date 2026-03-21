@@ -66,7 +66,7 @@ export async function POST(request: Request) {
         );
 
     } catch (error) {
-        console.error("Şifre değiştirme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Şifre değiştirme hatası");
         return NextResponse.json(
             { error: "Bir hata oluştu. Lütfen daha sonra tekrar deneyin." },
             { status: 500 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { movieSchema, movieUpdateSchema, mediaStatusSchema, ratingSchema, notesSchema } from "@/lib/validations";
+import { movieSchema, movieUpdateSchema, mediaStatusSchema } from "@/lib/validations";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
@@ -31,7 +31,6 @@ export async function GET(request: Request) {
             coverImage: um.movie.coverImage,
             type: "movie",
             status: um.status,
-            rating: um.rating,
             isFavorite: um.isFavorite,
             updatedAt: um.updatedAt.toISOString(),
 
@@ -40,7 +39,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(standardizedMovies);
     } catch (error) {
-        console.error("Film listesi hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Film hatası");
         return NextResponse.json(
             { error: "Filmler yüklenirken bir hata oluştu" },
             { status: 500 }
@@ -140,7 +139,6 @@ export async function POST(request: Request) {
             coverImage: userMovie.movie.coverImage,
             type: "movie",
             status: userMovie.status,
-            rating: userMovie.rating,
             isFavorite: userMovie.isFavorite,
             genre: userMovie.movie.genre,
             updatedAt: userMovie.updatedAt.toISOString(),
@@ -149,7 +147,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json(standardizedResponse, { status: 201 });
     } catch (error) {
-        console.error("Film ekleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Film hatası");
         return NextResponse.json(
             { error: "Film eklenirken bir hata oluştu" },
             { status: 500 }
@@ -190,26 +188,50 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: "Yetkisiz işlem" }, { status: 403 });
         }
 
-        await prisma.movie.update({
-            where: { id: movieId },
-            data: {
-                title,
-                director,
-                coverImage: coverImage || null,
-                genre: genre || null,
-            },
+        let targetMovie = await prisma.movie.findFirst({
+            where: { title, director },
         });
 
+        if (targetMovie && targetMovie.id !== movieId) {
+            const userHasTarget = await prisma.userMovie.findUnique({
+                where: { userId_movieId: { userId, movieId: targetMovie.id } }
+            });
+            if (userHasTarget) {
+                return NextResponse.json({ error: "Bu isimde bir film zaten kütüphanenizde var" }, { status: 400 });
+            }
+        }
+
+        if (!targetMovie || targetMovie.id === movieId) {
+            const ownerCount = await prisma.userMovie.count({ where: { movieId } });
+            if (ownerCount === 1) {
+                targetMovie = await prisma.movie.update({
+                    where: { id: movieId },
+                    data: { title, director, coverImage: coverImage || null, genre: genre || null },
+                });
+            } else {
+                const originalMovie = await prisma.movie.findUnique({ where: { id: movieId } });
+                targetMovie = await prisma.movie.create({
+                    data: { 
+                        title, 
+                        director, 
+                        coverImage: coverImage || null, 
+                        genre: genre || null,
+                        imdbId: originalMovie?.imdbId 
+                    },
+                });
+            }
+        }
+
         const userMovie = await prisma.userMovie.update({
-            where: {
-                id: userMovieId,
-                userId,
-            },
-            data: {
-                status,
-            },
+            where: { id: userMovieId, userId },
+            data: { status, movieId: targetMovie.id },
             include: { movie: true },
         });
+
+        if (targetMovie.id !== movieId) {
+             const oldMovieCount = await prisma.userMovie.count({ where: { movieId } });
+             if (oldMovieCount === 0) await prisma.movie.delete({ where: { id: movieId } }).catch(() => {});
+        }
 
         const standardizedResponse = {
             id: userMovie.id,
@@ -220,7 +242,6 @@ export async function PUT(request: Request) {
             coverImage: userMovie.movie.coverImage,
             type: "movie",
             status: userMovie.status,
-            rating: userMovie.rating,
             isFavorite: userMovie.isFavorite,
             genre: userMovie.movie.genre,
             updatedAt: userMovie.updatedAt.toISOString(),
@@ -229,7 +250,7 @@ export async function PUT(request: Request) {
 
         return NextResponse.json(standardizedResponse);
     } catch (error) {
-        console.error("Film güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Film hatası");
         return NextResponse.json(
             { error: "Film güncellenirken bir hata oluştu" },
             { status: 500 }
@@ -246,7 +267,7 @@ export async function PATCH(request: Request) {
         }
 
         const body = await request.json();
-        const { userMovieId, status, rating, notes, isFavorite } = body;
+        const { userMovieId, status, isFavorite } = body;
 
         if (!userMovieId || typeof userMovieId !== "string") {
             return NextResponse.json({ error: "Geçerli bir kayıt ID'si gereklidir" }, { status: 400 });
@@ -256,13 +277,8 @@ export async function PATCH(request: Request) {
             const sv = mediaStatusSchema.safeParse(status);
             if (!sv.success) return NextResponse.json({ error: "Geçersiz durum değeri" }, { status: 400 });
         }
-        if (rating !== undefined && rating !== null) {
-            const rv = ratingSchema.safeParse(rating);
-            if (!rv.success) return NextResponse.json({ error: "Puan 1-10 arasında olmalıdır" }, { status: 400 });
-        }
-        if (notes !== undefined) {
-            const nv = notesSchema.safeParse(notes);
-            if (!nv.success) return NextResponse.json({ error: "Notlar en fazla 5000 karakter olabilir" }, { status: 400 });
+        if (isFavorite !== undefined && typeof isFavorite !== "boolean") {
+            return NextResponse.json({ error: "Geçersiz favori değeri" }, { status: 400 });
         }
 
         const userMovie = await prisma.userMovie.update({
@@ -272,10 +288,7 @@ export async function PATCH(request: Request) {
             },
             data: {
                 ...(status && { status }),
-                ...(rating !== undefined && { rating }),
-                ...(notes !== undefined && { notes }),
                 ...(isFavorite !== undefined && { isFavorite }),
-                ...(status === "COMPLETED" && { watchedDate: new Date() }),
             },
             include: { movie: true },
         });
@@ -290,7 +303,6 @@ export async function PATCH(request: Request) {
             coverImage: userMovie.movie.coverImage,
             type: "movie",
             status: userMovie.status,
-            rating: userMovie.rating,
             isFavorite: userMovie.isFavorite,
             genre: userMovie.movie.genre,
             updatedAt: userMovie.updatedAt.toISOString(),
@@ -299,7 +311,7 @@ export async function PATCH(request: Request) {
 
         return NextResponse.json(standardizedResponse);
     } catch (error) {
-        console.error("Film güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Film hatası");
         return NextResponse.json(
             { error: "Film güncellenirken bir hata oluştu" },
             { status: 500 }
@@ -331,7 +343,7 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error("Film silme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Film hatası");
         return NextResponse.json(
             { error: "Film silinirken bir hata oluştu" },
             { status: 500 }

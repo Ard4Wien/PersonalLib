@@ -68,7 +68,7 @@ export async function checkLoginAttempt(email: string): Promise<{
                 const retryAfter = Math.ceil((lockoutEnd.getTime() - now.getTime()) / 1000);
                 return {
                     locked: true,
-                    message: `Hesap geçici olarak kilitlendi. ${Math.ceil(retryAfter / 60)} dakika sonra tekrar deneyin.`,
+                    message: `Giriş bilgileri hatalı veya hesap kilitli. Lütfen bir süre sonra tekrar deneyin.`,
                     retryAfter
                 };
             }

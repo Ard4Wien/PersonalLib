@@ -4,12 +4,13 @@ import prisma from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 import { validateEmailDomain } from "@/lib/email-validator";
+import { validateTurnstile } from "@/lib/turnstile";
+import { validateRecaptcha } from "@/lib/recaptcha";
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     try {
-
         const clientIP = getClientIP(request);
         const rateLimitResult = await checkRateLimit(clientIP);
 
@@ -26,7 +27,24 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const validatedFields = registerSchema.safeParse(body);
+        const { email: rawEmail, username: rawUsername, displayName, password, turnstileToken, recaptchaToken } = body;
+
+        // reCaptcha Doğrulaması (Birincil)
+        if (process.env.RECAPTCHA_SECRET_KEY) {
+            const isValid = await validateRecaptcha(recaptchaToken);
+            if (!isValid) {
+                return NextResponse.json({ error: "reCaptcha doğrulaması başarısız." }, { status: 403 });
+            }
+        }
+        // Turnstile Doğrulaması (Yedek - Sadece reCaptcha anahtarı yoksa çalışır)
+        else if (process.env.TURNSTILE_SECRET_KEY) {
+            const isValid = await validateTurnstile(turnstileToken);
+            if (!isValid) {
+                return NextResponse.json({ error: "Bot doğrulaması başarısız." }, { status: 403 });
+            }
+        }
+
+        const validatedFields = registerSchema.safeParse({ email: rawEmail, username: rawUsername, displayName, password });
 
         if (!validatedFields.success) {
             return NextResponse.json(
@@ -35,11 +53,10 @@ export async function POST(request: Request) {
             );
         }
 
-        const { email: rawEmail, username: rawUsername, displayName, password } = validatedFields.data;
         const email = rawEmail.toLowerCase();
         const username = rawUsername.toLowerCase();
 
-
+        // Email Domain Kontrolü
         const domainValidation = await validateEmailDomain(email);
         if (!domainValidation.valid) {
             return NextResponse.json(
@@ -60,29 +77,19 @@ export async function POST(request: Request) {
             );
         }
 
-
         const [existingUserByEmail, existingUserByUsername] = await Promise.all([
             prisma.user.findUnique({ where: { email } }),
             prisma.user.findUnique({ where: { username } }),
         ]);
 
-        if (existingUserByEmail) {
+        if (existingUserByEmail || existingUserByUsername) {
             return NextResponse.json(
-                { error: "Bu e-posta adresi zaten kullanılıyor" },
+                { error: "Girdiğiniz bilgilerle zaten bir hesap mevcut. Lütfen bilgilerinizi kontrol ediniz." },
                 { status: 400 }
             );
         }
-
-        if (existingUserByUsername) {
-            return NextResponse.json(
-                { error: "Bu kullanıcı adı zaten kullanılıyor" },
-                { status: 400 }
-            );
-        }
-
 
         const passwordHash = await bcrypt.hash(password, 10);
-
 
         const user = await prisma.user.create({
             data: {
@@ -105,11 +112,10 @@ export async function POST(request: Request) {
             { status: 201 }
         );
     } catch (error) {
-        console.error("Kayıt hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Kayıt hatası");
         return NextResponse.json(
             { error: "Kayıt işlemi sırasında bir hata oluştu" },
             { status: 500 }
         );
     }
 }
-

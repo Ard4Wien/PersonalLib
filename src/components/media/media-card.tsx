@@ -27,6 +27,7 @@ export interface MediaCardProps {
     onDelete?: (id: string) => void;
     lastSeason?: number | null;
     lastEpisode?: number | null;
+    priority?: boolean;
 }
 
 const itemVariants = {
@@ -102,7 +103,8 @@ export default function MediaCard({
     onEdit,
     onDelete,
     lastSeason,
-    lastEpisode
+    lastEpisode,
+    priority = false
 }: MediaCardProps) {
     const { viewMode } = useViewMode();
     const isMobile = useIsMobile();
@@ -175,6 +177,7 @@ export default function MediaCard({
                             alt={title}
                             fill
                             unoptimized={true}
+                            priority={priority}
                             className="object-cover transition-transform duration-500 group-hover:scale-110"
                             fallbackText={title}
                         />

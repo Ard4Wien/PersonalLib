@@ -86,7 +86,7 @@ export async function validateEmailDomain(email: string): Promise<{ valid: boole
                     }
                 }
             } catch (error) {
-                console.error("Abstract API error:", error);
+                console.error("E-posta doğrulama hatası");
                 continue;
             }
         }

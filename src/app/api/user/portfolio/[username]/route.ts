@@ -10,6 +10,11 @@ export async function GET(
     try {
         const { username } = await params;
 
+        // Username doğrulama (sadece küçük harf, rakam, alt çizgi)
+        if (!username || !/^[a-z0-9_]+$/.test(username)) {
+            return NextResponse.json({ error: "Geçersiz kullanıcı adı" }, { status: 400 });
+        }
+
         const user = await prisma.user.findUnique({
             where: { username },
             select: {
@@ -72,7 +77,6 @@ export async function GET(
                     subtitle: ub.book.author || "Bilinmeyen Yazar",
                     image: ub.book.coverImage,
                     status: ub.status,
-                    rating: ub.rating,
                     isFavorite: ub.isFavorite,
                     updatedAt: ub.updatedAt.toISOString()
                 })),
@@ -83,7 +87,6 @@ export async function GET(
                     subtitle: um.movie.director || "Bilinmeyen Yönetmen",
                     image: um.movie.coverImage,
                     status: um.status,
-                    rating: um.rating,
                     isFavorite: um.isFavorite,
                     updatedAt: um.updatedAt.toISOString()
                 })),
@@ -94,7 +97,6 @@ export async function GET(
                     subtitle: us.series.creator || "Bilinmeyen Yapımcı",
                     image: us.series.coverImage,
                     status: us.overallStatus,
-                    rating: us.rating,
                     isFavorite: us.isFavorite,
                     updatedAt: us.updatedAt.toISOString()
                 }))
@@ -103,7 +105,7 @@ export async function GET(
 
         return NextResponse.json(standardizedData);
     } catch (error) {
-        console.error("Portfolyo API hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Portfolyo hatası");
         return NextResponse.json({ error: "Veriler alınırken bir hata oluştu" }, { status: 500 });
     }
 }

@@ -188,7 +188,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(cleanResults);
     } catch (error) {
-        console.error("Kitap arama hatası:", error);
+        console.error("Kitap arama hatası");
         return NextResponse.json(
             { error: "Kitaplar aranırken bir hata oluştu" },
             { status: 500 }

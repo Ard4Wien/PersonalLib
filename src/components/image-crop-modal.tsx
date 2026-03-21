@@ -86,7 +86,7 @@ export function ImageCropModal({
             onCropComplete(croppedImage);
             onClose();
         } catch (error) {
-            console.error("Error cropping image:", error);
+            console.error("Kırpma hatası");
         }
     };
 

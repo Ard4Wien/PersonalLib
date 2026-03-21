@@ -83,7 +83,7 @@ export async function POST(request: Request) {
             },
         });
     } catch (error) {
-        console.error("Mobile login error:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Mobile login hatası");
         return NextResponse.json(
             { error: "Giriş işlemi sırasında bir hata oluştu" },
             { status: 500 }

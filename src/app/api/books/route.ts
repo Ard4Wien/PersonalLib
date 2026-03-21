@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { bookSchema, bookUpdateSchema, mediaStatusSchema, ratingSchema, notesSchema } from "@/lib/validations";
+import { bookSchema, bookUpdateSchema, mediaStatusSchema } from "@/lib/validations";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
@@ -31,7 +31,6 @@ export async function GET(request: Request) {
             coverImage: ub.book.coverImage,
             type: "book",
             status: ub.status,
-            rating: ub.rating,
             isFavorite: ub.isFavorite,
             genre: ub.book.genre,
             updatedAt: ub.updatedAt.toISOString(),
@@ -40,7 +39,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(standardizedBooks);
     } catch (error) {
-        console.error("Kitap listesi hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Kitap hatası");
         return NextResponse.json(
             { error: "Kitaplar yüklenirken bir hata oluştu" },
             { status: 500 }
@@ -131,7 +130,6 @@ export async function POST(request: Request) {
             coverImage: userBook.book.coverImage,
             type: "book",
             status: userBook.status,
-            rating: userBook.rating,
             isFavorite: userBook.isFavorite,
             genre: userBook.book.genre,
             updatedAt: userBook.updatedAt.toISOString(),
@@ -140,7 +138,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json(standardizedResponse, { status: 201 });
     } catch (error) {
-        console.error("Kitap ekleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Kitap hatası");
         return NextResponse.json(
             { error: "Kitap eklenirken bir hata oluştu" },
             { status: 500 }
@@ -181,30 +179,54 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: "Yetkisiz işlem" }, { status: 403 });
         }
 
-        await prisma.book.update({
-            where: { id: bookId },
-            data: {
-                title,
-                author,
-                coverImage: coverImage || null,
-                genre: genre || null,
-            },
+        let targetBook = await prisma.book.findFirst({
+            where: { title, author },
         });
 
+        if (targetBook && targetBook.id !== bookId) {
+            const userHasTarget = await prisma.userBook.findUnique({
+                where: { userId_bookId: { userId, bookId: targetBook.id } }
+            });
+            if (userHasTarget) {
+                return NextResponse.json({ error: "Bu isimde bir kitap zaten kütüphanenizde var" }, { status: 400 });
+            }
+        }
+
+        if (!targetBook || targetBook.id === bookId) {
+            const ownerCount = await prisma.userBook.count({ where: { bookId } });
+            if (ownerCount === 1) {
+                targetBook = await prisma.book.update({
+                    where: { id: bookId },
+                    data: { title, author, coverImage: coverImage || null, genre: genre || null },
+                });
+            } else {
+                const originalBook = await prisma.book.findUnique({ where: { id: bookId } });
+                targetBook = await prisma.book.create({
+                    data: { 
+                        title, 
+                        author, 
+                        coverImage: coverImage || null, 
+                        genre: genre || null,
+                        isbn: originalBook?.isbn 
+                    },
+                });
+            }
+        }
+
         const userBook = await prisma.userBook.update({
-            where: {
-                id: userBookId,
-                userId,
-            },
-            data: {
-                status,
-            },
+            where: { id: userBookId, userId },
+            data: { status, bookId: targetBook.id },
             include: { book: true },
         });
 
+        if (targetBook.id !== bookId) {
+             const oldBookCount = await prisma.userBook.count({ where: { bookId } });
+             if (oldBookCount === 0) await prisma.book.delete({ where: { id: bookId } }).catch(() => {});
+        }
+
         return NextResponse.json(userBook);
     } catch (error) {
-        console.error("Kitap güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Kitap hatası");
         return NextResponse.json(
             { error: "Kitap güncellenirken bir hata oluştu" },
             { status: 500 }
@@ -221,7 +243,7 @@ export async function PATCH(request: Request) {
         }
 
         const body = await request.json();
-        const { userBookId, status, rating, notes, isFavorite } = body;
+        const { userBookId, status, isFavorite } = body;
 
         if (!userBookId || typeof userBookId !== "string") {
             return NextResponse.json({ error: "Geçerli bir kayıt ID'si gereklidir" }, { status: 400 });
@@ -231,13 +253,8 @@ export async function PATCH(request: Request) {
             const sv = mediaStatusSchema.safeParse(status);
             if (!sv.success) return NextResponse.json({ error: "Geçersiz durum değeri" }, { status: 400 });
         }
-        if (rating !== undefined && rating !== null) {
-            const rv = ratingSchema.safeParse(rating);
-            if (!rv.success) return NextResponse.json({ error: "Puan 1-10 arasında olmalıdır" }, { status: 400 });
-        }
-        if (notes !== undefined) {
-            const nv = notesSchema.safeParse(notes);
-            if (!nv.success) return NextResponse.json({ error: "Notlar en fazla 5000 karakter olabilir" }, { status: 400 });
+        if (isFavorite !== undefined && typeof isFavorite !== "boolean") {
+            return NextResponse.json({ error: "Geçersiz favori değeri" }, { status: 400 });
         }
 
         const userBook = await prisma.userBook.update({
@@ -247,18 +264,14 @@ export async function PATCH(request: Request) {
             },
             data: {
                 ...(status && { status }),
-                ...(rating !== undefined && { rating }),
-                ...(notes !== undefined && { notes }),
                 ...(isFavorite !== undefined && { isFavorite }),
-                ...(status === "COMPLETED" && { endDate: new Date() }),
-                ...(status === "READING" && { startDate: new Date() }),
             },
             include: { book: true },
         });
 
         return NextResponse.json(userBook);
     } catch (error) {
-        console.error("Kitap güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Kitap hatası");
         return NextResponse.json(
             { error: "Kitap güncellenirken bir hata oluştu" },
             { status: 500 }
@@ -290,7 +303,7 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error("Kitap silme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Kitap hatası");
         return NextResponse.json(
             { error: "Kitap silinirken bir hata oluştu" },
             { status: 500 }

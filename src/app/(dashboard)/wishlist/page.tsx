@@ -133,8 +133,8 @@ export default function WishlistPage() {
             }
 
             setItems(wishlistItems);
-        } catch (error) {
-            console.error("İstek listesi yüklenemedi:", error);
+        } catch {
+            console.error("İstek listesi yükleme hatası");
             toast.error("İstek listesi yüklenirken bir hata oluştu");
         } finally {
             setIsLoading(false);
@@ -403,7 +403,7 @@ export default function WishlistPage() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
-                                        {statusOptions.map((option) => {
+                                        {statusOptions.filter(o => o.value !== "WATCHING").map((option) => {
                                             const Icon = option.icon;
                                             return (
                                                 <SelectItem key={option.value} value={option.value} className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10">
@@ -461,7 +461,7 @@ export default function WishlistPage() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
-                                        {statusOptions.slice(0, 3).map((option) => {
+                                        {statusOptions.filter(o => o.value !== "READING" && o.value !== "DROPPED").map((option) => {
                                             const Icon = option.icon;
                                             return (
                                                 <SelectItem key={option.value} value={option.value} className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10">
@@ -525,7 +525,7 @@ export default function WishlistPage() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
-                                        {statusOptions.slice(0, 3).map((option) => {
+                                        {statusOptions.filter(o => o.value !== "READING").map((option) => {
                                             const Icon = option.icon;
                                             return (
                                                 <SelectItem key={option.value} value={option.value} className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10">

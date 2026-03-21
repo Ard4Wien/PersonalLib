@@ -21,8 +21,10 @@ model User {
   username     String   @unique
   displayName  String
   passwordHash String
+  image        String?
   language     String   @default("tr")
   isPrivate    Boolean  @default(false)
+  socialLinks  Json?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -52,6 +54,8 @@ model PasswordResetAttempt {
   ip        String
   createdAt DateTime @default(now())
 
+  @@index([email, createdAt])
+  @@index([ip, createdAt])
   @@map("password_reset_attempts")
 }
 
@@ -148,10 +152,6 @@ model UserBook {
   userId    String
   bookId    String
   status    String   @default("WISHLIST") // READING, COMPLETED, WISHLIST, DROPPED
-  rating    Int?
-  notes     String?
-  startDate DateTime?
-  endDate   DateTime?
   createdAt DateTime @default(now())
   updatedAt  DateTime @updatedAt
   isFavorite Boolean  @default(false)
@@ -168,9 +168,6 @@ model UserMovie {
   userId      String
   movieId     String
   status      String    @default("WISHLIST") // WATCHING, COMPLETED, WISHLIST, DROPPED
-  rating      Int?
-  notes       String?
-  watchedDate DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   isFavorite  Boolean   @default(false)
@@ -187,8 +184,6 @@ model UserSeries {
   userId        String
   seriesId      String
   overallStatus String   @default("WISHLIST") // WATCHING, COMPLETED, WISHLIST, DROPPED
-  rating        Int?
-  notes         String?
   createdAt     DateTime @default(now())
   updatedAt      DateTime @updatedAt
   isFavorite     Boolean  @default(false)

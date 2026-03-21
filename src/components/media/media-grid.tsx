@@ -67,10 +67,11 @@ export default function MediaGrid({
                 : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
             }
         >
-            {items.map((item) => (
+            {items.map((item, index) => (
                 <MediaCard
                     key={item.id}
                     {...item}
+                    priority={index < 6}
                     onStatusChange={onStatusChange}
                     onFavoriteToggle={onFavoriteToggle}
                     onEdit={onEdit}

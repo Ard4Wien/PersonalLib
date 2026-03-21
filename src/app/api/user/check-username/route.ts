@@ -39,7 +39,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ available: !existingUser });
     } catch (error) {
-        console.error("Username check error:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Username check hatası");
         return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
     }
 }

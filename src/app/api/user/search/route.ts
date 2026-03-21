@@ -15,8 +15,8 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url);
         const query = searchParams.get("q");
 
-        if (!query || query.length < 2) {
-            return NextResponse.json({ error: "Arama terimi en az 2 karakter olmalıdır" }, { status: 400 });
+        if (!query || query.length < 2 || query.length > 100) {
+            return NextResponse.json({ error: "Arama terimi 2-100 karakter arasında olmalıdır" }, { status: 400 });
         }
 
         const users = await prisma.user.findMany({
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(users);
     } catch (error) {
-        console.error("Kullanıcı arama hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Kullanıcı arama hatası");
         return NextResponse.json({ error: "Arama yapılırken bir hata oluştu" }, { status: 500 });
     }
 }

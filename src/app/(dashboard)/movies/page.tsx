@@ -132,8 +132,8 @@ export default function MoviesPage() {
                 const seriesData = await seriesRes.json();
                 setSeries(seriesData);
             }
-        } catch (error) {
-            console.error("İçerik yüklenemedi:", error);
+        } catch {
+            console.error("İçerik yükleme hatası");
             toast.error("İçerik yüklenirken bir hata oluştu");
         } finally {
             setIsLoading(false);
@@ -424,14 +424,18 @@ export default function MoviesPage() {
         const movie = movies.find((m) => m.id === id);
         if (movie) {
             setEditingMovie(movie);
-            setEditMovieStatus(movie.status);
+            let mStatus = movie.status;
+            if (mStatus === "READING" || mStatus === "DROPPED") mStatus = "WATCHING";
+            setEditMovieStatus(mStatus);
             setIsMovieEditDialogOpen(true);
             return;
         }
         const s = series.find((s) => s.id === id);
         if (s) {
             setEditingSeries(s);
-            setEditSeriesStatus(s.overallStatus);
+            let sStatus = s.status || s.overallStatus || "WISHLIST";
+            if (sStatus === "READING") sStatus = "WATCHING";
+            setEditSeriesStatus(sStatus);
             setEditSeriesSeason(s.lastSeason?.toString() || "1");
             setEditSeriesEpisode(s.lastEpisode?.toString() || "1");
             setIsSeriesEditDialogOpen(true);
@@ -704,7 +708,7 @@ export default function MoviesPage() {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
-                                            {statusOptions.slice(0, 3).map((option) => {
+                                            {statusOptions.map((option) => {
                                                 const Icon = option.icon;
                                                 return (
                                                     <SelectItem key={option.value} value={option.value} className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10">
@@ -851,7 +855,7 @@ export default function MoviesPage() {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
-                                                {statusOptions.slice(0, 3).map((option) => {
+                                                {statusOptions.map((option) => {
                                                     const Icon = option.icon;
                                                     return (
                                                         <SelectItem key={option.value} value={option.value} className="text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 focus:bg-black/5 dark:focus:bg-white/10">
@@ -948,8 +952,14 @@ export default function MoviesPage() {
                 <TabsContent value="all" className="mt-6">
                     <MediaGrid
                         items={[...movieItems, ...seriesItems].sort((a, b) => {
-                            if (a.isFavorite === b.isFavorite) return 0;
-                            return a.isFavorite ? -1 : 1;
+                            if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1;
+                            const aMovie = movies.find(m => m.id === a.id);
+                            const bMovie = movies.find(m => m.id === b.id);
+                            const aSeries = series.find(s => s.id === a.id);
+                            const bSeries = series.find(s => s.id === b.id);
+                            const aDate = aMovie?.updatedAt || aSeries?.updatedAt || '';
+                            const bDate = bMovie?.updatedAt || bSeries?.updatedAt || '';
+                            return new Date(bDate).getTime() - new Date(aDate).getTime();
                         })}
                         onStatusChange={(id, status) => {
                             const isMovie = movieItems.some(m => m.id === id);

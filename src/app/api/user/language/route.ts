@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ language: user?.language || "tr" });
     } catch (error) {
-        console.error("Dil bilgisi hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Dil hatası");
         return NextResponse.json({ error: "Dil bilgisi alınamadı" }, { status: 500 });
     }
 }
@@ -46,7 +46,7 @@ export async function PATCH(request: Request) {
 
         return NextResponse.json({ success: true, language });
     } catch (error) {
-        console.error("Dil güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Dil hatası");
         return NextResponse.json({ error: "Dil ayarı güncellenemedi" }, { status: 500 });
     }
 }

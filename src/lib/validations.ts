@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isValidUsername, containsProfanity } from "./profanity";
+import { containsHtml } from "./sanitize";
 
 
 export const registerSchema = z.object({
@@ -50,15 +51,17 @@ export const loginSchema = z.object({
 
 const imageSchema = z.string().url().optional().or(z.literal("")).refine((val) => {
     if (!val) return true;
-    return val.startsWith("http://") || val.startsWith("https://");
+    return val.startsWith("https://");
 }, {
-    message: "Resim URL'i http veya https ile başlamalıdır"
+    message: "Resim Desteklenmiyor"
 });
 
 
 export const bookSchema = z.object({
-    title: z.string().min(1, "Kitap başlığı gereklidir").refine((val) => !containsProfanity(val), {
+    title: z.string().min(1, "Kitap başlığı gereklidir").max(500, "Başlık çok uzun").refine((val) => !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     author: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
@@ -76,8 +79,10 @@ export const bookSchema = z.object({
 });
 
 export const movieSchema = z.object({
-    title: z.string().min(1, "Film başlığı gereklidir").refine((val) => !containsProfanity(val), {
+    title: z.string().min(1, "Film başlığı gereklidir").max(500, "Başlık çok uzun").refine((val) => !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     director: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
@@ -95,8 +100,10 @@ export const movieSchema = z.object({
 });
 
 export const seriesSchema = z.object({
-    title: z.string().min(1, "Dizi başlığı gereklidir").refine((val) => !containsProfanity(val), {
+    title: z.string().min(1, "Dizi başlığı gereklidir").max(500, "Başlık çok uzun").refine((val) => !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     creator: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
@@ -135,12 +142,6 @@ export const mediaStatusSchema = z.enum(
     ["READING", "WATCHING", "COMPLETED", "WISHLIST", "DROPPED"],
     { error: "Geçersiz durum değeri" }
 );
-
-export const ratingSchema = z.number().int().min(1, "Puan en az 1 olmalıdır").max(10, "Puan en fazla 10 olabilir").nullable();
-
-export const notesSchema = z.string().max(5000, "Notlar en fazla 5000 karakter olabilir").optional().refine((val) => !val || !containsProfanity(val), {
-    message: "İçerik uygunsuz kelimeler barındırıyor",
-});
 
 export const bookUpdateSchema = z.object({
     userBookId: z.string().min(1),

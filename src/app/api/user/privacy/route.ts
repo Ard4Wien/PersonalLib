@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ isPrivate: user?.isPrivate || false });
     } catch (error) {
-        console.error("Gizlilik bilgisi hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Gizlilik hatası");
         return NextResponse.json({ error: "Gizlilik bilgisi alınamadı" }, { status: 500 });
     }
 }
@@ -45,7 +45,7 @@ export async function PATCH(request: Request) {
 
         return NextResponse.json({ success: true, isPrivate });
     } catch (error) {
-        console.error("Gizlilik güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Gizlilik hatası");
         return NextResponse.json({ error: "Gizlilik ayarı güncellenemedi" }, { status: 500 });
     }
 }

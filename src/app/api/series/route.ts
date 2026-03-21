@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { seriesSchema, seriesUpdateSchema, mediaStatusSchema, ratingSchema, notesSchema } from "@/lib/validations";
+import { seriesSchema, seriesUpdateSchema, mediaStatusSchema } from "@/lib/validations";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
@@ -38,7 +38,6 @@ export async function GET(request: Request) {
             coverImage: us.series.coverImage,
             type: "series",
             status: us.overallStatus,
-            rating: us.rating,
             isFavorite: us.isFavorite,
             updatedAt: us.updatedAt.toISOString(),
 
@@ -48,7 +47,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(standardizedSeries);
     } catch (error) {
-        console.error("Dizi listesi hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Dizi hatası");
         return NextResponse.json(
             { error: "Diziler yüklenirken bir hata oluştu" },
             { status: 500 }
@@ -165,7 +164,6 @@ export async function POST(request: Request) {
             coverImage: userSeries.series.coverImage,
             type: "series",
             status: userSeries.overallStatus,
-            rating: userSeries.rating,
             isFavorite: userSeries.isFavorite,
             genre: userSeries.series.genre,
             updatedAt: userSeries.updatedAt.toISOString(),
@@ -175,7 +173,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json(standardizedResponse, { status: 201 });
     } catch (error) {
-        console.error("Dizi ekleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Dizi hatası");
         return NextResponse.json(
             { error: "Dizi eklenirken bir hata oluştu" },
             { status: 500 }
@@ -221,27 +219,49 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: "Geçersiz sezon sayısı" }, { status: 400 });
         }
 
-        await prisma.series.update({
-            where: { id: seriesId },
-            data: {
-                title,
-                creator,
-                coverImage: coverImage || null,
-                genre: genre || null,
-                totalSeasons: parsedTotalSeasons,
-            },
+        let targetSeries = await prisma.series.findFirst({
+            where: { title, creator },
         });
+
+        if (targetSeries && targetSeries.id !== seriesId) {
+            const userHasTarget = await prisma.userSeries.findUnique({
+                where: { userId_seriesId: { userId, seriesId: targetSeries.id } }
+            });
+            if (userHasTarget) {
+                return NextResponse.json({ error: "Bu isimde bir dizi zaten kütüphanenizde var" }, { status: 400 });
+            }
+        }
+
+        if (!targetSeries || targetSeries.id === seriesId) {
+            const ownerCount = await prisma.userSeries.count({ where: { seriesId } });
+            if (ownerCount === 1) {
+                targetSeries = await prisma.series.update({
+                    where: { id: seriesId },
+                    data: { title, creator, coverImage: coverImage || null, genre: genre || null, totalSeasons: parsedTotalSeasons },
+                });
+            } else {
+                const originalSeries = await prisma.series.findUnique({ where: { id: seriesId } });
+                targetSeries = await prisma.series.create({
+                    data: { 
+                        title, 
+                        creator, 
+                        coverImage: coverImage || null, 
+                        genre: genre || null,
+                        totalSeasons: parsedTotalSeasons || originalSeries?.totalSeasons,
+                        imdbId: originalSeries?.imdbId 
+                    },
+                });
+            }
+        }
 
         const parsedLastSeason = lastSeason ? Number(lastSeason) : null;
         const parsedLastEpisode = lastEpisode ? Number(lastEpisode) : null;
 
         const userSeries = await prisma.userSeries.update({
-            where: {
-                id: userSeriesId,
-                userId,
-            },
+            where: { id: userSeriesId, userId },
             data: {
                 overallStatus: status,
+                seriesId: targetSeries.id,
                 ...(status === "COMPLETED" || status === "WISHLIST" ? {
                     lastSeason: null,
                     lastEpisode: null
@@ -256,6 +276,11 @@ export async function PUT(request: Request) {
             },
         });
 
+        if (targetSeries.id !== seriesId) {
+             const oldSeriesCount = await prisma.userSeries.count({ where: { seriesId } });
+             if (oldSeriesCount === 0) await prisma.series.delete({ where: { id: seriesId } }).catch(() => {});
+        }
+
         const standardizedResponse = {
             id: userSeries.id,
             mediaId: userSeries.seriesId,
@@ -265,7 +290,6 @@ export async function PUT(request: Request) {
             coverImage: userSeries.series.coverImage,
             type: "series",
             status: userSeries.overallStatus,
-            rating: userSeries.rating,
             isFavorite: userSeries.isFavorite,
             genre: userSeries.series.genre,
             updatedAt: userSeries.updatedAt.toISOString(),
@@ -275,7 +299,7 @@ export async function PUT(request: Request) {
 
         return NextResponse.json(standardizedResponse);
     } catch (error) {
-        console.error("Dizi güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Dizi hatası");
         return NextResponse.json(
             { error: "Dizi güncellenirken bir hata oluştu" },
             { status: 500 }
@@ -292,7 +316,7 @@ export async function PATCH(request: Request) {
         }
 
         const body = await request.json();
-        const { userSeriesId, status, rating, notes, seasonId, seasonStatus, isFavorite, lastSeason, lastEpisode } = body;
+        const { userSeriesId, status, seasonId, seasonStatus, isFavorite, lastSeason, lastEpisode } = body;
 
         if (!userSeriesId || typeof userSeriesId !== "string") {
             return NextResponse.json({ error: "Geçerli bir kayıt ID'si gereklidir" }, { status: 400 });
@@ -302,13 +326,8 @@ export async function PATCH(request: Request) {
             const sv = mediaStatusSchema.safeParse(status);
             if (!sv.success) return NextResponse.json({ error: "Geçersiz durum değeri" }, { status: 400 });
         }
-        if (rating !== undefined && rating !== null) {
-            const rv = ratingSchema.safeParse(rating);
-            if (!rv.success) return NextResponse.json({ error: "Puan 1-10 arasında olmalıdır" }, { status: 400 });
-        }
-        if (notes !== undefined) {
-            const nv = notesSchema.safeParse(notes);
-            if (!nv.success) return NextResponse.json({ error: "Notlar en fazla 5000 karakter olabilir" }, { status: 400 });
+        if (isFavorite !== undefined && typeof isFavorite !== "boolean") {
+            return NextResponse.json({ error: "Geçersiz favori değeri" }, { status: 400 });
         }
 
 
@@ -345,8 +364,6 @@ export async function PATCH(request: Request) {
             },
             data: {
                 ...(status && { overallStatus: status }),
-                ...(rating !== undefined && { rating }),
-                ...(notes !== undefined && { notes }),
                 ...(isFavorite !== undefined && { isFavorite }),
 
                 ...(status === "COMPLETED" || status === "WISHLIST" ? {
@@ -373,7 +390,6 @@ export async function PATCH(request: Request) {
             coverImage: userSeries.series.coverImage,
             type: "series",
             status: userSeries.overallStatus,
-            rating: userSeries.rating,
             isFavorite: userSeries.isFavorite,
             genre: userSeries.series.genre,
             updatedAt: userSeries.updatedAt.toISOString(),
@@ -383,7 +399,7 @@ export async function PATCH(request: Request) {
 
         return NextResponse.json(standardizedResponse);
     } catch (error) {
-        console.error("Dizi güncelleme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Dizi hatası");
         return NextResponse.json(
             { error: "Dizi güncellenirken bir hata oluştu" },
             { status: 500 }
@@ -415,7 +431,7 @@ export async function DELETE(request: Request) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error("Dizi silme hatası:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Dizi hatası");
         return NextResponse.json(
             { error: "Dizi silinirken bir hata oluştu" },
             { status: 500 }

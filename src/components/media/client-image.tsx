@@ -4,12 +4,13 @@ import { useState } from "react";
 import Image, { ImageProps } from "next/image";
 import { Image as ImageIcon } from "lucide-react";
 
-interface ClientImageProps extends ImageProps {
+interface ClientImageProps extends Omit<ImageProps, 'priority'> {
     fallbackText?: string;
     aspectRatio?: "portrait" | "square" | "landscape";
+    priority?: boolean;
 }
 
-export function ClientImage({ fallbackText, aspectRatio = "portrait", ...props }: ClientImageProps) {
+export function ClientImage({ fallbackText, aspectRatio = "portrait", priority = false, ...props }: ClientImageProps) {
     const [error, setError] = useState(false);
 
     if (error || !props.src) {
@@ -31,6 +32,8 @@ export function ClientImage({ fallbackText, aspectRatio = "portrait", ...props }
     return (
         <Image
             {...props}
+            priority={priority}
+            loading={priority ? "eager" : "lazy"}
             onError={() => setError(true)}
         />
     );
