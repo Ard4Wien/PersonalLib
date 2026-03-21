@@ -4,8 +4,6 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
-import { supabaseAdmin } from '@/lib/supabase-admin';
-
 export async function updateUserProfileImage(imageUrl: string) {
     try {
         const session = await auth();
@@ -14,58 +12,18 @@ export async function updateUserProfileImage(imageUrl: string) {
             return { success: false, error: 'Oturum açmanız gerekiyor.' };
         }
 
-        // imageUrl doğrulama (Path Traversal koruması)
-        if (!imageUrl ||
-            !imageUrl.startsWith('avatars/') ||
-            !imageUrl.endsWith('.jpg') ||
-            imageUrl.includes('..') ||
-            imageUrl.includes('//') ||
-            imageUrl.includes('\0')) {
-            return { success: false, error: 'Geçersiz resim yolu.' };
-        }
-
-        // 1. Mevcut resmi bul
-        const user = await prisma.user.findUnique({
+        // Kullanıcının profil resmini güncelle (Sadece dosya yolunu kaydediyoruz)
+        await prisma.user.update({
             where: { id: session.user.id },
-            select: { image: true }
+            data: { image: imageUrl } // Burada 'imageUrl' artık aslında 'path' (avatars/...)
         });
 
-        // 2. Eski resmi sil
-        if (user?.image) {
-            let pathToDelete = user.image;
-            if (user.image.includes('profile-pictures/')) {
-                pathToDelete = user.image.split('profile-pictures/')[1];
-            }
+        // Sayfayı yenile ki yeni resim her yerde güncellensin
+        revalidatePath('/(dashboard)/profile');
 
-            // Query string temizle (?t=...)
-            pathToDelete = pathToDelete.split('?')[0];
-
-            if (pathToDelete && !pathToDelete.startsWith('http')) {
-                try {
-                    const finalPath = decodeURIComponent(pathToDelete).replace(/^\/+/, '');
-                    await supabaseAdmin.storage
-                        .from('profile-pictures')
-                        .remove([finalPath]);
-                } catch (err) {
-                    console.error('Eski profil resmi silme hatası');
-                }
-            }
-        }
-
-        // 3. Yeni resmi kaydet
-        const updatedUser = await prisma.user.update({
-            where: { id: session.user.id },
-            data: { image: imageUrl }
-        });
-
-        // Sayfayı yenile
-        revalidatePath('/profile');
-
-        return {
-            success: true
-        };
+        return { success: true };
     } catch (error) {
-        console.error('Profil resmi güncelleme hatası');
+        console.error('Profile image update error:', error);
         return { success: false, error: 'Profil resmi güncellenirken bir hata oluştu.' };
     }
 }
