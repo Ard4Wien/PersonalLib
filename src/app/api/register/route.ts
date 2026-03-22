@@ -27,7 +27,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { email: rawEmail, username: rawUsername, displayName, password, turnstileToken, recaptchaToken } = body;
+        const { turnstileToken, recaptchaToken } = body;
 
         // reCaptcha Doğrulaması (Birincil)
         if (process.env.RECAPTCHA_SECRET_KEY) {
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
             }
         }
 
-        const validatedFields = registerSchema.safeParse({ email: rawEmail, username: rawUsername, displayName, password });
+        const validatedFields = registerSchema.safeParse(body);
 
         if (!validatedFields.success) {
             return NextResponse.json(
@@ -53,10 +53,9 @@ export async function POST(request: Request) {
             );
         }
 
-        const email = rawEmail.toLowerCase();
-        const username = rawUsername.toLowerCase();
+        const { email, username, displayName, password } = validatedFields.data;
 
-        // Email Domain Kontrolü
+        // Email Domain Kontrolü (Spam/Disposable mail engeli)
         const domainValidation = await validateEmailDomain(email);
         if (!domainValidation.valid) {
             return NextResponse.json(
@@ -83,6 +82,13 @@ export async function POST(request: Request) {
         ]);
 
         if (existingUserByEmail || existingUserByUsername) {
+            // Siber güvenlik: Timing Attack ve Enumeration önlemi. 
+            // Kullanıcı bulunsa da bulunmasa da benzer bir işlem yükü (bcrypt/delay)
+            // oluşturularak yanıt süresi maskelenir.
+            const DUMMY_HASH = "$2b$10$tnwJkrdRvkJ49DvEzHFM..AQmt3BmTjccjU2Hx/CmWp8ALvMkkWwd6";
+            await bcrypt.compare(password, DUMMY_HASH); // Hash hesaplama yükü ekle
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 200 + 100)); // Rastgele gecikme
+
             return NextResponse.json(
                 { error: "Girdiğiniz bilgilerle zaten bir hesap mevcut. Lütfen bilgilerinizi kontrol ediniz." },
                 { status: 400 }

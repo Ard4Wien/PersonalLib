@@ -5,7 +5,17 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: '*',
             allow: '/',
-            disallow: ['/api/', '/profile/'],
+            disallow: [
+                '/api/',
+                '/profile/',
+                '/books/',
+                '/movies/',
+                '/series/',
+                '/settings/',
+                '/wishlist/',
+                '/reset-password/',
+                '/forgot-password/',
+            ],
         },
         sitemap: 'https://personal-lib.vercel.app/sitemap.xml',
     }

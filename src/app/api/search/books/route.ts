@@ -18,6 +18,10 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "Arama terimi gerekli" }, { status: 400 });
         }
 
+        if (query.length > 100) {
+            return NextResponse.json({ error: "Arama terimi çok uzun" }, { status: 400 });
+        }
+
 
         const prhApiKey = process.env.PRH_API_KEY;
         const googleApiKey = process.env.GOOGLE_BOOKS_API_KEY;
@@ -102,12 +106,10 @@ export async function GET(request: Request) {
 
                 let coverLink = item._links?.find((l: any) => l.rel === "icon" || l.rel === "thumbnail")?.href || "";
 
-
                 const isbn = item.isbn || item.isbn13;
                 if (!coverLink && isbn) {
                     coverLink = `https://images.penguinrandomhouse.com/cover/${isbn}`;
                 }
-
 
                 if (!coverLink && item.key) {
                     coverLink = `https://images.penguinrandomhouse.com/cover/work/${item.key}`;
@@ -120,7 +122,7 @@ export async function GET(request: Request) {
                     author: authorName,
                     image: coverLink,
                     coverImage: coverLink,
-                    type: "BOOK",
+                    type: "book",
                     publishedYear: item.pub_date ? parseInt(item.pub_date.substring(0, 4)) : undefined,
                     genre: item.d_format_desc || undefined,
                     source: "prh"

@@ -14,7 +14,7 @@ export default function TermsPage() {
 
             <div className="relative z-10 p-4 max-w-3xl mx-auto w-full">
                 <div className="flex justify-between items-center mb-8">
-                    <Link href="/register">
+                    <Link href="/">
                         <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground">
                             <ArrowLeft className="h-4 w-4" />
                             Geri Dön
@@ -86,7 +86,7 @@ export default function TermsPage() {
                         <section className="space-y-2">
                             <h2 className="text-lg font-semibold text-foreground">6. Hesap Askıya Alma ve Fesih</h2>
                             <p>
-                                Kullanım koşurlarını ihlal eden hesaplar önceden bildirimde bulunulmaksızın askıya alınabilir veya kalıcı olarak kapatılabilir.
+                                Kullanım koşullarını ihlal eden hesaplar önceden bildirimde bulunulmaksızın askıya alınabilir veya kalıcı olarak kapatılabilir.
                             </p>
                         </section>
 
@@ -111,15 +111,18 @@ export default function TermsPage() {
                             </p>
                         </section>
 
-                        <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">10. Değişiklikler</h2>
+                        <section className="space-y-2 border-t border-black/5 dark:border-white/5 pt-6">
+                            <h2 className="text-lg font-semibold text-foreground">11. İletişim</h2>
                             <p>
-                                Bu kullanım koşulları önceden haber verilmeksizin güncellenebilir. Platformu kullanmaya devam etmeniz, güncel koşulları kabul ettiğiniz anlamına gelir.
+                                Bu kullanım koşulları hakkında herhangi bir sorunuz varsa bizimle iletişime geçebilirsiniz:
+                            </p>
+                            <p className="font-semibold text-purple-600 dark:text-purple-400">
+                                personallibinfo@gmail.com
                             </p>
                         </section>
 
-                        <div className="pt-4 border-t border-black/5 dark:border-white/5 text-xs italic text-muted-foreground/70">
-                            Son güncelleme: 17 Mart 2026
+                        <div className="pt-4 text-xs italic text-muted-foreground/70">
+                            Son güncelleme: 22 Mart 2026
                         </div>
                     </div>
                 </motion.div>

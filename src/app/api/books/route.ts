@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { bookSchema, bookUpdateSchema, mediaStatusSchema } from "@/lib/validations";
+import { bookSchema, bookUpdateSchema, bookPatchSchema, mediaStatusSchema } from "@/lib/validations";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
@@ -155,6 +155,12 @@ export async function PUT(request: Request) {
         }
 
         const body = await request.json();
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
+        }
+
 
         const validatedFields = bookUpdateSchema.safeParse(body);
         if (!validatedFields.success) {
@@ -243,19 +249,21 @@ export async function PATCH(request: Request) {
         }
 
         const body = await request.json();
-        const { userBookId, status, isFavorite } = body;
-
-        if (!userBookId || typeof userBookId !== "string") {
-            return NextResponse.json({ error: "Geçerli bir kayıt ID'si gereklidir" }, { status: 400 });
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
         }
 
-        if (status !== undefined) {
-            const sv = mediaStatusSchema.safeParse(status);
-            if (!sv.success) return NextResponse.json({ error: "Geçersiz durum değeri" }, { status: 400 });
+        const validatedFields = bookPatchSchema.safeParse(body);
+        if (!validatedFields.success) {
+            return NextResponse.json(
+                { error: validatedFields.error.flatten().fieldErrors },
+                { status: 400 }
+            );
         }
-        if (isFavorite !== undefined && typeof isFavorite !== "boolean") {
-            return NextResponse.json({ error: "Geçersiz favori değeri" }, { status: 400 });
-        }
+
+        const { userBookId, status, isFavorite } = validatedFields.data;
 
         const userBook = await prisma.userBook.update({
             where: {
@@ -287,11 +295,27 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
+        }
+
         const { searchParams } = new URL(request.url);
         const userBookId = searchParams.get("id");
 
         if (!userBookId) {
             return NextResponse.json({ error: "ID gerekli" }, { status: 400 });
+        }
+
+        // Silmeden önce bookId'yi al (yetim kayıt temizliği için)
+        const userBook = await prisma.userBook.findUnique({
+            where: { id: userBookId, userId },
+            select: { bookId: true }
+        });
+
+        if (!userBook) {
+            return NextResponse.json({ error: "Kayıt bulunamadı" }, { status: 404 });
         }
 
         await prisma.userBook.delete({
@@ -300,6 +324,12 @@ export async function DELETE(request: Request) {
                 userId,
             },
         });
+
+        // Yetim kayıt temizliği: Artık hiçbir kullanıcıya ait olmayan Book'u sil
+        const remainingOwners = await prisma.userBook.count({ where: { bookId: userBook.bookId } });
+        if (remainingOwners === 0) {
+            await prisma.book.delete({ where: { id: userBook.bookId } }).catch(() => {});
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {

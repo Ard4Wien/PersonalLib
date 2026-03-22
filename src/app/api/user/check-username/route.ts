@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
-import { isValidUsername } from "@/lib/profanity";
+import { usernameSchema } from "@/lib/validations";
 
 export const dynamic = 'force-dynamic';
 
@@ -18,19 +18,23 @@ export async function GET(request: Request) {
         }
 
         const { searchParams } = new URL(request.url);
-        const username = searchParams.get("username")?.toLowerCase();
+        const usernameParam = searchParams.get("username");
 
-        if (!username || username.length < 4) {
-            return NextResponse.json({ available: false, error: "Geçersiz kullanıcı adı" }, { status: 400 });
+        if (!usernameParam) {
+            return NextResponse.json({ available: false, error: "Kullanıcı adı gereklidir" }, { status: 400 });
         }
 
-        // Küfür ve rezerve kelime kontrolü
-        if (!isValidUsername(username)) {
+        // Merkezi validation şemasını kullan (uzunluk, karakter, küfür vb. hepsi dahil)
+        const validated = usernameSchema.safeParse(usernameParam);
+        
+        if (!validated.success) {
             return NextResponse.json({ 
                 available: false, 
-                error: "Bu kullanıcı adı kullanılamaz veya uygunsuz içerik barındırıyor" 
+                error: validated.error.issues[0]?.message || "Geçersiz kullanıcı adı" 
             });
         }
+
+        const username = validated.data;
 
         const existingUser = await prisma.user.findUnique({
             where: { username },
@@ -39,7 +43,6 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ available: !existingUser });
     } catch (error) {
-        console.error("Username check hatası");
         return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
     }
 }

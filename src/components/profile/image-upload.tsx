@@ -17,6 +17,10 @@ interface ImageUploadProps {
     onUploadSuccess: (url: string) => void;
 }
 
+// Güvenlik sabitleri: Dosya boyutu ve tip kısıtlamaları
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
 export default function ImageUpload({ currentImage, userId, username, name, onUploadSuccess }: ImageUploadProps) {
     const [image, setImage] = useState<string | null>(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -33,6 +37,21 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0];
+
+            // Güvenlik: MIME tipi kontrolü
+            if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+                toast.error('Sadece JPEG, PNG ve WebP formatları desteklenir.');
+                e.target.value = ''; // Input'u sıfırla
+                return;
+            }
+
+            // Güvenlik: Dosya boyutu kontrolü (5MB)
+            if (file.size > MAX_FILE_SIZE) {
+                toast.error('Dosya boyutu en fazla 5MB olabilir.');
+                e.target.value = '';
+                return;
+            }
+
             const reader = new FileReader();
             reader.addEventListener('load', () => {
                 setImage(reader.result as string);
@@ -93,8 +112,17 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
             setIsUploading(true);
             const croppedBlob = await getCroppedImg(image, croppedAreaPixels);
 
-            // Benzersiz bir dosya adı (Timestamp + UserID)
-            const fileName = `${userId}-${Date.now()}.jpg`;
+            // 8-12 arası rastgele bir uzunluk belirle
+            const randomLength = Math.floor(Math.random() * (12 - 8 + 1)) + 8;
+            // Büyük/küçük harf, rakam ve karakter
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@!';
+            let randomKey = '';
+            for (let i = 0; i < randomLength; i++) {
+                randomKey += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+
+            // Dosya adı: kullanıcıadıRandomKey.jpg (Aradaki tire kaldırıldı)
+            const fileName = `${username}${randomKey}.jpg`;
             const filePath = `avatars/${fileName}`;
 
             // 1. Supabase Storage'a Yükle
@@ -118,9 +146,9 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
             toast.success('Profil fotoğrafı güncellendi');
             setIsCropping(false);
             setImage(null);
-        } catch (error: any) {
+        } catch (error) {
             console.error('Upload error:', error);
-            toast.error('Resim yüklenirken bir hata oluştu: ' + error.message);
+            toast.error('Resim yüklenirken bir hata oluştu. Lütfen tekrar deneyin.');
         } finally {
             setIsUploading(false);
         }
@@ -155,7 +183,7 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 className="hidden"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
             />
 
             {/* Crop Modalı */}

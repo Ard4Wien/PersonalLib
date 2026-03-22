@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { movieSchema, movieUpdateSchema, mediaStatusSchema } from "@/lib/validations";
+import { movieSchema, movieUpdateSchema, moviePatchSchema, mediaStatusSchema } from "@/lib/validations";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
@@ -164,6 +164,12 @@ export async function PUT(request: Request) {
         }
 
         const body = await request.json();
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
+        }
+
 
         const validatedFields = movieUpdateSchema.safeParse(body);
         if (!validatedFields.success) {
@@ -267,19 +273,21 @@ export async function PATCH(request: Request) {
         }
 
         const body = await request.json();
-        const { userMovieId, status, isFavorite } = body;
-
-        if (!userMovieId || typeof userMovieId !== "string") {
-            return NextResponse.json({ error: "Geçerli bir kayıt ID'si gereklidir" }, { status: 400 });
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
         }
 
-        if (status !== undefined) {
-            const sv = mediaStatusSchema.safeParse(status);
-            if (!sv.success) return NextResponse.json({ error: "Geçersiz durum değeri" }, { status: 400 });
+        const validatedFields = moviePatchSchema.safeParse(body);
+        if (!validatedFields.success) {
+            return NextResponse.json(
+                { error: validatedFields.error.flatten().fieldErrors },
+                { status: 400 }
+            );
         }
-        if (isFavorite !== undefined && typeof isFavorite !== "boolean") {
-            return NextResponse.json({ error: "Geçersiz favori değeri" }, { status: 400 });
-        }
+
+        const { userMovieId, status, isFavorite } = validatedFields.data;
 
         const userMovie = await prisma.userMovie.update({
             where: {
@@ -327,11 +335,27 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
+        }
+
         const { searchParams } = new URL(request.url);
         const userMovieId = searchParams.get("id");
 
         if (!userMovieId) {
             return NextResponse.json({ error: "ID gerekli" }, { status: 400 });
+        }
+
+        // Silmeden önce movieId'yi al (yetim kayıt temizliği için)
+        const userMovie = await prisma.userMovie.findUnique({
+            where: { id: userMovieId, userId },
+            select: { movieId: true }
+        });
+
+        if (!userMovie) {
+            return NextResponse.json({ error: "Kayıt bulunamadı" }, { status: 404 });
         }
 
         await prisma.userMovie.delete({
@@ -340,6 +364,12 @@ export async function DELETE(request: Request) {
                 userId,
             },
         });
+
+        // Yetim kayıt temizliği: Artık hiçbir kullanıcıya ait olmayan Movie'yi sil
+        const remainingOwners = await prisma.userMovie.count({ where: { movieId: userMovie.movieId } });
+        if (remainingOwners === 0) {
+            await prisma.movie.delete({ where: { id: userMovie.movieId } }).catch(() => {});
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {

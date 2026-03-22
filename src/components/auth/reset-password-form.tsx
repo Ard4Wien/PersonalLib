@@ -12,6 +12,10 @@ import {
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { PasswordInput } from "@/components/ui/password-input";
 import { motion } from "framer-motion";
+import { Turnstile } from "@/components/ui/turnstile";
+import { ReCaptcha } from "@/components/ui/recaptcha";
+
+import { passwordSchema } from "@/lib/validations";
 
 export function ResetPasswordForm() {
     const router = useRouter();
@@ -22,6 +26,8 @@ export function ResetPasswordForm() {
     const [error, setError] = useState<string | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+    const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
     useEffect(() => {
         if (!token) {
@@ -44,27 +50,10 @@ export function ResetPasswordForm() {
             return;
         }
 
-        // Şifre Güvenlik Kontrolleri
-        if (password.length < 8) {
-            setError("Şifre en az 8 karakter olmalıdır");
-            setIsLoading(false);
-            return;
-        }
-
-        if (!/[A-Z]/.test(password)) {
-            setError("Şifre en az bir büyük harf içermelidir");
-            setIsLoading(false);
-            return;
-        }
-
-        if (!/[0-9]/.test(password)) {
-            setError("Şifre en az bir rakam içermelidir");
-            setIsLoading(false);
-            return;
-        }
-
-        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-            setError("Şifre en az bir özel karakter içermelidir");
+        // Merkezi validation şemasını kullan
+        const validated = passwordSchema.safeParse(password);
+        if (!validated.success) {
+            setError(validated.error.issues[0]?.message || "Geçersiz şifre formatı");
             setIsLoading(false);
             return;
         }
@@ -73,21 +62,34 @@ export function ResetPasswordForm() {
             const response = await fetch("/api/auth/reset-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token, password }),
+                body: JSON.stringify({
+                    token,
+                    password,
+                    turnstileToken,
+                    recaptchaToken
+                }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || "Bir hata oluştu");
+                // API'den gelen kontrollü hata mesajını göster
+                setError(data.error || "Bir hata oluştu. Lütfen tekrar deneyin.");
+                setIsLoading(false);
+                return;
             }
 
             setIsSubmitted(true);
             setTimeout(() => {
                 router.push("/login");
             }, 3000);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            // Ağ hatası — dahili bilgi sızdırmamak için genel mesaj
+            if (err instanceof TypeError && err.message === 'Failed to fetch') {
+                setError("Sunucuya ulaşılamıyor. Lütfen internet bağlantınızı kontrol edin.");
+            } else {
+                setError("Beklenmedik bir hata oluştu. Lütfen tekrar deneyin.");
+            }
         } finally {
             setIsLoading(false);
         }
@@ -166,6 +168,21 @@ export function ResetPasswordForm() {
                         onTogglePassword={() => setShowPassword(!showPassword)}
                         className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
                     />
+                </div>
+
+                {/* Siber Güvenlik: Bot Koruması (Hybrid) */}
+                <div className="space-y-4 pt-2">
+                    {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+                        <Turnstile
+                            onVerify={(token) => setTurnstileToken(token)}
+                            theme="dark"
+                        />
+                    )}
+                    {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+                        <ReCaptcha
+                            onVerify={(token) => setRecaptchaToken(token)}
+                        />
+                    )}
                 </div>
             </CardContent>
 

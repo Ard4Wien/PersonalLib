@@ -157,11 +157,22 @@ export default function Header() {
                                         variant="ghost"
                                         className="relative h-9 w-9 rounded-full"
                                     >
-                                        <Avatar className="h-9 w-9 border-2 border-purple-500/30">
-                                            {session.user.image && <AvatarImage src={getPublicUrl(session.user.image) || ""} alt="Profile" />}
+                                        <Avatar className="h-9 w-9 border-2 border-purple-500/30 relative overflow-hidden">
+                                            {session.user.image && (
+                                                <AvatarImage
+                                                    src={getPublicUrl(session.user.image) || ""}
+                                                    alt="Profile"
+                                                    className="pointer-events-none select-none"
+                                                />
+                                            )}
                                             <AvatarFallback className="bg-gradient-to-br from-purple-600 to-pink-600 text-white text-sm">
                                                 {session.user.name ? getInitials(session.user.name) : <User className="h-4 w-4" />}
                                             </AvatarFallback>
+                                            {/* Fotoğrafı sağ tıklanıp kaydedilmesin/önizlenmesin diye şeffaf koruma katmanı */}
+                                            <div
+                                                className="absolute inset-0 z-10 cursor-default"
+                                                onContextMenu={(e) => e.preventDefault()}
+                                            />
                                         </Avatar>
                                     </Button>
                                 </DropdownMenuTrigger>

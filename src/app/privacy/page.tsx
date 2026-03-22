@@ -14,7 +14,7 @@ export default function PrivacyPage() {
 
             <div className="relative z-10 p-4 max-w-3xl mx-auto w-full">
                 <div className="flex justify-between items-center mb-8">
-                    <Link href="/register">
+                    <Link href="/">
                         <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground">
                             <ArrowLeft className="h-4 w-4" />
                             Geri Dön
@@ -42,9 +42,19 @@ export default function PrivacyPage() {
                             <ul className="list-disc list-inside space-y-1 pl-2">
                                 <li><strong>E-posta adresi:</strong> Hesap oluşturma, giriş yapma ve şifre sıfırlama işlemleri için.</li>
                                 <li><strong>Kullanıcı adı ve görünen ad:</strong> Profil tanımlama ve sosyal özellikler için.</li>
-                                <li><strong>Şifre:</strong> Güvenli bir şekilde hash&apos;lenerek saklanır, düz metin olarak asla kaydedilmez.</li>
+                                <li><strong>Şifre:</strong> Güvenli bir şekilde bcrypt algoritmasıyla hash&apos;lenerek saklanır, düz metin olarak asla kaydedilmez.</li>
                                 <li><strong>Medya verileri:</strong> Eklediğiniz kitap, film ve dizi bilgileri.</li>
+                                <li><strong>Teknik Veriler:</strong> IP adresi, tarayıcı tipi ve oturum yönetimi için gerekli çerez verileri.</li>
                             </ul>
+                        </section>
+
+                        <section className="space-y-2">
+                            <h2 className="text-lg font-semibold text-foreground">2. Çerezler (Cookies) ve Yerel Depolama</h2>
+                            <p>
+                                <Link href="https://personal-lib.vercel.app" className="text-blue-500 hover:underline">PersonalLib</Link>, 
+                                kullanıcı oturumlarını yönetmek, tema tercihlerini (karanlık/aydınlık mod) saklamak ve güvenliği sağlamak amacıyla 
+                                teknik çerezler ve yerel depolama (localStorage) teknolojilerini kullanır. Bu veriler reklam veya takip amacıyla üçüncü taraflarla paylaşılmaz.
+                            </p>
                         </section>
 
                         <section className="space-y-2">
@@ -59,9 +69,11 @@ export default function PrivacyPage() {
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">3. Veri Paylaşımı ve Altyapı</h2>
+                            <h2 className="text-lg font-semibold text-foreground">4. Veri Paylaşımı ve KVKK</h2>
                             <p>
-                                Kişisel verileriniz üçüncü taraflarla paylaşılmaz, satılmaz veya kiralanmaz. Ancak, uygulamamızın çalışması için gerekli olan teknik altyapı (sunucu ve veritabanı barındırma) güvenli bulut sağlayıcıları tarafından sunulmaktadır. Verileriniz bu sağlayıcıların altyapısında, üçüncü taraflarca işlenmeksizin güvenli bir şekilde muhafaza edilmektedir. Yalnızca yasal zorunluluk durumlarında yetkili makamlarla paylaşım yapılabilir.
+                                Kişisel verileriniz üçüncü taraflarla paylaşılmaz, satılmaz veya kiralanmaz. Verileriniz 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) 
+                                uyumlu bir şekilde işlenmektedir. Uygulamanın çalışması için gerekli olan teknik altyapı güvenli bulut sağlayıcıları tarafından sunulmaktadır. 
+                                Yalnızca yasal zorunluluk durumlarında yetkili makamlarla paylaşım yapılabilir.
                             </p>
                         </section>
 
@@ -76,9 +88,11 @@ export default function PrivacyPage() {
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">5. Yaş Sınırı</h2>
+                            <h2 className="text-lg font-semibold text-foreground">6. Yaş Sınırı ve İletişim</h2>
                             <p>
-                                PersonalLib, 13 yaş ve üzeri kullanıcıların kullanımı için tasarlanmıştır. Eğer 13 yaşın altındaki bir çocuğun bize kişisel veri sağladığını fark ederseniz, lütfen bizimle iletişime geçin. Bu verileri sistemlerimizden derhal sileceğiz.
+                                PersonalLib, 13 yaş ve üzeri kullanıcıların kullanımı için tasarlanmıştır. Her türlü soru, görüş veya veri silme talebiniz için 
+                                bizimle <strong>personallibinfo@gmail.com</strong> adresi üzerinden iletişime geçebilirsiniz. İlgili talepleriniz en kısa sürede 
+                                değerlendirilerek sonuçlandırılacaktır.
                             </p>
                         </section>
 
@@ -101,7 +115,7 @@ export default function PrivacyPage() {
                         </section>
 
                         <div className="pt-4 border-t border-black/5 dark:border-white/5 text-xs italic text-muted-foreground/70">
-                            Son güncelleme: 17 Mart 2026
+                            Son güncelleme: 22 Mart 2026
                         </div>
                     </div>
                 </motion.div>

@@ -24,6 +24,7 @@ export function Turnstile({ onVerify, theme = "auto" }: TurnstileProps) {
                     sitekey: siteKey,
                     callback: onVerify,
                     theme: theme,
+                    appearance: "interaction-only",
                 });
             }
         };
@@ -41,7 +42,7 @@ export function Turnstile({ onVerify, theme = "auto" }: TurnstileProps) {
     if (!siteKey) return null;
 
     return (
-        <div className="flex justify-center my-4 min-h-[65px]">
+        <div className="flex justify-center">
             <Script
                 src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
                 onLoad={() => setIsLoaded(true)}
@@ -60,6 +61,7 @@ declare global {
                     sitekey: string;
                     callback: (token: string) => void;
                     theme?: string;
+                    appearance?: "always" | "execute" | "interaction-only";
                 }
             ) => string;
             remove: (widgetId: string) => void;

@@ -11,11 +11,15 @@ import {
 } from "@/components/ui/card";
 import { ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Turnstile } from "@/components/ui/turnstile";
+import { ReCaptcha } from "@/components/ui/recaptcha";
 
 export function ForgotPasswordForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+    const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -29,18 +33,25 @@ export function ForgotPasswordForm() {
             const response = await fetch("/api/auth/forgot-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ 
+                    email,
+                    turnstileToken,
+                    recaptchaToken
+                }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || "Bir hata oluştu");
+                // API'den gelen kontrollü hata mesajını göster
+                setError(data.error || "Bir hata oluştu. Lütfen tekrar deneyin.");
+                return;
             }
 
             setIsSubmitted(true);
-        } catch (err: any) {
-            setError(err.message);
+        } catch {
+            // Ağ hatası veya JSON parse hatası — dahili bilgi sızdırmamak için genel mesaj
+            setError("Bir hata oluştu. Lütfen tekrar deneyin.");
         } finally {
             setIsLoading(false);
         }
@@ -108,13 +119,23 @@ export function ForgotPasswordForm() {
                         className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
                     />
                 </div>
+
+                {/* Bot Koruması (Görünmez Mod) */}
+                <div className="space-y-4">
+                    <ReCaptcha onVerify={setRecaptchaToken} />
+                    {!recaptchaToken && <Turnstile onVerify={setTurnstileToken} />}
+                </div>
             </CardContent>
 
             <CardFooter className="flex flex-col gap-4 pt-6">
                 <Button
                     type="submit"
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all hover:scale-[1.02]"
-                    disabled={isLoading}
+                    disabled={
+                        isLoading || 
+                        ((!!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || !!process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) && 
+                         (!turnstileToken && !recaptchaToken))
+                    }
                 >
                     {isLoading ? (
                         <>

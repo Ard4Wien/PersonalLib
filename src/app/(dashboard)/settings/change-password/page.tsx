@@ -13,11 +13,15 @@ import { toast } from "sonner";
 import AnimatedPage from "@/components/layout/animated-page";
 import Link from "next/link";
 import { changePasswordSchema, type ChangePasswordInput } from "@/lib/validations";
+import { Turnstile } from "@/components/ui/turnstile";
+import { ReCaptcha } from "@/components/ui/recaptcha";
 
 export default function ChangePasswordPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [showPasswords, setShowPasswords] = useState(false);
+    const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+    const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
     const {
         register,
@@ -35,7 +39,11 @@ export default function ChangePasswordPage() {
             const response = await fetch("/api/user/change-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data),
+                body: JSON.stringify({
+                    ...data,
+                    turnstileToken,
+                    recaptchaToken,
+                }),
             });
 
             const result = await response.json();
@@ -142,6 +150,12 @@ export default function ChangePasswordPage() {
                                 {errors.confirmPassword && (
                                     <p className="text-xs text-red-400">{errors.confirmPassword.message}</p>
                                 )}
+                            </div>
+
+                            {/* Bot Koruması (Görünmez Mod) */}
+                            <div>
+                                <ReCaptcha onVerify={setRecaptchaToken} />
+                                {!recaptchaToken && <Turnstile onVerify={setTurnstileToken} />}
                             </div>
                         </CardContent>
                         <CardFooter className="pt-4">

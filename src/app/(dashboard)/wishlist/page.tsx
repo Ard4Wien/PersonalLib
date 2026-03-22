@@ -116,7 +116,7 @@ export default function WishlistPage() {
             if (seriesRes.ok) {
                 const series = await seriesRes.json();
                 series
-                    .filter((s: { overallStatus: string }) => s.overallStatus === "WISHLIST")
+                    .filter((s: { status: string }) => s.status === "WISHLIST")
                     .forEach((s: any) => {
                         wishlistItems.push({
                             id: s.id,

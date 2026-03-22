@@ -3,10 +3,16 @@ import prisma from "@/lib/prisma";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "@/lib/mail";
 import { headers } from "next/headers";
+import { validateTurnstile } from "@/lib/turnstile";
+import { validateRecaptcha } from "@/lib/recaptcha";
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     try {
-        const { email } = await request.json();
+        const body = await request.json();
+        const { email, turnstileToken, recaptchaToken } = body;
+        
         const headerList = await headers();
         
         // Daha güvenilir IP tespiti
@@ -19,6 +25,15 @@ export async function POST(request: Request) {
                 { error: "E-posta adresi gerekli" },
                 { status: 400 }
             );
+        }
+
+        // Bot Koruması (Hibrit)
+        if (process.env.RECAPTCHA_SECRET_KEY) {
+            const isValid = await validateRecaptcha(recaptchaToken);
+            if (!isValid) return NextResponse.json({ error: "Güvenlik doğrulaması başarısız (reCaptcha)." }, { status: 403 });
+        } else if (process.env.TURNSTILE_SECRET_KEY) {
+            const isValid = await validateTurnstile(turnstileToken);
+            if (!isValid) return NextResponse.json({ error: "Güvenlik doğrulaması başarısız (Turnstile)." }, { status: 403 });
         }
 
         const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { passwordSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -55,9 +56,13 @@ export function RegisterForm() {
                 const data = await res.json();
                 setUsernameAvailable(data.available);
                 setUsernameCheckError(data.error || null);
-            } catch (err) {
+            } catch (err: unknown) {
                 console.error("Kullanıcı adı kontrol hatası");
-                setUsernameCheckError("Sunucu hatası");
+                if (err instanceof TypeError && err.message === 'Failed to fetch') {
+                    setUsernameCheckError("Bağlantı hatası");
+                } else {
+                    setUsernameCheckError("Sunucu hatası");
+                }
             } finally {
                 setIsCheckingUsername(false);
             }
@@ -113,9 +118,10 @@ export function RegisterForm() {
         const confirmPassword = formData.get("confirmPassword") as string;
         const password = data.password;
 
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d])/;
-        if (!passwordRegex.test(password)) {
-            setError("Şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir.");
+        // Merkezi validation şemasını kullan
+        const validatedPassword = passwordSchema.safeParse(password);
+        if (!validatedPassword.success) {
+            setError(validatedPassword.error.issues[0]?.message || "Şifre formatı geçersiz.");
             setIsLoading(false);
             return;
         }
@@ -170,8 +176,13 @@ export function RegisterForm() {
             }
 
             router.push("/login?registered=true");
-        } catch {
-            setError("Bir hata oluştu. Lütfen tekrar deneyin.");
+        } catch (err: unknown) {
+            // Ağ hatası mı yoksa beklenmedik bir js hatası mı kontrol et
+            if (err instanceof TypeError && err.message === 'Failed to fetch') {
+                setError("Sunucuya ulaşılamıyor. Lütfen internet bağlantınızı kontrol edin.");
+            } else {
+                setError("Beklenmedik bir hata oluştu. Lütfen sayfayı yenileyip tekrar deneyin.");
+            }
         } finally {
             setIsLoading(false);
         }

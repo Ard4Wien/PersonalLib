@@ -28,6 +28,10 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "Arama terimi gerekli" }, { status: 400 });
         }
 
+        if (query.length > 100) {
+            return NextResponse.json({ error: "Arama terimi çok uzun" }, { status: 400 });
+        }
+
         const OMDB_API_KEY = process.env.OMDB_API_KEY;
 
 
@@ -86,8 +90,9 @@ export async function GET(request: Request) {
             return score;
         };
 
-        const topTMDB = tmdbResults.slice(0, 10);
-        const topOMDb = omdbResults.slice(0, 10);
+        // Performans için detay araması yapılan film sayısını 5+5 olarak sınırla
+        const topTMDB = tmdbResults.slice(0, 5);
+        const topOMDb = omdbResults.slice(0, 5);
 
 
         const fetchTMDBDetails = async (movie: any) => {
@@ -95,8 +100,23 @@ export async function GET(request: Request) {
                 const res = await fetch(`${TMDB_BASE_URL}/movie/${movie.id.replace("tmdb-", "")}?api_key=${TMDB_API_KEY}&append_to_response=credits&language=tr-TR`);
                 if (!res.ok) return movie;
                 const details = await res.json();
+                
+                let description = details.overview || movie.description;
+                
+                // Eğer Türkçe açıklama yoksa İngilizce dene (Dil Fallback)
+                if (!description && TMDB_API_KEY) {
+                    try {
+                        const enRes = await fetch(`${TMDB_BASE_URL}/movie/${movie.id.replace("tmdb-", "")}?api_key=${TMDB_API_KEY}&language=en-US`);
+                        if (enRes.ok) {
+                            const enData = await enRes.json();
+                            description = enData.overview || "";
+                        }
+                    } catch (e) {}
+                }
+
                 return {
                     ...movie,
+                    description,
                     director: details.credits?.crew?.find((p: any) => p.job === "Director")?.name || "Bilinmiyor",
                     genre: details.genres?.[0]?.name || ""
                 };
@@ -131,11 +151,8 @@ export async function GET(request: Request) {
             .map(({ score, ...item }) => ({
                 ...item,
                 subtitle: item.director || "Bilinmiyor",
-                director: item.director || "Bilinmiyor",
                 image: item.coverImage,
-                coverImage: item.coverImage,
-                type: "movie",
-                genre: item.genre || ""
+                type: "movie"
             }))
             .slice(0, 30);
 

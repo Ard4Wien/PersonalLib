@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
+import { usernameSchema } from "@/lib/validations";
 
 export const dynamic = 'force-dynamic';
 
@@ -8,12 +10,22 @@ export async function GET(
     { params }: { params: Promise<{ username: string }> }
 ) {
     try {
-        const { username } = await params;
+        const { username: rawUsername } = await params;
 
-        // Username doğrulama (sadece küçük harf, rakam, alt çizgi)
-        if (!username || !/^[a-z0-9_]+$/.test(username)) {
+        // Rate Limiting (Public endpoint bot koruması)
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
+        }
+
+        // Merkezi şema ile kullanıcı adı doğrulaması
+        const validated = usernameSchema.safeParse(rawUsername);
+        if (!validated.success) {
             return NextResponse.json({ error: "Geçersiz kullanıcı adı" }, { status: 400 });
         }
+
+        const username = validated.data;
 
         const user = await prisma.user.findUnique({
             where: { username },
@@ -26,21 +38,24 @@ export async function GET(
                         status: { in: ["READING", "COMPLETED"] }
                     },
                     include: { book: true },
-                    orderBy: { updatedAt: "desc" }
+                    orderBy: { updatedAt: "desc" },
+                    take: 40 // En güncel 40 içerik
                 },
                 movies: {
                     where: {
                         status: { in: ["WATCHING", "COMPLETED"] }
                     },
                     include: { movie: true },
-                    orderBy: { updatedAt: "desc" }
+                    orderBy: { updatedAt: "desc" },
+                    take: 40 // En güncel 40 içerik
                 },
                 series: {
                     where: {
                         overallStatus: { in: ["WATCHING", "COMPLETED"] }
                     },
                     include: { series: true },
-                    orderBy: { updatedAt: "desc" }
+                    orderBy: { updatedAt: "desc" },
+                    take: 40 // En güncel 40 içerik
                 }
             }
         });
@@ -71,7 +86,6 @@ export async function GET(
             },
             collections: {
                 books: user.books.map(ub => ({
-                    id: ub.id,
                     mediaId: ub.bookId,
                     title: ub.book.title,
                     subtitle: ub.book.author || "Bilinmeyen Yazar",
@@ -81,7 +95,6 @@ export async function GET(
                     updatedAt: ub.updatedAt.toISOString()
                 })),
                 movies: user.movies.map(um => ({
-                    id: um.id,
                     mediaId: um.movieId,
                     title: um.movie.title,
                     subtitle: um.movie.director || "Bilinmeyen Yönetmen",
@@ -91,7 +104,6 @@ export async function GET(
                     updatedAt: um.updatedAt.toISOString()
                 })),
                 series: user.series.map(us => ({
-                    id: us.id,
                     mediaId: us.seriesId,
                     title: us.series.title,
                     subtitle: us.series.creator || "Bilinmeyen Yapımcı",
@@ -105,7 +117,7 @@ export async function GET(
 
         return NextResponse.json(standardizedData);
     } catch (error) {
-        console.error("Portfolyo hatası");
+        // Sessiz hata yönetimi
         return NextResponse.json({ error: "Veriler alınırken bir hata oluştu" }, { status: 500 });
     }
 }

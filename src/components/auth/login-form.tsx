@@ -146,7 +146,11 @@ export function LoginForm() {
                     <Button
                         type="submit"
                         className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all hover:scale-[1.02]"
-                        disabled={isLoading}
+                        disabled={
+                            isLoading || 
+                            ((!!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || !!process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) && 
+                             (!turnstileToken && !recaptchaToken))
+                        }
                     >
                         {isLoading ? (
                             <>

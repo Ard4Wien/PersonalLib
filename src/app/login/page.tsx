@@ -3,8 +3,16 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { BACKGROUND_GRADIENT } from "@/lib/utils";
 import { LoginForm } from "@/components/auth/login-form";
 import * as motion from "framer-motion/client";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+    const session = await auth();
+
+    if (session) {
+        redirect("/");
+    }
+
     return (
         <div className={BACKGROUND_GRADIENT + " items-center justify-center p-4 transition-colors duration-500"}>
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />

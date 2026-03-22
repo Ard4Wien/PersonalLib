@@ -2,24 +2,34 @@ import { z } from "zod";
 import { isValidUsername, containsProfanity } from "./profanity";
 import { containsHtml } from "./sanitize";
 
+export const usernameSchema = z
+    .string()
+    .min(4, "Kullanıcı adı en az 4 karakter olmalıdır")
+    .max(12, "Kullanıcı adı en fazla 12 karakter olabilir")
+    .regex(
+        /^[a-z0-9_]+$/,
+        "Kullanıcı adı sadece küçük harf, rakam ve alt çizgi içerebilir"
+    )
+    .transform((val) => val.toLowerCase())
+    .refine((val) => !/^\d+$/.test(val), {
+        message: "Kullanıcı adı sadece rakamlardan oluşamaz",
+    })
+    .refine((val) => isValidUsername(val), {
+        message: "Bu kullanıcı adı kullanılamaz veya uygunsuz içerik barındırıyor",
+    });
+
+export const passwordSchema = z
+    .string()
+    .min(8, "Şifre en az 8 karakter olmalıdır")
+    .max(100, "Şifre en fazla 100 karakter olabilir")
+    .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d])/,
+        "Şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir"
+    );
 
 export const registerSchema = z.object({
     email: z.string().email("Geçerli bir e-posta adresi giriniz"),
-    username: z
-        .string()
-        .min(4, "Kullanıcı adı en az 4 karakter olmalıdır")
-        .max(12, "Kullanıcı adı en fazla 12 karakter olabilir")
-        .regex(
-            /^[a-z0-9_]+$/,
-            "Kullanıcı adı sadece küçük harf, rakam ve alt çizgi içerebilir"
-        )
-        .transform((val) => val.toLowerCase())
-        .refine((val) => !/^\d+$/.test(val), {
-            message: "Kullanıcı adı sadece rakamlardan oluşamaz",
-        })
-        .refine((val) => isValidUsername(val), {
-            message: "Bu kullanıcı adı kullanılamaz veya uygunsuz içerik barındırıyor",
-        }),
+    username: usernameSchema,
     displayName: z
         .string()
         .min(2, "Görünen ad en az 2 karakter olmalıdır")
@@ -34,14 +44,7 @@ export const registerSchema = z.object({
         .refine((val) => !containsProfanity(val), {
             message: "Görünen ad uygunsuz içerik barındıramaz",
         }),
-    password: z
-        .string()
-        .min(8, "Şifre en az 8 karakter olmalıdır")
-        .max(100, "Şifre en fazla 100 karakter olabilir")
-        .regex(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d])/,
-            "Şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir"
-        ),
+    password: passwordSchema,
 });
 
 export const loginSchema = z.object({
@@ -135,6 +138,9 @@ export const changePasswordSchema = z.object({
 }).refine((data) => data.newPassword === data.confirmPassword, {
     message: "Şifreler uyuşmuyor",
     path: ["confirmPassword"],
+}).refine((data) => data.newPassword !== data.currentPassword, {
+    message: "Yeni şifre mevcut şifre ile aynı olamaz",
+    path: ["newPassword"],
 });
 
 
@@ -194,9 +200,52 @@ export const seriesUpdateSchema = z.object({
     lastEpisode: z.string().or(z.number()).nullable().optional(),
 });
 
+export const mediaPatchSchema = z.object({
+    status: mediaStatusSchema.optional(),
+    isFavorite: z.boolean().optional(),
+});
+
+export const bookPatchSchema = mediaPatchSchema.extend({
+    userBookId: z.string().min(1),
+});
+
+export const moviePatchSchema = mediaPatchSchema.extend({
+    userMovieId: z.string().min(1),
+});
+
+export const seriesPatchSchema = mediaPatchSchema.extend({
+    userSeriesId: z.string().min(1),
+    lastSeason: z.string().or(z.number()).nullable().optional(),
+    lastEpisode: z.string().or(z.number()).nullable().optional(),
+    seasonId: z.string().optional(),
+    seasonStatus: mediaStatusSchema.optional(),
+});
+
+export const languageSchema = z.enum(["tr", "en", "fr", "de"]);
+
+export const privacySchema = z.object({
+    isPrivate: z.boolean()
+});
+
+export const profileImageSchema = z.string().min(1, "Resim yolu gereklidir").max(500, "Resim yolu çok uzun").refine((val) => {
+    // HTTPS URL'leri kabul et (eski format desteği)
+    if (val.startsWith("https://")) return true;
+
+    // Path Traversal koruması: "..", "//", "\\" karakterlerini engelle
+    if (val.includes("..") || val.includes("//") || val.includes("\\")) return false;
+
+    // Sadece avatars/ altında ve güvenli dosya uzantılarıyla kabul et
+    return /^avatars\/[a-zA-Z0-9@!_-]+\.(jpg|jpeg|png|webp)$/i.test(val);
+}, {
+    message: "Geçersiz resim formatı"
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type BookInput = z.infer<typeof bookSchema>;
 export type MovieInput = z.infer<typeof movieSchema>;
 export type SeriesInput = z.infer<typeof seriesSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+export type BookPatchInput = z.infer<typeof bookPatchSchema>;
+export type MoviePatchInput = z.infer<typeof moviePatchSchema>;
+export type SeriesPatchInput = z.infer<typeof seriesPatchSchema>;

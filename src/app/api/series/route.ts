@@ -1,11 +1,32 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { seriesSchema, seriesUpdateSchema, mediaStatusSchema } from "@/lib/validations";
+import { seriesSchema, seriesUpdateSchema, seriesPatchSchema, mediaStatusSchema } from "@/lib/validations";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 import { getUserIdFromRequest } from "@/lib/mobile-auth";
 
 export const dynamic = 'force-dynamic';
+
+// Yanıt formatını standartlaştırmak için yardımcı fonksiyon
+function formatUserSeriesResponse(userSeries: any) {
+    const series = userSeries.series;
+    return {
+        id: userSeries.id,
+        mediaId: userSeries.seriesId,
+        title: series.title,
+        subtitle: `${series.creator || "Bilinmeyen Yapımcı"} • ${series.totalSeasons || 1} Sezon`,
+        image: series.coverImage,
+        coverImage: series.coverImage,
+        type: "series",
+        status: userSeries.overallStatus,
+        isFavorite: userSeries.isFavorite,
+        genre: series.genre || "",
+        totalSeasons: series.totalSeasons || 1,
+        updatedAt: userSeries.updatedAt.toISOString(),
+        series: series,
+        seasonStatuses: userSeries.seasonStatuses || []
+    };
+}
 
 
 export async function GET(request: Request) {
@@ -29,21 +50,7 @@ export async function GET(request: Request) {
         });
 
 
-        const standardizedSeries = userSeries.map((us) => ({
-            id: us.id,
-            mediaId: us.seriesId,
-            title: us.series.title,
-            subtitle: us.series.creator || "Bilinmeyen Yapımcı",
-            image: us.series.coverImage,
-            coverImage: us.series.coverImage,
-            type: "series",
-            status: us.overallStatus,
-            isFavorite: us.isFavorite,
-            updatedAt: us.updatedAt.toISOString(),
-
-            series: us.series,
-            seasonStatuses: us.seasonStatuses
-        }));
+        const standardizedSeries = userSeries.map(formatUserSeriesResponse);
 
         return NextResponse.json(standardizedSeries);
     } catch (error) {
@@ -75,7 +82,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { status = "WISHLIST", lastSeason, lastEpisode, seasons = [], ...seriesData } = body;
+        const { status = "WISHLIST", lastSeason, lastEpisode, ...seriesData } = body;
 
         const validatedFields = seriesSchema.safeParse(seriesData);
         if (!validatedFields.success) {
@@ -155,23 +162,7 @@ export async function POST(request: Request) {
         });
 
 
-        const standardizedResponse = {
-            id: userSeries.id,
-            mediaId: userSeries.seriesId,
-            title: userSeries.series.title,
-            subtitle: `${userSeries.series.creator} • ${userSeries.series.totalSeasons} Sezon`,
-            image: userSeries.series.coverImage,
-            coverImage: userSeries.series.coverImage,
-            type: "series",
-            status: userSeries.overallStatus,
-            isFavorite: userSeries.isFavorite,
-            genre: userSeries.series.genre,
-            updatedAt: userSeries.updatedAt.toISOString(),
-            series: userSeries.series,
-            seasonStatuses: userSeries.seasonStatuses
-        };
-
-        return NextResponse.json(standardizedResponse, { status: 201 });
+        return NextResponse.json(formatUserSeriesResponse(userSeries), { status: 201 });
     } catch (error) {
         console.error("Dizi hatası");
         return NextResponse.json(
@@ -190,6 +181,12 @@ export async function PUT(request: Request) {
         }
 
         const body = await request.json();
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
+        }
+
 
         const validatedFields = seriesUpdateSchema.safeParse(body);
         if (!validatedFields.success) {
@@ -241,14 +238,21 @@ export async function PUT(request: Request) {
                 });
             } else {
                 const originalSeries = await prisma.series.findUnique({ where: { id: seriesId } });
+                const newTotalSeasons = parsedTotalSeasons || originalSeries?.totalSeasons || 1;
+                
                 targetSeries = await prisma.series.create({
                     data: { 
                         title, 
                         creator, 
                         coverImage: coverImage || null, 
                         genre: genre || null,
-                        totalSeasons: parsedTotalSeasons || originalSeries?.totalSeasons,
-                        imdbId: originalSeries?.imdbId 
+                        totalSeasons: newTotalSeasons,
+                        imdbId: originalSeries?.imdbId,
+                        seasons: {
+                            create: Array.from({ length: newTotalSeasons }, (_, i) => ({
+                                seasonNumber: i + 1,
+                            })),
+                        },
                     },
                 });
             }
@@ -281,23 +285,7 @@ export async function PUT(request: Request) {
              if (oldSeriesCount === 0) await prisma.series.delete({ where: { id: seriesId } }).catch(() => {});
         }
 
-        const standardizedResponse = {
-            id: userSeries.id,
-            mediaId: userSeries.seriesId,
-            title: userSeries.series.title,
-            subtitle: `${userSeries.series.creator} • ${userSeries.series.totalSeasons} Sezon`,
-            image: userSeries.series.coverImage,
-            coverImage: userSeries.series.coverImage,
-            type: "series",
-            status: userSeries.overallStatus,
-            isFavorite: userSeries.isFavorite,
-            genre: userSeries.series.genre,
-            updatedAt: userSeries.updatedAt.toISOString(),
-            series: userSeries.series,
-            seasonStatuses: userSeries.seasonStatuses
-        };
-
-        return NextResponse.json(standardizedResponse);
+        return NextResponse.json(formatUserSeriesResponse(userSeries));
     } catch (error) {
         console.error("Dizi hatası");
         return NextResponse.json(
@@ -316,19 +304,21 @@ export async function PATCH(request: Request) {
         }
 
         const body = await request.json();
-        const { userSeriesId, status, seasonId, seasonStatus, isFavorite, lastSeason, lastEpisode } = body;
-
-        if (!userSeriesId || typeof userSeriesId !== "string") {
-            return NextResponse.json({ error: "Geçerli bir kayıt ID'si gereklidir" }, { status: 400 });
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
         }
 
-        if (status !== undefined) {
-            const sv = mediaStatusSchema.safeParse(status);
-            if (!sv.success) return NextResponse.json({ error: "Geçersiz durum değeri" }, { status: 400 });
+        const validatedFields = seriesPatchSchema.safeParse(body);
+        if (!validatedFields.success) {
+            return NextResponse.json(
+                { error: validatedFields.error.flatten().fieldErrors },
+                { status: 400 }
+            );
         }
-        if (isFavorite !== undefined && typeof isFavorite !== "boolean") {
-            return NextResponse.json({ error: "Geçersiz favori değeri" }, { status: 400 });
-        }
+
+        const { userSeriesId, status, isFavorite, lastSeason, lastEpisode, seasonId, seasonStatus } = validatedFields.data;
 
 
         if (seasonId && seasonStatus) {
@@ -381,23 +371,7 @@ export async function PATCH(request: Request) {
         });
 
 
-        const standardizedResponse = {
-            id: userSeries.id,
-            mediaId: userSeries.seriesId,
-            title: userSeries.series.title,
-            subtitle: `${userSeries.series.creator} • ${userSeries.series.totalSeasons} Sezon`,
-            image: userSeries.series.coverImage,
-            coverImage: userSeries.series.coverImage,
-            type: "series",
-            status: userSeries.overallStatus,
-            isFavorite: userSeries.isFavorite,
-            genre: userSeries.series.genre,
-            updatedAt: userSeries.updatedAt.toISOString(),
-            series: userSeries.series,
-            seasonStatuses: userSeries.seasonStatuses
-        };
-
-        return NextResponse.json(standardizedResponse);
+        return NextResponse.json(formatUserSeriesResponse(userSeries));
     } catch (error) {
         console.error("Dizi hatası");
         return NextResponse.json(
@@ -415,11 +389,27 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
         }
 
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
+        }
+
         const { searchParams } = new URL(request.url);
         const userSeriesId = searchParams.get("id");
 
         if (!userSeriesId) {
             return NextResponse.json({ error: "ID gerekli" }, { status: 400 });
+        }
+
+        // Silmeden önce seriesId'yi al (yetim kayıt temizliği için)
+        const userSeries = await prisma.userSeries.findUnique({
+            where: { id: userSeriesId, userId },
+            select: { seriesId: true }
+        });
+
+        if (!userSeries) {
+            return NextResponse.json({ error: "Kayıt bulunamadı" }, { status: 404 });
         }
 
         await prisma.userSeries.delete({
@@ -428,6 +418,13 @@ export async function DELETE(request: Request) {
                 userId,
             },
         });
+
+        // Yetim kayıt temizliği: Artık hiçbir kullanıcıya ait olmayan Series'i sil
+        // (Cascade ile Season kayıtları da otomatik silinir)
+        const remainingOwners = await prisma.userSeries.count({ where: { seriesId: userSeries.seriesId } });
+        if (remainingOwners === 0) {
+            await prisma.series.delete({ where: { id: userSeries.seriesId } }).catch(() => {});
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {

@@ -10,10 +10,15 @@ const DANGEROUS_TAGS = /<\s*\/?\s*(script|iframe|object|embed|form|input|textare
 const EVENT_HANDLERS = /\s*on\w+\s*=\s*["'][^"']*["']/gi;
 
 // data: ve javascript: URL'lerini temizle
-const DANGEROUS_URLS = /(javascript|vbscript|data)\s*:/gi;
+// NOT: Aşağıdaki regex'ler iki farklı amaçla kullanılıyor:
+// - Global (g) flagli olanlar: replace() içinde tüm eşleşmeleri temizlemek için
+// - Global flagsiz olanlar: test() içinde stateful lastIndex bug'ından kaçınmak için
+const DANGEROUS_URLS_GLOBAL = /(javascript|vbscript|data)\s*:/gi;
+const DANGEROUS_URLS_TEST = /(javascript|vbscript|data)\s*:/i;
 
 // Temel HTML etiketlerini temizle (<div>, <span>, <a>, <img> vs.)
-const ALL_HTML_TAGS = /<[^>]+>/g;
+const ALL_HTML_TAGS_GLOBAL = /<[^>]+>/g;
+const ALL_HTML_TAGS_TEST = /<[^>]+>/;
 
 /**
  * Metinden tüm HTML etiketlerini kaldırır (Düz metin döndürür)
@@ -21,8 +26,8 @@ const ALL_HTML_TAGS = /<[^>]+>/g;
 export function stripHtml(input: string): string {
     if (!input) return input;
     return input
-        .replace(ALL_HTML_TAGS, '')
-        .replace(DANGEROUS_URLS, '')
+        .replace(ALL_HTML_TAGS_GLOBAL, '')
+        .replace(DANGEROUS_URLS_GLOBAL, '')
         .replace(EVENT_HANDLERS, '')
         .trim();
 }
@@ -36,7 +41,7 @@ export function sanitizeHtml(input: string): string {
     return input
         .replace(DANGEROUS_TAGS, '')
         .replace(EVENT_HANDLERS, '')
-        .replace(DANGEROUS_URLS, '')
+        .replace(DANGEROUS_URLS_GLOBAL, '')
         .trim();
 }
 
@@ -49,7 +54,8 @@ export function isSafeUrl(url: string): boolean {
     if (trimmed.startsWith('javascript:')) return false;
     if (trimmed.startsWith('vbscript:')) return false;
     if (trimmed.startsWith('data:')) return false;
-    if (!trimmed.startsWith('https://') && !trimmed.startsWith('http://')) return false;
+    // Güvenlik politikası gereği sadece HTTPS kabul edilir
+    if (!trimmed.startsWith('https://')) return false;
     return true;
 }
 
@@ -58,5 +64,6 @@ export function isSafeUrl(url: string): boolean {
  */
 export function containsHtml(input: string): boolean {
     if (!input) return false;
-    return ALL_HTML_TAGS.test(input) || DANGEROUS_URLS.test(input);
+    // Global flag'siz regex kullanarak stateful lastIndex bug'ından kaçınılır
+    return ALL_HTML_TAGS_TEST.test(input) || DANGEROUS_URLS_TEST.test(input);
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { getUserIdFromRequest } from "@/lib/mobile-auth";
+import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 
 export async function GET(request: Request) {
     try {
@@ -9,6 +10,13 @@ export async function GET(request: Request) {
 
         if (!userId) {
             return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 });
+        }
+
+        // Rate Limiting (Güvenlik)
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+        if (!rateLimitResult.success) {
+            return NextResponse.json({ error: rateLimitResult.message }, { status: 429 });
         }
 
         const [bookStats, movieStats, seriesStats] = await Promise.all([
@@ -38,7 +46,7 @@ export async function GET(request: Request) {
             series: seriesStats
         });
     } catch (error) {
-        console.error("Stats fetching error:", error instanceof Error ? error.message : "Bilinmeyen hata");
+        console.error("Stats fetching error");
         return NextResponse.json({ error: "İstatistikler yüklenemedi" }, { status: 500 });
     }
 }

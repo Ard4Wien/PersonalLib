@@ -28,6 +28,10 @@ export async function GET(request: Request) {
             return NextResponse.json({ error: "Arama terimi gerekli" }, { status: 400 });
         }
 
+        if (query.length > 100) {
+            return NextResponse.json({ error: "Arama terimi çok uzun" }, { status: 400 });
+        }
+
         const OMDB_API_KEY = process.env.OMDB_API_KEY;
 
 
@@ -50,6 +54,7 @@ export async function GET(request: Request) {
                 id: `tmdb-${show.id}`,
                 title: show.name,
                 startYear: show.first_air_date ? parseInt(show.first_air_date.substring(0, 4)) : undefined,
+                description: show.overview || "",
                 coverImage: show.poster_path ? `https://image.tmdb.org/t/p/w780${show.poster_path}` : "",
                 source: "tmdb"
             }));
@@ -66,6 +71,7 @@ export async function GET(request: Request) {
                     startYear: show.premiered ? parseInt(show.premiered.substring(0, 4)) : undefined,
                     coverImage: show.image?.original || show.image?.medium || "",
                     genre: show.genres?.[0] || "",
+                    description: show.summary ? show.summary.replace(/<[^>]*>/g, "") : "", // HTML taglerini temizle
                     source: "tvmaze"
                 };
             });
@@ -92,6 +98,7 @@ export async function GET(request: Request) {
                 id: `mal-${anime.mal_id}`,
                 title: anime.title,
                 startYear: anime.year || (anime.aired?.from ? parseInt(anime.aired.from.substring(0, 4)) : undefined),
+                description: anime.synopsis || "",
                 coverImage: anime.images?.jpg?.large_image_url || anime.images?.jpg?.image_url || "",
                 genre: anime.genres?.[0]?.name || "",
                 creator: anime.studios?.[0]?.name || "Bilinmiyor",
@@ -121,9 +128,10 @@ export async function GET(request: Request) {
             return score;
         };
 
-        const topTMDB = tmdbResults.slice(0, 8);
-        const topTVm = tvmazeResults.slice(0, 8);
-        const topOMDb = omdbResults.slice(0, 8);
+        // Performans için detay araması yapılan dizi sayısını 4+4+4 olarak sınırla
+        const topTMDB = tmdbResults.slice(0, 4);
+        const topTVm = tvmazeResults.slice(0, 4);
+        const topOMDb = omdbResults.slice(0, 4);
 
 
         const [detailedTMDB, detailedOMDb, detailedTVm] = await Promise.all([
@@ -134,6 +142,7 @@ export async function GET(request: Request) {
                     const details = await res.json();
                     return {
                         ...show,
+                        description: details.overview || show.description,
                         creator: details.created_by?.[0]?.name || "Bilinmiyor",
                         genre: details.genres?.[0]?.name || "",
                         totalSeasons: details.number_of_seasons || 1
@@ -147,32 +156,15 @@ export async function GET(request: Request) {
                     const details = await res.json();
                     return {
                         ...show,
+                        description: details.Plot !== "N/A" ? details.Plot : "",
                         creator: details.Writer !== "N/A" ? details.Writer.split(",")[0] : "Bilinmiyor",
-                        genre: details.Genre !== "N/A" ? details.Genre.split(",")[0] : "",
-                        totalSeasons: Number(details.totalSeasons) || 1
+                        genre: details.Genre !== "N/A" ? details.Genre.split(",")[0] : ""
                     };
                 } catch { return show; }
             })),
             Promise.all(topTVm.map(async (show: any) => {
-                try {
-                    const [crewRes, seasonsRes] = await Promise.all([
-                        fetch(`https://api.tvmaze.com/shows/${show.id.replace("tvm-", "")}/crew`),
-                        fetch(`https://api.tvmaze.com/shows/${show.id.replace("tvm-", "")}/seasons`)
-                    ]);
-                    let creator = "Bilinmiyor";
-                    let totalSeasons = 1;
-                    if (crewRes.ok) {
-                        const crew = await crewRes.json();
-                        creator = crew.find((c: any) => c.type === "Creator")?.person?.name ||
-                            crew.find((c: any) => c.type === "Executive Producer")?.person?.name ||
-                            "Bilinmiyor";
-                    }
-                    if (seasonsRes.ok) {
-                        const seasons = await seasonsRes.json();
-                        totalSeasons = Array.isArray(seasons) ? seasons.length : 1;
-                    }
-                    return { ...show, creator, totalSeasons };
-                } catch { return show; }
+                // TVMaze'den sezon ve ekip çekilmiyor (Performans ve Veri Tutarlılığı için)
+                return show;
             }))
         ]);
 
@@ -186,12 +178,8 @@ export async function GET(request: Request) {
             .map(({ score, ...item }) => ({
                 ...item,
                 subtitle: item.creator || "Bilinmiyor",
-                creator: item.creator || "Bilinmiyor",
                 image: item.coverImage,
-                coverImage: item.coverImage,
-                type: "series",
-                genre: item.genre || "",
-                totalSeasons: item.totalSeasons || 1
+                type: "series"
             }))
             .slice(0, 40);
 

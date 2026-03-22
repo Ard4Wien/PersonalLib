@@ -3,32 +3,59 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { z } from "zod";
+import { headers } from "next/headers";
+import { validateTurnstile } from "@/lib/turnstile";
+import { validateRecaptcha } from "@/lib/recaptcha";
+import { getClientIP, checkRateLimit } from "@/lib/rate-limiter";
+
+import { passwordSchema } from "@/lib/validations";
+
+export const dynamic = "force-dynamic";
 
 const resetPasswordSchema = z.object({
     token: z.string().min(1, "Token gereklidir"),
-    password: z
-        .string()
-        .min(8, "Şifre en az 8 karakter olmalıdır")
-        .max(100, "Şifre en fazla 100 karakter olabilir")
-        .regex(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d])/,
-            "Şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir"
-        ),
+    password: passwordSchema,
 });
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
+        const ip = getClientIP(request);
 
-        const validatedFields = resetPasswordSchema.safeParse(body);
+        // Siber Güvenlik: IP tabanlı genel hız sınırı kontrolü
+        const rateLimit = await checkRateLimit(ip);
+        if (!rateLimit.success) {
+            return NextResponse.json(
+                { error: "Çok fazla deneme yaptınız. Lütfen bir süre bekleyin." },
+                { status: 429 }
+            );
+        }
+
+        const { token, password, turnstileToken, recaptchaToken } = body;
+
+        // Siber Güvenlik: Bot Koruması Doğrulaması (Hybrid)
+        // reCaptcha Doğrulaması (Birincil)
+        if (process.env.RECAPTCHA_SECRET_KEY) {
+            const isValid = await validateRecaptcha(recaptchaToken);
+            if (!isValid) {
+                return NextResponse.json({ error: "reCaptcha doğrulaması başarısız oldu." }, { status: 403 });
+            }
+        }
+        // Turnstile Doğrulaması (Yedek - Sadece reCaptcha anahtarı yoksa çalışır)
+        else if (process.env.TURNSTILE_SECRET_KEY) {
+            const isValid = await validateTurnstile(turnstileToken);
+            if (!isValid) {
+                return NextResponse.json({ error: "Bot doğrulaması başarısız oldu." }, { status: 403 });
+            }
+        }
+
+        const validatedFields = resetPasswordSchema.safeParse({ token, password });
         if (!validatedFields.success) {
             return NextResponse.json(
                 { error: validatedFields.error.flatten().fieldErrors },
                 { status: 400 }
             );
         }
-
-        const { token, password } = validatedFields.data;
 
         // Gelen token'ı DB'deki hash ile karşılaştırmak için hash'le
         const hashedToken = crypto.createHash("sha256").update(token).digest("hex");

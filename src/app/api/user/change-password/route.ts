@@ -4,6 +4,11 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { changePasswordSchema } from "@/lib/validations";
 import { getUserIdFromRequest } from "@/lib/mobile-auth";
+import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
+import { validateTurnstile } from "@/lib/turnstile";
+import { validateRecaptcha } from "@/lib/recaptcha";
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
     try {
@@ -16,8 +21,35 @@ export async function POST(request: Request) {
             );
         }
 
+        // Rate Limiting
+        const clientIP = getClientIP(request);
+        const rateLimitResult = await checkRateLimit(clientIP);
+
+        if (!rateLimitResult.success) {
+            return NextResponse.json(
+                { error: rateLimitResult.message },
+                {
+                    status: 429,
+                    headers: {
+                        "Retry-After": String(rateLimitResult.retryAfter || 60)
+                    }
+                }
+            );
+        }
+
         const body = await request.json();
-        const validatedFields = changePasswordSchema.safeParse(body);
+        const { turnstileToken, recaptchaToken, ...fields } = body;
+
+        // Bot Koruması (Hibrit)
+        if (process.env.RECAPTCHA_SECRET_KEY) {
+            const isValid = await validateRecaptcha(recaptchaToken);
+            if (!isValid) return NextResponse.json({ error: "Güvenlik doğrulaması başarısız (reCaptcha)." }, { status: 403 });
+        } else if (process.env.TURNSTILE_SECRET_KEY) {
+            const isValid = await validateTurnstile(turnstileToken);
+            if (!isValid) return NextResponse.json({ error: "Güvenlik doğrulaması başarısız (Turnstile)." }, { status: 403 });
+        }
+
+        const validatedFields = changePasswordSchema.safeParse(fields);
 
         if (!validatedFields.success) {
             return NextResponse.json(
@@ -45,6 +77,11 @@ export async function POST(request: Request) {
         const isPasswordMatch = await bcrypt.compare(currentPassword, user.passwordHash);
 
         if (!isPasswordMatch) {
+            // Timing attack koruması: Rastgele bekleme ve dummy compare
+            await bcrypt.compare("dummy_password", "$2b$10$dummyhashdummyhashdummyhashdummyhashdummyhash");
+            const delay = Math.floor(Math.random() * 200) + 100;
+            await new Promise(resolve => setTimeout(resolve, delay));
+
             return NextResponse.json(
                 { error: { currentPassword: ["Mevcut şifre hatalı"] } },
                 { status: 400 }
@@ -66,7 +103,6 @@ export async function POST(request: Request) {
         );
 
     } catch (error) {
-        console.error("Şifre değiştirme hatası");
         return NextResponse.json(
             { error: "Bir hata oluştu. Lütfen daha sonra tekrar deneyin." },
             { status: 500 }

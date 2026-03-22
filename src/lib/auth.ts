@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { headers } from "next/headers";
 import prisma from "./prisma";
 import { loginSchema } from "./validations";
 import { checkLoginAttempt, recordFailedLogin, resetLoginAttempts } from "./rate-limiter";
@@ -28,6 +29,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 const turnstileToken = credentials?.turnstileToken as string;
                 const recaptchaToken = credentials?.recaptchaToken as string;
                 const email = rawEmail.toLowerCase();
+
+                // Sunucu tarafı header'larından IP adresi çıkarma
+                const headersList = await headers();
+                const clientIp = headersList.get("x-real-ip")
+                    || headersList.get("cf-connecting-ip")
+                    || headersList.get("x-vercel-forwarded-for")?.split(",")[0]?.trim()
+                    || headersList.get("x-forwarded-for")?.split(",")[0]?.trim()
+                    || "unknown";
 
                 // reCaptcha Doğrulaması (Birincil)
                 if (process.env.RECAPTCHA_SECRET_KEY) {
@@ -66,7 +75,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 const passwordsMatch = await bcrypt.compare(password, hashToCompare);
 
                 if (!user || !user.passwordHash || !passwordsMatch) {
-                    await recordFailedLogin(email);
+                    await recordFailedLogin(email, clientIp);
                     return null;
                 }
 

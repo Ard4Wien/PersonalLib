@@ -2,12 +2,22 @@ import { NextResponse } from "next/server";
 import { compare } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import prisma from "@/lib/prisma";
-import { checkLoginAttempt, recordFailedLogin, resetLoginAttempts } from "@/lib/rate-limiter";
+import { checkLoginAttempt, recordFailedLogin, resetLoginAttempts, getClientIP, checkRateLimit } from "@/lib/rate-limiter";
 import { loginSchema } from "@/lib/validations";
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
+        const ip = getClientIP(request);
+
+        // Siber Güvenlik: IP tabanlı genel hız sınırı kontrolü
+        const rateLimit = await checkRateLimit(ip);
+        if (!rateLimit.success) {
+            return NextResponse.json(
+                { error: rateLimit.message || "Çok fazla istek. Lütfen biraz bekleyin." },
+                { status: 429 }
+            );
+        }
 
         const validatedFields = loginSchema.safeParse(body);
         if (!validatedFields.success) {
@@ -43,7 +53,7 @@ export async function POST(request: Request) {
         const passwordsMatch = await compare(password, hashToCompare);
 
         if (!user || !user.passwordHash || !passwordsMatch) {
-            await recordFailedLogin(email);
+            await recordFailedLogin(email, ip);
             return NextResponse.json(
                 { error: "Geçersiz e-posta veya şifre" },
                 { status: 401 }
