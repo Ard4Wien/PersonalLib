@@ -26,6 +26,7 @@ import { Check, Clapperboard, Clock, Film, Heart, Loader2, Plus, Star, Tv, X } f
 import { toast } from "sonner";
 import AnimatedPage from "@/components/layout/animated-page";
 import { useSearch } from "@/contexts/search-context";
+import { useTranslation } from "@/contexts/language-context";
 
 interface UserMovie {
     id: string;
@@ -73,16 +74,16 @@ interface UserSeries {
     lastEpisode: number | null;
 }
 
-const statusOptions = [
-    { value: "WISHLIST", label: "İstek Listesi", icon: Heart, color: "text-purple-400" },
-    { value: "WATCHING", label: "İzleniyor", icon: Clock, color: "text-blue-400" },
-    { value: "COMPLETED", label: "İzlendi", icon: Check, color: "text-green-400" },
-    { value: "DROPPED", label: "Bırakıldı", icon: X, color: "text-red-400" },
+const getStatusOptions = (t: any) => [
+    { value: "WISHLIST", label: t.status.wishlist, icon: Heart, color: "text-purple-400" },
+    { value: "WATCHING", label: t.status.watching, icon: Clock, color: "text-blue-400" },
+    { value: "COMPLETED", label: t.status.completedMovie, icon: Check, color: "text-green-400" },
+    { value: "DROPPED", label: t.status.dropped, icon: X, color: "text-red-400" },
 ];
 
-const filterOptions = [
-    { value: "all", label: "Tüm Durumlar", icon: Film, color: "text-gray-400" },
-    ...statusOptions,
+const getFilterOptions = (t: any) => [
+    { value: "all", label: t.status.allStatuses, icon: Film, color: "text-gray-400" },
+    ...getStatusOptions(t),
 ];
 
 export default function MoviesPage() {
@@ -112,6 +113,10 @@ export default function MoviesPage() {
     const [editSeriesSeason, setEditSeriesSeason] = useState("1");
     const [editSeriesEpisode, setEditSeriesEpisode] = useState("1");
     const { searchQuery } = useSearch();
+    const { t } = useTranslation();
+
+    const statusOptions = getStatusOptions(t);
+    const filterOptions = getFilterOptions(t);
 
     useEffect(() => {
         fetchContent();
@@ -133,8 +138,8 @@ export default function MoviesPage() {
                 setSeries(seriesData);
             }
         } catch {
-            console.error("İçerik yükleme hatası");
-            toast.error("İçerik yüklenirken bir hata oluştu");
+            console.error("Content loading error");
+            toast.error(t.movies.loadError);
         } finally {
             setIsLoading(false);
         }
@@ -166,18 +171,18 @@ export default function MoviesPage() {
                 setMovies((prev) => [newMovie, ...prev]);
                 setIsMovieDialogOpen(false);
                 setMovieStatus("WISHLIST");
-                toast.success("Film başarıyla eklendi!");
+                toast.success(t.movies.movieAddSuccess);
             } else {
                 const error = await response.json();
                 const errorMessage = typeof error.error === 'string'
                     ? error.error
                     : typeof error.error === 'object'
                         ? Object.values(error.error).flat().join(', ')
-                        : "Film eklenemedi";
+                        : t.movies.movieAddFailed;
                 toast.error(errorMessage);
             }
         } catch {
-            toast.error("Bir hata oluştu");
+            toast.error(t.common.error);
         } finally {
             setIsSubmitting(false);
         }
@@ -213,18 +218,18 @@ export default function MoviesPage() {
                 setSeriesStatus("WISHLIST");
                 setSeriesSeason("1");
                 setSeriesEpisode("1");
-                toast.success("Dizi başarıyla eklendi!");
+                toast.success(t.movies.seriesAddSuccess);
             } else {
                 const error = await response.json();
                 const errorMessage = typeof error.error === 'string'
                     ? error.error
                     : typeof error.error === 'object'
                         ? Object.values(error.error).flat().join(', ')
-                        : "Dizi eklenemedi";
+                        : t.movies.seriesAddFailed;
                 toast.error(errorMessage);
             }
         } catch {
-            toast.error("Bir hata oluştu");
+            toast.error(t.common.error);
         } finally {
             setIsSubmitting(false);
         }
@@ -260,18 +265,18 @@ export default function MoviesPage() {
                 );
                 setIsMovieEditDialogOpen(false);
                 setEditingMovie(null);
-                toast.success("Film güncellendi!");
+                toast.success(t.movies.movieUpdateSuccess);
             } else {
                 const error = await response.json();
                 const errorMessage = typeof error.error === 'string'
                     ? error.error
                     : typeof error.error === 'object'
                         ? Object.values(error.error).flat().join(', ')
-                        : "Film güncellenemedi";
+                        : t.movies.movieUpdateFailed;
                 toast.error(errorMessage);
             }
         } catch {
-            toast.error("Bir hata oluştu");
+            toast.error(t.common.error);
         } finally {
             setIsSubmitting(false);
         }
@@ -310,18 +315,18 @@ export default function MoviesPage() {
                 );
                 setIsSeriesEditDialogOpen(false);
                 setEditingSeries(null);
-                toast.success("Dizi güncellendi!");
+                toast.success(t.movies.seriesUpdateSuccess);
             } else {
                 const error = await response.json();
                 const errorMessage = typeof error.error === 'string'
                     ? error.error
                     : typeof error.error === 'object'
                         ? Object.values(error.error).flat().join(', ')
-                        : "Dizi güncellenemedi";
+                        : t.movies.seriesUpdateFailed;
                 toast.error(errorMessage);
             }
         } catch {
-            toast.error("Bir hata oluştu");
+            toast.error(t.common.error);
         } finally {
             setIsSubmitting(false);
         }
@@ -341,12 +346,12 @@ export default function MoviesPage() {
                 setMovies((prev) =>
                     prev.map((m) => (m.id === userMovieId ? { ...m, isFavorite: newFavoriteStatus } : m))
                 );
-                toast.success(newFavoriteStatus ? "Favorilere eklendi" : "Favorilerden çıkarıldı", {
+                toast.success(newFavoriteStatus ? t.media.addedToFavorites : t.media.removedFromFavorites, {
                     icon: <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />,
                 });
             }
         } catch {
-            toast.error("İşlem başarısız oldu");
+            toast.error(t.common.error);
         }
     };
 
@@ -364,12 +369,12 @@ export default function MoviesPage() {
                 setSeries((prev) =>
                     prev.map((s) => (s.id === userSeriesId ? { ...s, isFavorite: newFavoriteStatus } : s))
                 );
-                toast.success(newFavoriteStatus ? "Favorilere eklendi" : "Favorilerden çıkarıldı", {
+                toast.success(newFavoriteStatus ? t.media.addedToFavorites : t.media.removedFromFavorites, {
                     icon: <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />,
                 });
             }
         } catch {
-            toast.error("İşlem başarısız oldu");
+            toast.error(t.common.error);
         }
     };
 
@@ -385,10 +390,10 @@ export default function MoviesPage() {
                 setMovies((prev) =>
                     prev.map((m) => (m.id === userMovieId ? { ...m, status } : m))
                 );
-                toast.success("Durum güncellendi");
+                toast.success(t.common.statusUpdated);
             }
         } catch {
-            toast.error("Durum güncellenemedi");
+            toast.error(t.common.statusUpdateFailed);
         }
     };
 
@@ -413,10 +418,10 @@ export default function MoviesPage() {
                         s.id === userSeriesId ? updatedData : s
                     )
                 );
-                toast.success("Durum güncellendi");
+                toast.success(t.common.statusUpdated);
             }
         } catch {
-            toast.error("Durum güncellenemedi");
+            toast.error(t.common.statusUpdateFailed);
         }
     };
 
@@ -464,16 +469,16 @@ export default function MoviesPage() {
             if (response.ok) {
                 if (itemToDelete.type === "movie") {
                     setMovies((prev) => prev.filter((m) => m.id !== itemToDelete.id));
-                    toast.success("Film kaldırıldı");
+                    toast.success(t.movies.movieRemoveSuccess);
                 } else {
                     setSeries((prev) => prev.filter((s) => s.id !== itemToDelete.id));
-                    toast.success("Dizi kaldırıldı");
+                    toast.success(t.movies.seriesRemoveSuccess);
                 }
                 setIsDeleteDialogOpen(false);
                 setItemToDelete(null);
             }
         } catch {
-            toast.error(`${itemToDelete.type === "movie" ? "Film" : "Dizi"} kaldırılamadı`);
+            toast.error(itemToDelete.type === "movie" ? t.movies.movieRemoveFailed : t.movies.seriesRemoveFailed);
         } finally {
             setIsDeleting(false);
         }
@@ -556,27 +561,27 @@ export default function MoviesPage() {
                         <Film className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-foreground line-clamp-1">Filmler & Diziler</h1>
+                        <h1 className="text-xl md:text-2xl font-bold text-foreground line-clamp-1">{t.nav.moviesAndSeries}</h1>
                         <p className="text-muted-foreground text-xs md:text-sm">
-                            {movies.length} film, {series.length} dizi
+                            {t.movies.moviesCount.replace("{count}", movies.length.toString())}, {t.movies.seriesCount.replace("{count}", series.length.toString())}
                         </p>
                     </div>
                 </div>
 
                 <div className="flex gap-2 w-full sm:w-auto">
-                    {/* Film Ekle Dialog */}
+                    {/* Add Movie Dialog */}
                     <Dialog open={isMovieDialogOpen} onOpenChange={setIsMovieDialogOpen}>
                         <DialogTrigger asChild>
                             <Button className="flex-1 sm:flex-none bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white text-xs md:text-sm px-3 md:px-4">
                                 <Clapperboard className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
-                                Film Ekle
+                                {t.movies.addMovie}
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                             <DialogHeader>
-                                <DialogTitle className="text-foreground dark:text-white">Yeni Film Ekle</DialogTitle>
+                                <DialogTitle className="text-foreground dark:text-white">{t.movies.addNewMovie}</DialogTitle>
                                 <DialogDescription className="sr-only">
-                                    Kütüphanenize eklemek için yeni bir film arayın veya manuel olarak ekleyin.
+                                    {t.movies.addNewMovie}
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4 py-2 border-b border-white/5 mb-4">
@@ -590,7 +595,7 @@ export default function MoviesPage() {
                                             (form.elements.namedItem("coverImage") as HTMLInputElement).value = item.coverImage || "";
                                             (form.elements.namedItem("genre") as HTMLInputElement).value = item.genre || "";
                                         }
-                                        toast.success("Bilgiler dolduruldu!");
+                                        toast.success(t.books.infoFilled);
                                     }}
                                 />
                             </div>
@@ -598,24 +603,24 @@ export default function MoviesPage() {
                             <form id="add-movie-form" onSubmit={handleAddMovie} className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="movie-title" className="text-muted-foreground">Film Adı *</Label>
-                                        <Input id="movie-title" name="title" required placeholder="Örn: Inception" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
+                                        <Label htmlFor="movie-title" className="text-muted-foreground">{t.movies.movieName}</Label>
+                                        <Input id="movie-title" name="title" required placeholder={t.movies.movieNamePlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="movie-director" className="text-muted-foreground">Yönetmen *</Label>
-                                        <Input id="movie-director" name="director" required placeholder="Örn: Christopher Nolan" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
+                                        <Label htmlFor="movie-director" className="text-muted-foreground">{t.movies.director}</Label>
+                                        <Input id="movie-director" name="director" required placeholder={t.movies.directorPlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="movie-cover" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                    <Label htmlFor="movie-cover" className="text-muted-foreground">{t.books.coverImageUrl}</Label>
                                     <Input id="movie-cover" name="coverImage" type="url" placeholder="https://..." className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="movie-genre" className="text-muted-foreground">Tür</Label>
-                                    <Input id="movie-genre" name="genre" placeholder="Örn: Bilim Kurgu" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
+                                    <Label htmlFor="movie-genre" className="text-muted-foreground">{t.books.genre}</Label>
+                                    <Input id="movie-genre" name="genre" placeholder={t.movies.genrePlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-muted-foreground">Durum</Label>
+                                    <Label className="text-muted-foreground">{t.books.status}</Label>
                                     <Select value={movieStatus} onValueChange={setMovieStatus}>
                                         <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                             <SelectValue />
@@ -637,26 +642,26 @@ export default function MoviesPage() {
                                 </div>
                                 <DialogFooter>
                                     <Button type="submit" disabled={isSubmitting} className="bg-gradient-to-r from-blue-600 to-cyan-600">
-                                        {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Ekleniyor...</> : "Ekle"}
+                                        {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t.common.adding}</> : t.common.add}
                                     </Button>
                                 </DialogFooter>
                             </form>
                         </DialogContent>
                     </Dialog>
 
-                    {/* Dizi Ekle Dialog */}
+                    {/* Add Series Dialog */}
                     <Dialog open={isSeriesDialogOpen} onOpenChange={setIsSeriesDialogOpen}>
                         <DialogTrigger asChild>
                             <Button className="flex-1 sm:flex-none bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs md:text-sm px-3 md:px-4">
                                 <Tv className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
-                                Dizi Ekle
+                                {t.movies.addSeries}
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                             <DialogHeader>
-                                <DialogTitle className="text-foreground dark:text-white">Yeni Dizi Ekle</DialogTitle>
+                                <DialogTitle className="text-foreground dark:text-white">{t.movies.addNewSeries}</DialogTitle>
                                 <DialogDescription className="sr-only">
-                                    Kütüphanenize eklemek için yeni bir dizi arayın veya manuel olarak ekleyin.
+                                    {t.movies.addNewSeries}
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4 py-2 border-b border-white/5 mb-4">
@@ -671,7 +676,7 @@ export default function MoviesPage() {
                                             (form.elements.namedItem("genre") as HTMLInputElement).value = item.genre || "";
                                             (form.elements.namedItem("totalSeasons") as HTMLInputElement).value = item.totalSeasons?.toString() || "1";
                                         }
-                                        toast.success("Bilgiler dolduruldu!");
+                                        toast.success(t.books.infoFilled);
                                     }}
                                 />
                             </div>
@@ -679,30 +684,30 @@ export default function MoviesPage() {
                             <form id="add-series-form" onSubmit={handleAddSeries} className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="series-title" className="text-muted-foreground">Dizi Adı *</Label>
-                                        <Input id="series-title" name="title" required placeholder="Örn: Breaking Bad" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
+                                        <Label htmlFor="series-title" className="text-muted-foreground">{t.movies.seriesName}</Label>
+                                        <Input id="series-title" name="title" required placeholder={t.movies.seriesNamePlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="series-creator" className="text-muted-foreground">Yapımcı *</Label>
-                                        <Input id="series-creator" name="creator" required placeholder="Örn: Vince Gilligan" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
+                                        <Label htmlFor="series-creator" className="text-muted-foreground">{t.movies.creator}</Label>
+                                        <Input id="series-creator" name="creator" required placeholder={t.movies.creatorPlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="series-cover" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                    <Label htmlFor="series-cover" className="text-muted-foreground">{t.books.coverImageUrl}</Label>
                                     <Input id="series-cover" name="coverImage" type="url" placeholder="https://..." className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="series-genre" className="text-muted-foreground">Tür</Label>
-                                        <Input id="series-genre" name="genre" placeholder="Örn: Dram" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
+                                        <Label htmlFor="series-genre" className="text-muted-foreground">{t.books.genre}</Label>
+                                        <Input id="series-genre" name="genre" placeholder={t.movies.genrePlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="series-seasons" className="text-muted-foreground">Sezon Sayısı</Label>
+                                        <Label htmlFor="series-seasons" className="text-muted-foreground">{t.movies.totalSeasons}</Label>
                                         <Input id="series-seasons" name="totalSeasons" type="number" min="1" defaultValue="1" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-muted-foreground">Durum</Label>
+                                    <Label className="text-muted-foreground">{t.books.status}</Label>
                                     <Select value={seriesStatus} onValueChange={setSeriesStatus}>
                                         <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                             <SelectValue />
@@ -726,7 +731,7 @@ export default function MoviesPage() {
                                 {(seriesStatus === "WATCHING" || seriesStatus === "DROPPED") && (
                                     <div className="grid grid-cols-2 gap-4 pt-2">
                                         <div className="space-y-2">
-                                            <Label htmlFor="series-last-season" className="text-muted-foreground">Kaldığım Sezon</Label>
+                                            <Label htmlFor="series-last-season" className="text-muted-foreground">{t.movies.lastSeason}</Label>
                                             <Input
                                                 id="series-last-season"
                                                 type="number"
@@ -737,7 +742,7 @@ export default function MoviesPage() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="series-last-episode" className="text-muted-foreground">Kaldığım Bölüm</Label>
+                                            <Label htmlFor="series-last-episode" className="text-muted-foreground">{t.movies.lastEpisode}</Label>
                                             <Input
                                                 id="series-last-episode"
                                                 type="number"
@@ -749,43 +754,45 @@ export default function MoviesPage() {
                                         </div>
                                     </div>
                                 )}
+
                                 <DialogFooter>
                                     <Button type="submit" disabled={isSubmitting} className="bg-gradient-to-r from-purple-600 to-pink-600">
-                                        {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Ekleniyor...</> : "Ekle"}
+                                        {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t.common.adding}</> : t.common.add}
                                     </Button>
                                 </DialogFooter>
                             </form>
                         </DialogContent>
                     </Dialog>
 
+                    {/* Edit Movie Dialog */}
                     <Dialog open={isMovieEditDialogOpen} onOpenChange={(open) => { setIsMovieEditDialogOpen(open); if (!open) setEditingMovie(null); }}>
                         <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                             <DialogHeader>
-                                <DialogTitle className="text-foreground dark:text-white">Filmi Düzenle</DialogTitle>
+                                <DialogTitle className="text-foreground dark:text-white">{t.movies.editMovie}</DialogTitle>
                                 <DialogDescription className="sr-only">
-                                    Seçili filmin bilgilerini ve izleme durumunu güncelleyin.
+                                    {t.movies.editMovie}
                                 </DialogDescription>
                             </DialogHeader>
                             {editingMovie && (
                                 <form onSubmit={handleEditMovie} className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-movie-title" className="text-muted-foreground">Film Adı *</Label>
+                                        <Label htmlFor="edit-movie-title" className="text-muted-foreground">{t.movies.movieName}</Label>
                                         <Input id="edit-movie-title" name="title" required defaultValue={editingMovie.title} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-movie-director" className="text-muted-foreground">Yönetmen</Label>
+                                        <Label htmlFor="edit-movie-director" className="text-muted-foreground">{t.movies.director}</Label>
                                         <Input id="edit-movie-director" name="director" defaultValue={editingMovie.subtitle} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-movie-cover" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                        <Label htmlFor="edit-movie-cover" className="text-muted-foreground">{t.books.coverImageUrl}</Label>
                                         <Input id="edit-movie-cover" name="coverImage" type="url" defaultValue={editingMovie.image || editingMovie.coverImage || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-movie-genre" className="text-muted-foreground">Tür</Label>
+                                        <Label htmlFor="edit-movie-genre" className="text-muted-foreground">{t.books.genre}</Label>
                                         <Input id="edit-movie-genre" name="genre" defaultValue={editingMovie.genre || editingMovie.movie?.genre || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-muted-foreground">Durum</Label>
+                                        <Label className="text-muted-foreground">{t.books.status}</Label>
                                         <Select value={editMovieStatus} onValueChange={setEditMovieStatus}>
                                             <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                                 <SelectValue />
@@ -807,7 +814,7 @@ export default function MoviesPage() {
                                     </div>
                                     <DialogFooter>
                                         <Button type="submit" disabled={isSubmitting} className="bg-gradient-to-r from-blue-600 to-cyan-600">
-                                            {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Güncelleniyor...</> : "Güncelle"}
+                                            {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t.common.updating}</> : t.common.update}
                                         </Button>
                                     </DialogFooter>
                                 </form>
@@ -835,16 +842,16 @@ export default function MoviesPage() {
                                         <Input id="edit-series-creator" name="creator" defaultValue={editingSeries.subtitle} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-series-cover" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                        <Label htmlFor="edit-series-cover" className="text-muted-foreground">{t.books.coverImageUrl}</Label>
                                         <Input id="edit-series-cover" name="coverImage" type="url" defaultValue={editingSeries.image || editingSeries.coverImage || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="edit-series-genre" className="text-muted-foreground">Tür</Label>
+                                            <Label htmlFor="edit-series-genre" className="text-muted-foreground">{t.books.genre}</Label>
                                             <Input id="edit-series-genre" name="genre" defaultValue={editingSeries.genre || editingSeries.series?.genre || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="edit-series-seasons" className="text-muted-foreground">Sezon Sayısı</Label>
+                                            <Label htmlFor="edit-series-seasons" className="text-muted-foreground">{t.movies.totalSeasons}</Label>
                                             <Input id="edit-series-seasons" name="totalSeasons" type="number" min="1" defaultValue={editingSeries.series?.totalSeasons || 1} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                         </div>
                                     </div>
@@ -873,7 +880,7 @@ export default function MoviesPage() {
                                     {(editSeriesStatus === "WATCHING" || editSeriesStatus === "DROPPED") && (
                                         <div className="grid grid-cols-2 gap-4 pt-2">
                                             <div className="space-y-2">
-                                                <Label htmlFor="edit-series-last-season" className="text-muted-foreground">Kaldığım Sezon</Label>
+                                                <Label htmlFor="edit-series-last-season" className="text-muted-foreground">{t.movies.lastSeason}</Label>
                                                 <Input
                                                     id="edit-series-last-season"
                                                     type="number"
@@ -884,7 +891,7 @@ export default function MoviesPage() {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label htmlFor="edit-series-last-episode" className="text-muted-foreground">Kaldığım Bölüm</Label>
+                                                <Label htmlFor="edit-series-last-episode" className="text-muted-foreground">{t.movies.lastEpisode}</Label>
                                                 <Input
                                                     id="edit-series-last-episode"
                                                     type="number"
@@ -898,7 +905,7 @@ export default function MoviesPage() {
                                     )}
                                     <DialogFooter>
                                         <Button type="submit" disabled={isSubmitting} className="bg-gradient-to-r from-purple-600 to-pink-600">
-                                            {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Güncelleniyor...</> : "Güncelle"}
+                                            {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t.common.updating}</> : t.common.update}
                                         </Button>
                                     </DialogFooter>
                                 </form>
@@ -909,22 +916,23 @@ export default function MoviesPage() {
             </div>
 
             {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <TabsList className="bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 w-full md:w-auto justify-start overflow-x-auto">
                         <TabsTrigger value="all" className="flex-1 md:flex-none data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 text-xs md:text-sm text-foreground dark:text-white data-[state=active]:text-white hover:text-white">
                             <Film className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
-                            Tümü ({movies.length + series.length})
+                            {t.movies.all} ({movies.length + series.length})
                         </TabsTrigger>
                         <TabsTrigger value="movies" className="flex-1 md:flex-none data-[state=active]:bg-blue-600 text-xs md:text-sm text-foreground dark:text-white data-[state=active]:text-white hover:text-white">
                             <Clapperboard className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
-                            Filmler
+                            {t.movies.moviesTab}
                         </TabsTrigger>
                         <TabsTrigger value="series" className="flex-1 md:flex-none data-[state=active]:bg-purple-600 text-xs md:text-sm text-foreground dark:text-white data-[state=active]:text-white hover:text-white">
                             <Tv className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
-                            Diziler
+                            {t.movies.seriesTab}
                         </TabsTrigger>
                     </TabsList>
+
 
                     {/* Status Filter */}
                     <div className="hidden md:block">
@@ -986,7 +994,7 @@ export default function MoviesPage() {
                                 handleSeriesDelete(id);
                             }
                         }}
-                        emptyMessage="Henüz içerik eklenmemiş"
+                        emptyMessage={t.movies.noContent}
                     />
                 </TabsContent>
 
@@ -997,7 +1005,7 @@ export default function MoviesPage() {
                         onFavoriteToggle={handleMovieFavoriteToggle}
                         onEdit={handleEdit}
                         onDelete={handleMovieDelete}
-                        emptyMessage="Henüz film eklenmemiş"
+                        emptyMessage={t.movies.noMovies}
                     />
                 </TabsContent>
 
@@ -1008,7 +1016,7 @@ export default function MoviesPage() {
                         onFavoriteToggle={handleSeriesFavoriteToggle}
                         onEdit={handleEdit}
                         onDelete={handleSeriesDelete}
-                        emptyMessage="Henüz dizi eklenmemiş"
+                        emptyMessage={t.movies.noSeries}
                     />
                 </TabsContent>
             </Tabs>
@@ -1017,8 +1025,8 @@ export default function MoviesPage() {
                 isOpen={isDeleteDialogOpen}
                 onClose={() => setIsDeleteDialogOpen(false)}
                 onConfirm={confirmDelete}
-                title={`${itemToDelete?.type === "movie" ? "Filmi" : "Diziyi"} Kaldır`}
-                description={`Bu ${itemToDelete?.type === "movie" ? "filmi" : "diziyi"} kütüphanenizden kaldırmak istediğinize emin misiniz? Bu işlem geri alınamaz.`}
+                title={itemToDelete?.type === "movie" ? t.movies.removeMovieTitle : t.movies.removeSeriesTitle}
+                description={itemToDelete?.type === "movie" ? t.movies.removeMovieDescription : t.movies.removeSeriesDescription}
                 isLoading={isDeleting}
             />
         </AnimatedPage>

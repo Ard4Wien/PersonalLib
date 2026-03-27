@@ -10,6 +10,7 @@ import { getOptimizedImageUrl } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { Star } from "lucide-react";
 import { ClientImage } from "./client-image";
+import { useTranslation } from "@/contexts/language-context";
 
 export interface MediaCardProps {
     id: string;
@@ -40,26 +41,6 @@ const mobileItemVariants = {
     show: { opacity: 1 }
 };
 
-const statusLabels = {
-    book: {
-        COMPLETED: "Okundu",
-        READING: "Okunuyor",
-        WISHLIST: "İstek Listesi",
-        DROPPED: "Bırakıldı",
-    },
-    movie: {
-        COMPLETED: "İzlendi",
-        WATCHING: "İzleniyor",
-        WISHLIST: "İstek Listesi",
-        DROPPED: "Bırakıldı",
-    },
-    series: {
-        COMPLETED: "İzlendi",
-        WATCHING: "İzleniyor",
-        WISHLIST: "İstek Listesi",
-        DROPPED: "Bırakıldı",
-    },
-} as const;
 
 const getStatusColor = (s: string) => {
     switch (s) {
@@ -106,9 +87,31 @@ export default function MediaCard({
     lastEpisode,
     priority = false
 }: MediaCardProps) {
+    const { t } = useTranslation();
     const { viewMode } = useViewMode();
     const isMobile = useIsMobile();
     const variants = isMobile ? mobileItemVariants : itemVariants;
+
+    const statusLabels: Record<string, Record<string, string>> = {
+        book: {
+            COMPLETED: t.status.completed,
+            READING: t.status.reading,
+            WISHLIST: t.status.wishlist,
+            DROPPED: t.status.dropped,
+        },
+        movie: {
+            COMPLETED: t.status.completedMovie,
+            WATCHING: t.status.watching,
+            WISHLIST: t.status.wishlist,
+            DROPPED: t.status.dropped,
+        },
+        series: {
+            COMPLETED: t.status.completedMovie,
+            WATCHING: t.status.watching,
+            WISHLIST: t.status.wishlist,
+            DROPPED: t.status.dropped,
+        },
+    };
 
     if (viewMode === "list") {
         return (
@@ -134,9 +137,9 @@ export default function MediaCard({
 
                     <MediaCardContent href={href} className="absolute right-[56px] md:right-[70px] top-1/2 -translate-y-1/2 flex flex-col items-end gap-1 text-right">
                         <Badge className={`text-[10px] md:text-xs font-semibold py-0.5 md:py-1 px-2 md:px-3 md:backdrop-blur-sm border shadow-sm ${getStatusColor(status)}`}>
-                            {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
+                            {statusLabels[type][status] || status}
                             {type === "series" && status !== "COMPLETED" && status !== "WISHLIST" && lastSeason && lastEpisode && (
-                                ` • S${lastSeason} B${lastEpisode}`
+                                ` • ${t.movies.seasonShort}${lastSeason} ${t.movies.episodeShort}${lastEpisode}`
                             )}
                         </Badge>
                         {genre && (
@@ -206,9 +209,9 @@ export default function MediaCard({
                             <Badge
                                 className={`text-[10px] md:text-xs font-bold shadow-lg md:backdrop-blur-md border ${getStatusColor(status)}`}
                             >
-                                {statusLabels[type][status as keyof (typeof statusLabels)[typeof type]] || status}
+                                {statusLabels[type][status] || status}
                                 {type === "series" && status !== "COMPLETED" && status !== "WISHLIST" && lastSeason && lastEpisode && (
-                                    ` • S${lastSeason} B${lastEpisode}`
+                                    ` • ${t.movies.seasonShort}${lastSeason} ${t.movies.episodeShort}${lastEpisode}`
                                 )}
                             </Badge>
                         </motion.div>

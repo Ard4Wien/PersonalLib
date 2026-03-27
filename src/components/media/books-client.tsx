@@ -26,6 +26,7 @@ import { BookOpen, Check, Clock, Heart, Loader2, Plus, Star, X } from "lucide-re
 import { toast } from "sonner";
 import AnimatedPage from "@/components/layout/animated-page";
 import { useSearch } from "@/contexts/search-context";
+import { useTranslation } from "@/contexts/language-context";
 
 interface UserBook {
     id: string;
@@ -66,6 +67,7 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
     const [idToDelete, setIdToDelete] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const { searchQuery } = useSearch();
+    const { t } = useTranslation();
 
     // Opsiyonel: Veriyi taze tutmak için client-side fetch yapılabilir
     // ama initial load için server verisini kullanıyoruz.
@@ -95,13 +97,13 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                 setBooks((prev) => [newBook, ...prev]);
                 setIsDialogOpen(false);
                 setAddStatus("WISHLIST");
-                toast.success("Kitap başarıyla eklendi!");
+                toast.success(t.books.addSuccess);
             } else {
                 const error = await response.json();
-                toast.error(error.error || "Kitap eklenemedi");
+                toast.error(error.error || t.books.addFailed);
             }
         } catch {
-            toast.error("Bir hata oluştu");
+            toast.error(t.common.error);
         } finally {
             setIsSubmitting(false);
         }
@@ -137,13 +139,13 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                 );
                 setIsEditDialogOpen(false);
                 setEditingBook(null);
-                toast.success("Kitap güncellendi!");
+                toast.success(t.books.updateSuccess);
             } else {
                 const error = await response.json();
-                toast.error(error.error || "Kitap güncellenemedi");
+                toast.error(error.error || t.books.updateFailed);
             }
         } catch {
-            toast.error("Bir hata oluştu");
+            toast.error(t.common.error);
         } finally {
             setIsSubmitting(false);
         }
@@ -166,12 +168,12 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                 setBooks((prev) =>
                     prev.map((b) => (b.id === userBookId ? { ...b, isFavorite: newFavoriteStatus } : b))
                 );
-                toast.success(newFavoriteStatus ? "Favorilere eklendi" : "Favorilerden çıkarıldı", {
+                toast.success(newFavoriteStatus ? t.media.addedToFavorites : t.media.removedFromFavorites, {
                     icon: <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />,
                 });
             }
         } catch {
-            toast.error("İşlem başarısız oldu");
+            toast.error(t.common.error);
         }
     };
 
@@ -187,10 +189,10 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                 setBooks((prev) =>
                     prev.map((b) => (b.id === userBookId ? { ...b, status } : b))
                 );
-                toast.success("Durum güncellendi");
+                toast.success(t.common.statusUpdated);
             }
         } catch {
-            toast.error("Durum güncellenemedi");
+            toast.error(t.common.statusUpdateFailed);
         }
     };
 
@@ -218,12 +220,12 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
 
             if (response.ok) {
                 setBooks((prev) => prev.filter((b) => b.id !== idToDelete));
-                toast.success("Kitap kaldırıldı");
+                toast.success(t.books.removeSuccess);
                 setIsDeleteDialogOpen(false);
                 setIdToDelete(null);
             }
         } catch {
-            toast.error("Kitap kaldırılamadı");
+            toast.error(t.books.removeFailed);
         } finally {
             setIsDeleting(false);
         }
@@ -263,10 +265,10 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
     }));
 
     const statusOptions = [
-        { value: "WISHLIST", label: "İstek Listesi", icon: Heart, color: "text-purple-400" },
-        { value: "READING", label: "Okunuyor", icon: Clock, color: "text-blue-400" },
-        { value: "COMPLETED", label: "Okundu", icon: Check, color: "text-green-400" },
-        { value: "DROPPED", label: "Bırakıldı", icon: X, color: "text-red-400" },
+        { value: "WISHLIST", label: t.status.wishlist, icon: Heart, color: "text-purple-400" },
+        { value: "READING", label: t.status.reading, icon: Clock, color: "text-blue-400" },
+        { value: "COMPLETED", label: t.status.completed, icon: Check, color: "text-green-400" },
+        { value: "DROPPED", label: t.status.dropped, icon: X, color: "text-red-400" },
     ];
 
     return (
@@ -278,9 +280,9 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                         <BookOpen className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-foreground line-clamp-1">Kitaplarım</h1>
+                        <h1 className="text-xl md:text-2xl font-bold text-foreground line-clamp-1">{t.nav.books}</h1>
                         <p className="text-muted-foreground text-xs md:text-sm">
-                            {books.length} kitap kütüphanenizde
+                            {t.books.booksInLibrary.replace("{count}", books.length.toString())}
                         </p>
                     </div>
                 </div>
@@ -289,12 +291,12 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                     <DialogTrigger asChild>
                         <Button className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs md:text-sm px-3 md:px-4">
                             <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
-                            Kitap Ekle
+                            {t.books.addBook}
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                         <DialogHeader>
-                            <DialogTitle className="text-foreground dark:text-white">Yeni Kitap Ekle</DialogTitle>
+                            <DialogTitle className="text-foreground dark:text-white">{t.books.addNewBook}</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4 py-2 border-b border-white/5 mb-4">
                             <MediaSearch
@@ -307,7 +309,7 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                                         (form.elements.namedItem("coverImage") as HTMLInputElement).value = item.coverImage || "";
                                         (form.elements.namedItem("genre") as HTMLInputElement).value = item.genre || "";
                                     }
-                                    toast.success("Bilgiler dolduruldu!");
+                                    toast.success(t.books.infoFilled);
                                 }}
                             />
                         </div>
@@ -315,21 +317,21 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                         <form id="add-book-form" onSubmit={handleAddBook} className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="title" className="text-muted-foreground">Kitap Adı *</Label>
-                                    <Input id="title" name="title" required placeholder="Örn: Suç ve Ceza" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
+                                    <Label htmlFor="title" className="text-muted-foreground">{t.books.bookName} *</Label>
+                                    <Input id="title" name="title" required placeholder={t.books.bookNamePlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="author" className="text-muted-foreground">Yazar *</Label>
-                                    <Input id="author" name="author" required placeholder="Örn: Fyodor Dostoyevski" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
+                                    <Label htmlFor="author" className="text-muted-foreground">{t.books.author} *</Label>
+                                    <Input id="author" name="author" required placeholder={t.books.authorPlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="coverImage" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                <Label htmlFor="coverImage" className="text-muted-foreground">{t.books.coverImageUrl}</Label>
                                 <Input id="coverImage" name="coverImage" type="url" placeholder="https://..." className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="genre" className="text-muted-foreground">Tür</Label>
-                                <Input id="genre" name="genre" placeholder="Örn: Roman" className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
+                                <Label htmlFor="genre" className="text-muted-foreground">{t.books.genre}</Label>
+                                <Input id="genre" name="genre" placeholder={t.books.genrePlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-muted-foreground">Durum</Label>
@@ -370,24 +372,24 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
             <Dialog open={isEditDialogOpen} onOpenChange={(open) => { setIsEditDialogOpen(open); if (!open) setEditingBook(null); }}>
                 <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-foreground dark:text-white">Kitabı Düzenle</DialogTitle>
+                        <DialogTitle className="text-foreground dark:text-white">{t.books.editBook}</DialogTitle>
                     </DialogHeader>
                     {editingBook && (
                         <form onSubmit={handleEditBook} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="edit-title" className="text-muted-foreground">Kitap Adı *</Label>
+                                <Label htmlFor="edit-title" className="text-muted-foreground">{t.books.bookName} *</Label>
                                 <Input id="edit-title" name="title" required defaultValue={editingBook.title} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-author" className="text-muted-foreground">Yazar *</Label>
+                                <Label htmlFor="edit-author" className="text-muted-foreground">{t.books.author} *</Label>
                                 <Input id="edit-author" name="author" required defaultValue={editingBook.subtitle} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-coverImage" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                <Label htmlFor="edit-coverImage" className="text-muted-foreground">{t.books.coverImageUrl}</Label>
                                 <Input id="edit-coverImage" name="coverImage" type="url" defaultValue={editingBook.image || editingBook.coverImage || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-genre" className="text-muted-foreground">Tür</Label>
+                                <Label htmlFor="edit-genre" className="text-muted-foreground">{t.books.genre}</Label>
                                 <Input id="edit-genre" name="genre" defaultValue={editingBook.genre || editingBook.book?.genre || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
@@ -429,10 +431,10 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <TabsList className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 w-full sm:w-auto justify-start overflow-x-auto">
-                        <TabsTrigger value="all" className="flex-1 sm:flex-none data-[state=active]:bg-purple-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">Tümü</TabsTrigger>
-                        <TabsTrigger value="reading" className="flex-1 sm:flex-none data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">Okunuyor</TabsTrigger>
-                        <TabsTrigger value="completed" className="flex-1 sm:flex-none data-[state=active]:bg-green-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">Okundu</TabsTrigger>
-                        <TabsTrigger value="wishlist" className="flex-1 sm:flex-none data-[state=active]:bg-purple-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">İstek</TabsTrigger>
+                        <TabsTrigger value="all" className="flex-1 sm:flex-none data-[state=active]:bg-purple-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">{t.books.all}</TabsTrigger>
+                        <TabsTrigger value="reading" className="flex-1 sm:flex-none data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">{t.status.reading}</TabsTrigger>
+                        <TabsTrigger value="completed" className="flex-1 sm:flex-none data-[state=active]:bg-green-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">{t.status.completed}</TabsTrigger>
+                        <TabsTrigger value="wishlist" className="flex-1 sm:flex-none data-[state=active]:bg-purple-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">{t.books.wishlistTab}</TabsTrigger>
                     </TabsList>
                 </div>
 
@@ -443,7 +445,7 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                         onFavoriteToggle={handleFavoriteToggle}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
-                        emptyMessage="Henüz kitap eklenmemiş"
+                        emptyMessage={t.books.noBooks}
                     />
                 </TabsContent>
             </Tabs>
@@ -452,8 +454,8 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                 isOpen={isDeleteDialogOpen}
                 onClose={() => setIsDeleteDialogOpen(false)}
                 onConfirm={confirmDelete}
-                title="Kitabı Kaldır"
-                description="Bu kitabı kütüphanenizden kaldırmak istediğinize emin misiniz? Bu işlem geri alınamaz."
+                title={t.books.removeTitle}
+                description={t.books.removeDescription}
                 isLoading={isDeleting}
             />
         </AnimatedPage>

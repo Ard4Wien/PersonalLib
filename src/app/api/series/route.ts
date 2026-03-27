@@ -84,6 +84,11 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { status = "WISHLIST", lastSeason, lastEpisode, ...seriesData } = body;
 
+        const statusValidation = mediaStatusSchema.safeParse(status);
+        if (!statusValidation.success) {
+            return NextResponse.json({ error: "Geçersiz durum değeri" }, { status: 400 });
+        }
+
         const validatedFields = seriesSchema.safeParse(seriesData);
         if (!validatedFields.success) {
             return NextResponse.json(
@@ -148,8 +153,8 @@ export async function POST(request: Request) {
                 seriesId: series.id,
                 overallStatus: status,
                 ...(status === "WATCHING" || status === "DROPPED" ? {
-                    lastSeason: lastSeason ? parseInt(lastSeason) : 1,
-                    lastEpisode: lastEpisode ? parseInt(lastEpisode) : 1,
+                    lastSeason: lastSeason || 1,
+                    lastEpisode: lastEpisode || 1,
                 } : {
                     lastSeason: null,
                     lastEpisode: null,
@@ -231,15 +236,21 @@ export async function PUT(request: Request) {
 
         if (!targetSeries || targetSeries.id === seriesId) {
             const ownerCount = await prisma.userSeries.count({ where: { seriesId } });
+            const newTotalSeasons = totalSeasons || 1;
+
             if (ownerCount === 1) {
                 targetSeries = await prisma.series.update({
                     where: { id: seriesId },
-                    data: { title, creator, coverImage: coverImage || null, genre: genre || null, totalSeasons: parsedTotalSeasons },
+                    data: { 
+                        title, 
+                        creator, 
+                        coverImage: coverImage || null, 
+                        genre: genre || null, 
+                        totalSeasons: newTotalSeasons 
+                    },
                 });
             } else {
                 const originalSeries = await prisma.series.findUnique({ where: { id: seriesId } });
-                const newTotalSeasons = parsedTotalSeasons || originalSeries?.totalSeasons || 1;
-                
                 targetSeries = await prisma.series.create({
                     data: { 
                         title, 
@@ -248,18 +259,30 @@ export async function PUT(request: Request) {
                         genre: genre || null,
                         totalSeasons: newTotalSeasons,
                         imdbId: originalSeries?.imdbId,
-                        seasons: {
-                            create: Array.from({ length: newTotalSeasons }, (_, i) => ({
-                                seasonNumber: i + 1,
-                            })),
-                        },
                     },
                 });
             }
-        }
 
-        const parsedLastSeason = lastSeason ? Number(lastSeason) : null;
-        const parsedLastEpisode = lastEpisode ? Number(lastEpisode) : null;
+            // Sezon Kayıtlarını Senkronize Et (Senkronizasyon Hardening)
+            const currentSeasons = await prisma.season.findMany({ where: { seriesId: targetSeries.id } });
+            if (currentSeasons.length !== newTotalSeasons) {
+                if (currentSeasons.length < newTotalSeasons) {
+                    await prisma.season.createMany({
+                        data: Array.from({ length: newTotalSeasons - currentSeasons.length }, (_, i) => ({
+                            seriesId: targetSeries!.id,
+                            seasonNumber: currentSeasons.length + i + 1,
+                        })),
+                    });
+                } else {
+                    await prisma.season.deleteMany({
+                        where: {
+                            seriesId: targetSeries.id,
+                            seasonNumber: { gt: newTotalSeasons },
+                        },
+                    });
+                }
+            }
+        }
 
         const userSeries = await prisma.userSeries.update({
             where: { id: userSeriesId, userId },
@@ -270,8 +293,8 @@ export async function PUT(request: Request) {
                     lastSeason: null,
                     lastEpisode: null
                 } : {
-                    ...(lastSeason !== undefined && { lastSeason: parsedLastSeason || 1 }),
-                    ...(lastEpisode !== undefined && { lastEpisode: parsedLastEpisode || 1 })
+                    ...(lastSeason !== undefined && { lastSeason: lastSeason || 1 }),
+                    ...(lastEpisode !== undefined && { lastEpisode: lastEpisode || 1 })
                 }),
             },
             include: {
@@ -360,8 +383,8 @@ export async function PATCH(request: Request) {
                     lastSeason: null,
                     lastEpisode: null
                 } : {
-                    ...(lastSeason !== undefined && { lastSeason: lastSeason ? parseInt(lastSeason.toString()) : null }),
-                    ...(lastEpisode !== undefined && { lastEpisode: lastEpisode ? parseInt(lastEpisode.toString()) : null })
+                    ...(lastSeason !== undefined && { lastSeason: lastSeason || null }),
+                    ...(lastEpisode !== undefined && { lastEpisode: lastEpisode || null })
                 }),
             },
             include: {

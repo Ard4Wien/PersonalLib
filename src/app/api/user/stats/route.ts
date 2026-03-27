@@ -46,7 +46,7 @@ export async function GET(request: Request) {
             series: seriesStats
         });
     } catch (error) {
-        console.error("Stats fetching error");
+        console.error("İstatistik hatası");
         return NextResponse.json({ error: "İstatistikler yüklenemedi" }, { status: 500 });
     }
 }

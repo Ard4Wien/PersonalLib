@@ -69,6 +69,11 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { status = "WISHLIST", ...movieData } = body;
 
+        const statusValidation = mediaStatusSchema.safeParse(status);
+        if (!statusValidation.success) {
+            return NextResponse.json({ error: "Geçersiz durum değeri" }, { status: 400 });
+        }
+
         const validatedFields = movieSchema.safeParse(movieData);
         if (!validatedFields.success) {
             return NextResponse.json(

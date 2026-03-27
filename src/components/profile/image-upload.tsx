@@ -8,6 +8,7 @@ import { Camera, Loader2, X, Check, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getInitials } from '@/lib/utils';
+import { useTranslation } from '@/contexts/language-context';
 
 interface ImageUploadProps {
     currentImage?: string | null;
@@ -22,6 +23,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export default function ImageUpload({ currentImage, userId, username, name, onUploadSuccess }: ImageUploadProps) {
+    const { t, locale } = useTranslation();
     const [image, setImage] = useState<string | null>(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
@@ -40,14 +42,14 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
 
             // Güvenlik: MIME tipi kontrolü
             if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-                toast.error('Sadece JPEG, PNG ve WebP formatları desteklenir.');
+                toast.error(t.profile.uploadOnlyImages);
                 e.target.value = ''; // Input'u sıfırla
                 return;
             }
 
             // Güvenlik: Dosya boyutu kontrolü (5MB)
             if (file.size > MAX_FILE_SIZE) {
-                toast.error('Dosya boyutu en fazla 5MB olabilir.');
+                toast.error(t.profile.maxFileSize);
                 e.target.value = '';
                 return;
             }
@@ -143,12 +145,12 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
             // 3. Parent bileşene haber ver (URL yerine sadece PATH gönderiyoruz)
             onUploadSuccess(filePath);
 
-            toast.success('Profil fotoğrafı güncellendi');
+            toast.success(t.profile.avatarUpdated);
             setIsCropping(false);
             setImage(null);
         } catch (error) {
             console.error('Upload error:', error);
-            toast.error('Resim yüklenirken bir hata oluştu. Lütfen tekrar deneyin.');
+            toast.error(t.profile.avatarUpdateError);
         } finally {
             setIsUploading(false);
         }
@@ -165,7 +167,7 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
                     />
                 ) : (
                     <div className="text-white font-black text-2xl sm:text-4xl tracking-tighter shadow-sm">
-                        {name ? getInitials(name) : userId.substring(0, 1).toUpperCase()}
+                        {name ? getInitials(name, locale) : userId.substring(0, 1).toLocaleUpperCase(locale === 'tr' ? 'tr-TR' : 'en-US')}
                     </div>
                 )}
 
@@ -174,7 +176,7 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
                     className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1"
                 >
                     <Camera className="h-6 w-6" />
-                    <span className="text-[10px] font-medium uppercase tracking-wider">Değiştir</span>
+                    <span className="text-[10px] font-medium uppercase tracking-wider">{t.profile.changeAvatar}</span>
                 </button>
             </div>
 
@@ -201,7 +203,7 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
                             className="bg-background w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-border"
                         >
                             <div className="p-4 border-b flex items-center justify-between">
-                                <h3 className="font-semibold text-lg">Fotoğrafı Düzenle</h3>
+                                <h3 className="font-semibold text-lg">{t.profile.editPhoto}</h3>
                                 <button onClick={() => setIsCropping(false)} className="text-muted-foreground hover:text-foreground transition-colors">
                                     <X className="h-5 w-5" />
                                 </button>
@@ -226,7 +228,7 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
                             <div className="p-6 space-y-6">
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-xs font-medium text-muted-foreground">
-                                        <span>Yakınlaştır</span>
+                                        <span>{t.profile.zoom}</span>
                                         <span>{Math.round(zoom * 100)}%</span>
                                     </div>
                                     <input
@@ -248,7 +250,7 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
                                         onClick={() => setIsCropping(false)}
                                         disabled={isUploading}
                                     >
-                                        İptal
+                                        {t.common.cancel}
                                     </Button>
                                     <Button
                                         className="flex-1 rounded-xl h-11 gap-2 shadow-lg shadow-primary/20"
@@ -260,7 +262,7 @@ export default function ImageUpload({ currentImage, userId, username, name, onUp
                                         ) : (
                                             <Upload className="h-4 w-4" />
                                         )}
-                                        {isUploading ? 'Yükleniyor...' : 'Fotoğrafı Kaydet'}
+                                        {isUploading ? t.common.updating : t.profile.savePhoto}
                                     </Button>
                                 </div>
                             </div>

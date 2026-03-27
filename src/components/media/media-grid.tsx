@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import MediaCard, { MediaCardProps } from "./media-card";
 import { useViewMode } from "@/contexts/view-mode-context";
 import { useIsMobile } from "@/hooks/use-is-mobile";
+import { useTranslation } from "@/contexts/language-context";
 
 interface MediaGridProps {
     items: Omit<MediaCardProps, "onStatusChange" | "onDelete" | "onEdit" | "onFavoriteToggle">[];
@@ -38,11 +39,14 @@ export default function MediaGrid({
     onFavoriteToggle,
     onEdit,
     onDelete,
-    emptyMessage = "Henüz içerik eklenmemiş",
+    emptyMessage,
 }: MediaGridProps) {
+    const { t } = useTranslation();
     const { viewMode } = useViewMode();
     const isMobile = useIsMobile();
     const variants = isMobile ? mobileContainer : container;
+
+    const finalEmptyMessage = emptyMessage || t.movies.noContent;
 
     if (items.length === 0) {
         return (
@@ -52,7 +56,7 @@ export default function MediaGrid({
                 className="flex flex-col items-center justify-center py-20 text-center"
             >
                 <div className="text-6xl mb-4">📭</div>
-                <p className="text-muted-foreground text-lg">{emptyMessage}</p>
+                <p className="text-muted-foreground text-lg">{finalEmptyMessage}</p>
             </motion.div>
         );
     }

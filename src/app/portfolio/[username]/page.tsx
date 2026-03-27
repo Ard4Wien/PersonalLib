@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { BookOpen, Check, Clock, Film, Star, Tv, Lock, User } from "lucide-react";
+import { BookOpen, Check, Clock, Film, Star, Tv, Lock, User, ArrowLeft } from "lucide-react";
 import { getInitials, BACKGROUND_GRADIENT, getOptimizedImageUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,6 +14,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { ClientImage } from "@/components/media/client-image";
 import { getPublicUrl } from "@/lib/supabase";
 import { SOCIAL_PLATFORMS, PLATFORM_ORDER, PLATFORM_MAP } from "@/lib/social-platforms";
+import { translations, Locale } from "@/lib/translations";
 
 
 interface PortfolioPageProps {
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: PortfolioPageProps) {
     const { username } = await params;
     const user = await prisma.user.findUnique({
         where: { username },
-        select: { displayName: true }
+        select: { displayName: true, language: true }
     });
 
     if (!user) {
@@ -33,9 +34,11 @@ export async function generateMetadata({ params }: PortfolioPageProps) {
         };
     }
 
+    const t = translations[user.language as Locale] || translations.tr;
+
     return {
-        title: `${user.displayName} (@${username}) | PersonalLib Portfolio`,
-        description: `${user.displayName} kullanıcısının kitap, film ve dizi koleksiyonuna göz atın.`,
+        title: t.portfolio.viewPortfolio.replace("{name}", user.displayName).replace("{username}", username),
+        description: t.portfolio.viewPortfolioDescription.replace("{name}", user.displayName),
     };
 }
 
@@ -59,6 +62,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
             username: true,
             displayName: true,
             image: true,
+            language: true,
             isPrivate: true,
             socialLinks: true,
 
@@ -87,6 +91,8 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
         notFound();
     }
 
+    const t = translations[user.language as Locale] || translations.tr;
+
     if (user.isPrivate) {
         return (
             <div className={BACKGROUND_GRADIENT}>
@@ -98,13 +104,13 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                         <div className="h-20 w-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Lock className="h-10 w-10 text-red-500" />
                         </div>
-                        <h1 className="text-2xl font-bold text-foreground mb-2">Bu Profil Gizlidir</h1>
+                        <h1 className="text-2xl font-bold text-foreground mb-2">{t.portfolio.privateProfileTitle}</h1>
                         <p className="text-muted-foreground">
-                            Bu kullanıcı profilini gizli tutmayı tercih etti.
+                            {t.portfolio.privateProfileDesc}
                         </p>
                         <Link href="/">
                             <Button className="mt-8 w-full bg-gradient-to-r from-purple-600 to-pink-600">
-                                Ana Sayfaya Dön
+                                {t.common.backToHome}
                             </Button>
                         </Link>
                     </div>
@@ -152,6 +158,8 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
         });
     }
 
+
+
     return (
         <div className={BACKGROUND_GRADIENT}>
             <div className="container mx-auto px-4 pt-8 max-w-4xl">
@@ -187,26 +195,26 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                         </div>
                     )}
 
-                    {/* Stats */}
-                    <div className="flex justify-center gap-8 mt-6">
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-foreground">{totalCompleted}</div>
-                            <div className="text-sm text-muted-foreground">Tamamlanan</div>
+                    {/* Stats - Minimalist Reverted Design */}
+                    <div className="flex justify-center flex-wrap gap-x-8 gap-y-4 mt-8 px-4">
+                        <div className="text-center group cursor-default">
+                            <div className="text-2xl md:text-3xl font-black text-foreground tabular-nums group-hover:scale-110 transition-transform duration-300">{totalCompleted}</div>
+                            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wider mt-0.5">{t.status.completed}</div>
                         </div>
-                        <Separator orientation="vertical" className="h-12 bg-black/5 dark:bg-white/10" />
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{completedBooks}</div>
-                            <div className="text-sm text-muted-foreground">Kitap</div>
+                        <Separator orientation="vertical" className="hidden sm:block h-10 bg-black/5 dark:bg-white/10 self-center" />
+                        <div className="text-center group cursor-default">
+                            <div className="text-2xl md:text-3xl font-black text-purple-600 dark:text-purple-400 tabular-nums group-hover:scale-110 transition-transform duration-300">{completedBooks}</div>
+                            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wider mt-0.5">{t.profile.booksCount}</div>
                         </div>
-                        <Separator orientation="vertical" className="h-12 bg-black/5 dark:bg-white/10" />
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{completedMovies}</div>
-                            <div className="text-sm text-muted-foreground">Film</div>
+                        <Separator orientation="vertical" className="hidden sm:block h-10 bg-black/5 dark:bg-white/10 self-center" />
+                        <div className="text-center group cursor-default">
+                            <div className="text-2xl md:text-3xl font-black text-blue-600 dark:text-blue-400 tabular-nums group-hover:scale-110 transition-transform duration-300">{completedMovies}</div>
+                            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wider mt-0.5">{t.profile.moviesCount}</div>
                         </div>
-                        <Separator orientation="vertical" className="h-12 bg-black/5 dark:bg-white/10" />
-                        <div className="text-center">
-                            <div className="text-2xl font-bold text-cyan-600 dark:text-cyan-400">{completedSeries}</div>
-                            <div className="text-sm text-muted-foreground">Dizi</div>
+                        <Separator orientation="vertical" className="hidden sm:block h-10 bg-black/10 dark:bg-white/10 self-center" />
+                        <div className="text-center group cursor-default">
+                            <div className="text-2xl md:text-3xl font-black text-cyan-600 dark:text-cyan-400 tabular-nums group-hover:scale-110 transition-transform duration-300">{completedSeries}</div>
+                            <div className="text-xs md:text-sm text-muted-foreground uppercase tracking-wider mt-0.5">{t.profile.seriesCount}</div>
                         </div>
                     </div>
                 </div>
@@ -216,7 +224,7 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                     <div className="mb-12">
                         <div className="flex items-center gap-2 mb-6">
                             <Star className="h-6 w-6 text-yellow-500 fill-yellow-500" />
-                            <h2 className="text-2xl font-bold text-foreground uppercase tracking-wider">Favoriler</h2>
+                            <h2 className="text-2xl font-bold text-foreground uppercase tracking-wider">{t.common.favorites}</h2>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
                             {allFavorites.map((item: any) => {
@@ -246,11 +254,11 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                     </div>
                 )}
                 {books.length > 0 && (
-                    <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 mb-8 shadow-sm">
+                    <Card id="books-section" className="scroll-mt-24 bg-white dark:bg-white/5 border-black/5 dark:border-white/10 mb-8 shadow-sm">
                         <CardHeader>
                             <CardTitle className="text-foreground flex items-center gap-2">
                                 <BookOpen className="h-5 w-5 text-purple-500 dark:text-purple-400" />
-                                Okunan & Okunmakta Olan Kitaplar
+                                {t.portfolio.readingBooks}
                                 <Badge variant="secondary" className="ml-auto bg-purple-500/10 text-purple-600 dark:text-purple-400">
                                     {books.length}
                                 </Badge>
@@ -291,11 +299,11 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
 
                 {/* Movies Section */}
                 {movies.length > 0 && (
-                    <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 mb-8 shadow-sm">
+                    <Card id="movies-section" className="scroll-mt-24 bg-white dark:bg-white/5 border-black/5 dark:border-white/10 mb-8 shadow-sm">
                         <CardHeader>
                             <CardTitle className="text-foreground flex items-center gap-2">
                                 <Film className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-                                İzlenen & İzlenmekte Olan Filmler
+                                {t.portfolio.watchingMovies}
                                 <Badge variant="secondary" className="ml-auto bg-blue-500/10 text-blue-600 dark:text-blue-400">
                                     {movies.length}
                                 </Badge>
@@ -336,11 +344,11 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
 
                 {/* Series Section */}
                 {series.length > 0 && (
-                    <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-sm">
+                    <Card id="series-section" className="scroll-mt-24 bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-sm">
                         <CardHeader>
                             <CardTitle className="text-foreground flex items-center gap-2">
                                 <Tv className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
-                                İzlenen & İzlenmekte Olan Diziler
+                                {t.portfolio.watchingSeries}
                                 <Badge variant="secondary" className="ml-auto bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
                                     {series.length}
                                 </Badge>
@@ -384,13 +392,13 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                     <div className="text-center py-20">
                         <div className="text-6xl mb-4">📭</div>
                         <p className="text-muted-foreground text-lg">
-                            Henüz tamamlanan içerik yok
+                            {t.media.emptyState}
                         </p>
                     </div>
                 )}
             </div>
             <footer className="text-center py-8 text-muted-foreground text-sm">
-                PersonalLib ile oluşturuldu 📚🎬
+                {t.portfolio.footer}
             </footer>
         </div>
     );

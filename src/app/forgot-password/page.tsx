@@ -2,8 +2,8 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { BookOpen, Film } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BACKGROUND_GRADIENT } from "@/lib/utils";
-import { motion } from "framer-motion";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
+import { AuthFooter } from "@/components/auth/auth-footer";
 
 export const metadata = {
     title: "Şifremi Unuttum | PersonalLib",
@@ -42,9 +42,7 @@ export default function ForgotPasswordPage() {
                 </Card>
             </div>
 
-            <footer className="mt-8 relative z-10 text-gray-500 text-sm">
-                PersonalLib ile oluşturuldu 📚🎬
-            </footer>
+            <AuthFooter />
         </div>
     );
 }

@@ -85,7 +85,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ message: "Şifre başarıyla güncellendi" });
     } catch (error) {
-        console.error("Reset password hatası");
+        console.error("Şifre sıfırlama hatası");
         return NextResponse.json(
             { error: "Bir hata oluştu. Lütfen daha sonra tekrar deneyin." },
             { status: 500 }

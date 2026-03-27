@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ language: user?.language || "tr" });
     } catch (error) {
-        console.error("Dil alma hatası:", error);
+        console.error("Dil alma hatası");
         return NextResponse.json({ error: "Dil bilgisi alınamadı" }, { status: 500 });
     }
 }

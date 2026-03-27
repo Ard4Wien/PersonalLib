@@ -13,8 +13,10 @@ import { ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Turnstile } from "@/components/ui/turnstile";
 import { ReCaptcha } from "@/components/ui/recaptcha";
+import { useTranslation } from "@/contexts/language-context";
 
 export function ForgotPasswordForm() {
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -44,14 +46,14 @@ export function ForgotPasswordForm() {
 
             if (!response.ok) {
                 // API'den gelen kontrollü hata mesajını göster
-                setError(data.error || "Bir hata oluştu. Lütfen tekrar deneyin.");
+                setError(data.error || t.common.tryAgain);
                 return;
             }
 
             setIsSubmitted(true);
         } catch {
             // Ağ hatası veya JSON parse hatası — dahili bilgi sızdırmamak için genel mesaj
-            setError("Bir hata oluştu. Lütfen tekrar deneyin.");
+            setError(t.common.tryAgain);
         } finally {
             setIsLoading(false);
         }
@@ -72,13 +74,13 @@ export function ForgotPasswordForm() {
                 <div className="space-y-4">
                     <div className="space-y-2">
                         <p className="text-gray-300">
-                            Eğer bu e-posta adresiyle kayıtlı bir hesap varsa, şifre sıfırlama bağlantısını e-posta kutunuzda göreceksiniz.
+                            {t.auth.resetEmailSent}
                         </p>
                         <p className="text-sm text-blue-400 bg-blue-500/10 border border-blue-500/20 p-2 rounded-lg">
-                            Not: Mailin tarafınıza ulaşması 5 ila 15 dakika arasında değişebilir.
+                            {t.auth.resetEmailNote}
                         </p>
                         <p className="text-xs text-gray-500 italic">
-                            Lütfen Spam/Gereksiz kutusunu kontrol etmeyi unutmayın.
+                            {t.auth.checkSpam}
                         </p>
                     </div>
                 </div>
@@ -87,7 +89,7 @@ export function ForgotPasswordForm() {
                     variant="outline"
                     className="w-full border-white/10 hover:bg-white/5 text-white"
                 >
-                    <Link href="/login">Giriş Yap'a Geri Dön</Link>
+                    <Link href="/login">{t.auth.backToLogin}</Link>
                 </Button>
             </CardContent>
         );
@@ -108,13 +110,13 @@ export function ForgotPasswordForm() {
 
                 <div className="space-y-2">
                     <Label htmlFor="email" className="text-muted-foreground">
-                        E-posta
+                        {t.auth.email}
                     </Label>
                     <Input
                         id="email"
                         name="email"
                         type="email"
-                        placeholder="ornek@email.com"
+                        placeholder={t.auth.emailPlaceholder}
                         required
                         className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
                     />
@@ -140,10 +142,10 @@ export function ForgotPasswordForm() {
                     {isLoading ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Gönderiliyor...
+                            {t.common.sending}
                         </>
                     ) : (
-                        "Sıfırlama Bağlantısı Gönder"
+                        t.auth.sendResetLink
                     )}
                 </Button>
 
@@ -152,7 +154,7 @@ export function ForgotPasswordForm() {
                     className="text-sm text-gray-400 hover:text-white flex items-center justify-center gap-2 transition-colors"
                 >
                     <ArrowLeft className="h-4 w-4" />
-                    Giriş Yap'a Geri Dön
+                    {t.auth.backToLogin}
                 </Link>
             </CardFooter>
         </form>

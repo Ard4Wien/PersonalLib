@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import Providers from "@/components/providers";
 import { auth } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -49,10 +50,12 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   const headersList = await headers();
+  const cookieStore = await cookies();
+  const locale = cookieStore.get('NEXT_LOCALE')?.value || 'tr';
   const nonce = headersList.get('x-nonce') || '';
 
   return (
-    <html lang="tr" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased overflow-x-hidden w-full`} suppressHydrationWarning>
         <script
           type="application/ld+json"
@@ -73,7 +76,7 @@ export default async function RootLayout({
             })
           }}
         />
-        <Providers session={session}>
+        <Providers session={session} nonce={nonce}>
           {children}
           <Toaster position="top-right" richColors />
         </Providers>

@@ -6,13 +6,16 @@ import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 
 // İzin verilen sosyal medya platformları
 const ALLOWED_SOCIAL_KEYS = ['x', 'instagram', 'github', 'linkedin', 'youtube', 'tiktok', 'discord', 'twitch', 'spotify'];
+// Güvenlik: Sosyal medya kullanıcı adlarında kesinlikle olmaması gereken karakterler
+// Protokol enjeksiyonu (://), sorgu/hash (#?), path traversal (..), null byte (\0)
+const DANGEROUS_USERNAME_CHARS = /(:\/\/|\?|#|\.\.|%00|%0a|%0d)/i;
 const MAX_LINK_LENGTH = 500;
 const MAX_LINK_COUNT = 10;
 
 export async function GET() {
     const session = await auth();
     if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -26,7 +29,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
     const session = await auth();
     if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ error: "Yetkisiz" }, { status: 401 });
     }
 
     // Rate Limiting (Güvenlik)
@@ -79,6 +82,11 @@ export async function PATCH(request: Request) {
                     return NextResponse.json({ error: `${key} geçersiz içerik barındırıyor` }, { status: 400 });
                 }
 
+                // Protokol enjeksiyonu ve URL manipülasyonu engelle
+                if (DANGEROUS_USERNAME_CHARS.test(username)) {
+                    return NextResponse.json({ error: `${key} geçersiz karakter içeriyor` }, { status: 400 });
+                }
+
                 sanitizedLinks[platformKey] = {
                     u: username.trim(),
                     v: isVisible
@@ -95,6 +103,11 @@ export async function PATCH(request: Request) {
                 // Kullanıcı adı/URL güvenliği (HTML/Script engelle)
                 if (containsHtml(value)) {
                     return NextResponse.json({ error: `${key} geçersiz içerik barındırıyor` }, { status: 400 });
+                }
+
+                // Protokol enjeksiyonu ve URL manipülasyonu engelle
+                if (DANGEROUS_USERNAME_CHARS.test(value)) {
+                    return NextResponse.json({ error: `${key} geçersiz karakter içeriyor` }, { status: 400 });
                 }
 
                 sanitizedLinks[platformKey] = {

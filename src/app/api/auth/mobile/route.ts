@@ -66,7 +66,7 @@ export async function POST(request: Request) {
         const JWT_SECRET = process.env.JWT_SECRET || process.env.AUTH_SECRET;
 
         if (!JWT_SECRET) {
-            console.error("JWT_SECRET or AUTH_SECRET is not defined in environment variables");
+            console.error("JWT_SECRET veya AUTH_SECRET ortam değişkenlerinde tanımlı değil");
             return NextResponse.json(
                 { error: "Sunucu yapılandırma hatası" },
                 { status: 500 }
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
             },
         });
     } catch (error) {
-        console.error("Mobile login hatası");
+        console.error("Mobil giriş hatası");
         return NextResponse.json(
             { error: "Giriş işlemi sırasında bir hata oluştu" },
             { status: 500 }

@@ -9,8 +9,10 @@ import { BookOpen, Film, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BACKGROUND_GRADIENT } from "@/lib/utils";
+import { useTranslation } from "@/contexts/language-context";
 
 export default function HomePage() {
+  const { t } = useTranslation();
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -92,23 +94,22 @@ export default function HomePage() {
 
 
         <motion.p variants={item} className="text-xl text-muted-foreground mb-8 max-w-xl mx-auto">
-          Kitaplarınızı, filmlerinizi ve dizilerinizi tek bir yerde takip edin.
-          Kişisel medya kütüphanenizi oluşturun ve paylaşın.
+          {t.landing.subtitle}
         </motion.p>
 
 
         <motion.div variants={item} className="flex flex-wrap justify-center gap-4 mb-10">
           <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 text-foreground dark:text-gray-300 shadow-sm">
             <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            <span>Okuma & İzleme Takibi</span>
+            <span>{t.landing.feature1}</span>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 text-foreground dark:text-gray-300 shadow-sm">
             <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <span>İstek Listesi</span>
+            <span>{t.landing.feature2}</span>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 text-foreground dark:text-gray-300 shadow-sm">
             <Sparkles className="h-4 w-4 text-pink-600 dark:text-pink-400" />
-            <span>Paylaşılabilir Portfolyo</span>
+            <span>{t.landing.feature3}</span>
           </motion.div>
         </motion.div>
 
@@ -117,7 +118,7 @@ export default function HomePage() {
           <Link href="/register">
             <motion.div whileTap={{ scale: 0.95 }}>
               <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-lg px-8 transition-all hover:scale-105 shadow-lg shadow-purple-500/25">
-                Ücretsiz Başla
+                {t.landing.getStarted}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </motion.div>
@@ -125,7 +126,7 @@ export default function HomePage() {
           <Link href="/login">
             <motion.div whileTap={{ scale: 0.95 }}>
               <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white/50 dark:bg-transparent border-zinc-200 dark:border-white/20 text-foreground dark:text-white hover:bg-zinc-100 dark:hover:bg-white/10 text-lg px-8 transition-all hover:scale-105">
-                Giriş Yap
+                {t.auth.login}
               </Button>
             </motion.div>
           </Link>

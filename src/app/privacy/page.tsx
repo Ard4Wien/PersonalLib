@@ -6,8 +6,11 @@ import { BACKGROUND_GRADIENT } from "@/lib/utils";
 import Link from "next/link";
 import { ArrowLeft, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/contexts/language-context";
 
 export default function PrivacyPage() {
+    const { t } = useTranslation();
+
     return (
         <div className={BACKGROUND_GRADIENT + " items-center justify-center p-4 transition-colors duration-500 overflow-y-auto"}>
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
@@ -17,7 +20,7 @@ export default function PrivacyPage() {
                     <Link href="/">
                         <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground">
                             <ArrowLeft className="h-4 w-4" />
-                            Geri Dön
+                            {t.common.back}
                         </Button>
                     </Link>
                     <ThemeToggle />
@@ -32,90 +35,80 @@ export default function PrivacyPage() {
                         <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
                             <Shield className="h-6 w-6 text-white" />
                         </div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Gizlilik Politikası</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t.privacy.title}</h1>
                     </div>
 
                     <div className="space-y-6 text-muted-foreground text-sm md:text-base leading-relaxed">
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">1. Toplanan Veriler</h2>
-                            <p>PersonalLib, hizmetlerini sunabilmek için aşağıdaki kişisel verileri toplar:</p>
+                            <h2 className="text-lg font-semibold text-foreground">{t.privacy.section1Title}</h2>
+                            <p>{t.privacy.section1Intro}</p>
                             <ul className="list-disc list-inside space-y-1 pl-2">
-                                <li><strong>E-posta adresi:</strong> Hesap oluşturma, giriş yapma ve şifre sıfırlama işlemleri için.</li>
-                                <li><strong>Kullanıcı adı ve görünen ad:</strong> Profil tanımlama ve sosyal özellikler için.</li>
-                                <li><strong>Şifre:</strong> Güvenli bir şekilde bcrypt algoritmasıyla hash&apos;lenerek saklanır, düz metin olarak asla kaydedilmez.</li>
-                                <li><strong>Medya verileri:</strong> Eklediğiniz kitap, film ve dizi bilgileri.</li>
-                                <li><strong>Teknik Veriler:</strong> IP adresi, tarayıcı tipi ve oturum yönetimi için gerekli çerez verileri.</li>
+                                {t.privacy.section1Items.map((item, idx) => (
+                                    <li key={idx}><strong>{item.bold}</strong>{item.text}</li>
+                                ))}
                             </ul>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">2. Çerezler (Cookies) ve Yerel Depolama</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.privacy.section2Title}</h2>
                             <p>
                                 <Link href="https://personal-lib.vercel.app" className="text-blue-500 hover:underline">PersonalLib</Link>, 
-                                kullanıcı oturumlarını yönetmek, tema tercihlerini (karanlık/aydınlık mod) saklamak ve güvenliği sağlamak amacıyla 
-                                teknik çerezler ve yerel depolama (localStorage) teknolojilerini kullanır. Bu veriler reklam veya takip amacıyla üçüncü taraflarla paylaşılmaz.
+                                {t.privacy.section2Text}
                             </p>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">2. Verilerin Kullanım Amacı</h2>
-                            <p>Topladığımız verileri yalnızca şu amaçlarla kullanırız:</p>
+                            <h2 className="text-lg font-semibold text-foreground">{t.privacy.section3Title}</h2>
+                            <p>{t.privacy.section3Intro}</p>
                             <ul className="list-disc list-inside space-y-1 pl-2">
-                                <li>Hesabınızı oluşturmak ve yönetmek.</li>
-                                <li>Kişisel medya kütüphanenizi sunmak.</li>
-                                <li>Platform güvenliğini sağlamak.</li>
-                                <li>Hizmet kalitesini iyileştirmek.</li>
+                                {t.privacy.section3Items.map((item, idx) => (
+                                    <li key={idx}>{item}</li>
+                                ))}
                             </ul>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">4. Veri Paylaşımı ve KVKK</h2>
-                            <p>
-                                Kişisel verileriniz üçüncü taraflarla paylaşılmaz, satılmaz veya kiralanmaz. Verileriniz 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) 
-                                uyumlu bir şekilde işlenmektedir. Uygulamanın çalışması için gerekli olan teknik altyapı güvenli bulut sağlayıcıları tarafından sunulmaktadır. 
-                                Yalnızca yasal zorunluluk durumlarında yetkili makamlarla paylaşım yapılabilir.
-                            </p>
+                            <h2 className="text-lg font-semibold text-foreground">{t.privacy.section4Title}</h2>
+                            <p>{t.privacy.section4Text}</p>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">4. Veri Güvenliği ve Saklama Süreci</h2>
-                            <p>Verilerinizin güvenliğini sağlamak için aşağıdaki önlemleri alıyor ve şu silme politikasını uyguluyoruz:</p>
+                            <h2 className="text-lg font-semibold text-foreground">{t.privacy.section5Title}</h2>
+                            <p>{t.privacy.section5Intro}</p>
                             <ul className="list-disc list-inside space-y-1 pl-2">
-                                <li>Şifreler bcrypt algoritmasıyla hash&apos;lenerek saklanır.</li>
-                                <li>HTTPS ile şifrelenmiş bağlantı kullanılır.</li>
-                                <li><strong>Hesap Silme:</strong> Hesabınızı sildiğinizde verileriniz aktif veritabanımızdan anında silinir. Yedekleme sistemlerimizdeki veriler ise en geç 30 gün içerisinde tamamen temizlenmektedir.</li>
+                                {t.privacy.section5Items.map((item, idx) => (
+                                    <li key={idx}>{item}</li>
+                                ))}
+                                <li><strong>{t.privacy.section5Delete}</strong>{t.privacy.section5DeleteText}</li>
                             </ul>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">6. Yaş Sınırı ve İletişim</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.privacy.section6Title}</h2>
                             <p>
-                                PersonalLib, 13 yaş ve üzeri kullanıcıların kullanımı için tasarlanmıştır. Her türlü soru, görüş veya veri silme talebiniz için 
-                                bizimle <strong>personallibinfo@gmail.com</strong> adresi üzerinden iletişime geçebilirsiniz. İlgili talepleriniz en kısa sürede 
-                                değerlendirilerek sonuçlandırılacaktır.
+                                {t.privacy.section6Text}
+                                <strong>{t.privacy.section6Email}</strong>
+                                {t.privacy.section6TextEnd}
                             </p>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">6. Kullanıcı Hakları</h2>
-                            <p>Kullanıcılarımız aşağıdaki haklara sahiptir:</p>
+                            <h2 className="text-lg font-semibold text-foreground">{t.privacy.section7Title}</h2>
+                            <p>{t.privacy.section7Intro}</p>
                             <ul className="list-disc list-inside space-y-1 pl-2">
-                                <li>Kişisel verilerine erişim talep etme.</li>
-                                <li>Verilerinin düzeltilmesini veya silinmesini isteme.</li>
-                                <li>Hesabını kalıcı olarak kapatma.</li>
-                                <li>Veri işleme faaliyetleri hakkında bilgi alma.</li>
+                                {t.privacy.section7Items.map((item, idx) => (
+                                    <li key={idx}>{item}</li>
+                                ))}
                             </ul>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">7. Değişiklikler</h2>
-                            <p>
-                                Bu gizlilik politikası önceden haber verilmeksizin güncellenebilir. Önemli değişiklikler yapıldığında kullanıcılarımız bilgilendirilecektir.
-                            </p>
+                            <h2 className="text-lg font-semibold text-foreground">{t.privacy.section8Title}</h2>
+                            <p>{t.privacy.section8Text}</p>
                         </section>
 
                         <div className="pt-4 border-t border-black/5 dark:border-white/5 text-xs italic text-muted-foreground/70">
-                            Son güncelleme: 22 Mart 2026
+                            {t.privacy.lastUpdated}
                         </div>
                     </div>
                 </motion.div>

@@ -32,12 +32,13 @@ import { useViewMode } from "@/contexts/view-mode-context";
 import { useSearch } from "@/contexts/search-context";
 import { getInitials } from "@/lib/utils";
 import { getPublicUrl } from "@/lib/supabase";
+import { useTranslation } from "@/contexts/language-context";
 
 const navItems = [
-    { href: "/books", label: "Kitaplar", icon: BookOpen },
-    { href: "/movies", label: "Filmler & Diziler", icon: Film },
-    { href: "/wishlist", label: "İstek Listesi", icon: Heart },
-];
+    { href: "/books", translationKey: "books", icon: BookOpen },
+    { href: "/movies", translationKey: "moviesAndSeries", icon: Film },
+    { href: "/wishlist", translationKey: "wishlist", icon: Heart },
+] as const;
 
 export default function Header() {
     const { data: session } = useSession();
@@ -45,16 +46,17 @@ export default function Header() {
     const { searchQuery, setSearchQuery } = useSearch();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { viewMode, toggleViewMode } = useViewMode();
+    const { t, locale } = useTranslation();
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
     };
 
     const getSearchPlaceholder = () => {
-        if (pathname.startsWith("/books")) return "Kitaplarımda ara...";
-        if (pathname.startsWith("/movies")) return "Film ve dizilerimde ara...";
-        if (pathname.startsWith("/wishlist")) return "İstek listemde ara...";
-        return "Kitap, film veya dizi ara...";
+        if (pathname.startsWith("/books")) return t.nav.searchBooks;
+        if (pathname.startsWith("/movies")) return t.nav.searchMovies;
+        if (pathname.startsWith("/wishlist")) return t.nav.searchWishlist;
+        return t.nav.searchAll;
     };
 
 
@@ -102,11 +104,11 @@ export default function Header() {
                         })}
                     </nav>
 
-                    {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-1">
                         {navItems.map((item) => {
                             const Icon = item.icon;
                             const isActive = pathname.startsWith(item.href);
+                            const label = t.nav[item.translationKey as keyof typeof t.nav];
                             return (
                                 <Link
                                     key={item.href}
@@ -117,7 +119,7 @@ export default function Header() {
                                         }`}
                                 >
                                     <Icon className="h-4 w-4" />
-                                    <span>{item.label}</span>
+                                    <span>{label}</span>
                                 </Link>
                             );
                         })}
@@ -166,7 +168,7 @@ export default function Header() {
                                                 />
                                             )}
                                             <AvatarFallback className="bg-gradient-to-br from-purple-600 to-pink-600 text-white text-sm">
-                                                {session.user.name ? getInitials(session.user.name) : <User className="h-4 w-4" />}
+                                                {session.user.name ? getInitials(session.user.name, locale) : <User className="h-4 w-4" />}
                                             </AvatarFallback>
                                             {/* Fotoğrafı sağ tıklanıp kaydedilmesin/önizlenmesin diye şeffaf koruma katmanı */}
                                             <div
@@ -195,7 +197,7 @@ export default function Header() {
                                             className="flex items-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer focus:bg-purple-50 dark:focus:bg-purple-900/20"
                                         >
                                             <User className="h-4 w-4" />
-                                            <span>Profil</span>
+                                            <span>{t.nav.profile}</span>
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
@@ -204,7 +206,7 @@ export default function Header() {
                                             className="flex items-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer focus:bg-purple-50 dark:focus:bg-purple-900/20"
                                         >
                                             <BookOpen className="h-4 w-4" />
-                                            <span>Portfolyo</span>
+                                            <span>{t.nav.portfolio}</span>
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem asChild>
@@ -213,7 +215,7 @@ export default function Header() {
                                             className="flex items-center gap-2 text-muted-foreground hover:text-foreground cursor-pointer focus:bg-purple-50 dark:focus:bg-purple-900/20"
                                         >
                                             <Lock className="h-4 w-4" />
-                                            <span>Şifre Değiştir</span>
+                                            <span>{t.nav.changePassword}</span>
                                         </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
@@ -223,12 +225,12 @@ export default function Header() {
                                         {viewMode === "compact" ? (
                                             <>
                                                 <List className="h-4 w-4" />
-                                                <span>Liste Görünümü</span>
+                                                <span>{t.nav.listView}</span>
                                             </>
                                         ) : (
                                             <>
                                                 <LayoutGrid className="h-4 w-4" />
-                                                <span>Kompakt Görünüm</span>
+                                                <span>{t.nav.compactView}</span>
                                             </>
                                         )}
                                     </DropdownMenuItem>
@@ -238,7 +240,7 @@ export default function Header() {
                                         className="flex items-center gap-2 text-red-400 hover:text-red-300 cursor-pointer"
                                     >
                                         <LogOut className="h-4 w-4" />
-                                        <span>Çıkış Yap</span>
+                                        <span>{t.nav.logout}</span>
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>

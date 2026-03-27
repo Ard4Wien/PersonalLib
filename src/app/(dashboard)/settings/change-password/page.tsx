@@ -15,8 +15,10 @@ import Link from "next/link";
 import { changePasswordSchema, type ChangePasswordInput } from "@/lib/validations";
 import { Turnstile } from "@/components/ui/turnstile";
 import { ReCaptcha } from "@/components/ui/recaptcha";
+import { useTranslation } from "@/contexts/language-context";
 
 export default function ChangePasswordPage() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [showPasswords, setShowPasswords] = useState(false);
@@ -49,22 +51,21 @@ export default function ChangePasswordPage() {
             const result = await response.json();
 
             if (!response.ok) {
-
                 if (typeof result.error === "object") {
                     Object.entries(result.error).forEach(([field, messages]) => {
                         toast.error((messages as string[])[0]);
                     });
                 } else {
-                    toast.error(result.error || "Şifre değiştirilemedi");
+                    toast.error(result.error || t.changePassword.failed);
                 }
                 return;
             }
 
-            toast.success("Şifreniz başarıyla değiştirildi");
+            toast.success(t.changePassword.success);
             reset();
             router.push("/books");
         } catch (error) {
-            toast.error("Bir hata oluştu");
+            toast.error(t.common.error);
         } finally {
             setIsLoading(false);
         }
@@ -81,7 +82,7 @@ export default function ChangePasswordPage() {
                 >
                     <Link href="/books">
                         <ChevronLeft className="mr-2 h-4 w-4" />
-                        Geri Dön
+                        {t.common.back}
                     </Link>
                 </Button>
 
@@ -91,16 +92,16 @@ export default function ChangePasswordPage() {
                             <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400">
                                 <Lock className="h-5 w-5" />
                             </div>
-                            <CardTitle className="text-2xl text-foreground">Şifre Değiştir</CardTitle>
+                            <CardTitle className="text-2xl text-foreground">{t.changePassword.title}</CardTitle>
                         </div>
                         <CardDescription className="text-muted-foreground">
-                            Hesabınızın güvenliği için şifrenizi buradan güncelleyebilirsiniz.
+                            {t.changePassword.description}
                         </CardDescription>
                     </CardHeader>
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="currentPassword" title="Mevcut Şifre" className="text-foreground/80">Mevcut Şifre</Label>
+                                <Label htmlFor="currentPassword" title={t.changePassword.currentPassword} className="text-foreground/80">{t.changePassword.currentPassword}</Label>
                                 <PasswordInput
                                     id="currentPassword"
                                     placeholder="••••••••"
@@ -117,7 +118,7 @@ export default function ChangePasswordPage() {
                             <DropdownMenuSeparator className="bg-black/5 dark:bg-white/5 !my-6" />
 
                             <div className="space-y-2">
-                                <Label htmlFor="newPassword" title="Yeni Şifre" className="text-foreground/80">Yeni Şifre</Label>
+                                <Label htmlFor="newPassword" title={t.changePassword.newPassword} className="text-foreground/80">{t.changePassword.newPassword}</Label>
                                 <PasswordInput
                                     id="newPassword"
                                     placeholder="••••••••"
@@ -129,7 +130,7 @@ export default function ChangePasswordPage() {
                                 <div className="flex items-center gap-2 mt-1">
                                     <ShieldCheck className="h-3 w-3 text-gray-500" />
                                     <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
-                                        En az 8 karakter, harf ve rakam içermeli
+                                        {t.changePassword.passwordHint}
                                     </p>
                                 </div>
                                 {errors.newPassword && (
@@ -138,7 +139,7 @@ export default function ChangePasswordPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="confirmPassword" title="Yeni Şifre (Tekrar)" className="text-foreground/80">Yeni Şifre (Tekrar)</Label>
+                                <Label htmlFor="confirmPassword" title={t.changePassword.confirmPassword} className="text-foreground/80">{t.changePassword.confirmPassword}</Label>
                                 <PasswordInput
                                     id="confirmPassword"
                                     placeholder="••••••••"
@@ -167,10 +168,10 @@ export default function ChangePasswordPage() {
                                 {isLoading ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Güncelleniyor...
+                                        {t.common.updating}
                                     </>
                                 ) : (
-                                    "Şifreyi Güncelle"
+                                    t.changePassword.updateButton
                                 )}
                             </Button>
                         </CardFooter>

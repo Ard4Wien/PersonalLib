@@ -54,9 +54,18 @@ export const loginSchema = z.object({
 
 const imageSchema = z.string().url().optional().or(z.literal("")).refine((val) => {
     if (!val) return true;
-    return val.startsWith("https://");
+    // Güvenlik: Tehlikeli protokolleri kesinlikle engelle (defense-in-depth)
+    const lower = val.toLowerCase().trim();
+    if (lower.startsWith("javascript:") || lower.startsWith("data:") || lower.startsWith("vbscript:")) return false;
+    // Sadece HTTPS kabul et
+    return lower.startsWith("https://");
 }, {
     message: "Resim Desteklenmiyor"
+}).refine((val) => {
+    if (!val) return true;
+    return val.length <= 2000;
+}, {
+    message: "URL çok uzun"
 });
 
 
@@ -68,14 +77,20 @@ export const bookSchema = z.object({
     }),
     author: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !val || !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     coverImage: imageSchema,
     description: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !val || !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     publishedYear: z.number().optional(),
     genre: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !val || !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     pageCount: z.number().optional(),
     isbn: z.string().optional(),
@@ -89,14 +104,20 @@ export const movieSchema = z.object({
     }),
     director: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !val || !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     coverImage: imageSchema,
     description: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !val || !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     releaseYear: z.number().optional(),
     genre: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !val || !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     duration: z.number().optional(),
     imdbId: z.string().optional(),
@@ -110,15 +131,21 @@ export const seriesSchema = z.object({
     }),
     creator: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !val || !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     coverImage: imageSchema,
     description: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !val || !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     startYear: z.number().optional(),
     endYear: z.number().optional(),
     genre: z.string().optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
+    }).refine((val) => !val || !containsHtml(val), {
+        message: "HTML içerik kullanılamaz",
     }),
     totalSeasons: z.number().min(1).default(1),
     imdbId: z.string().optional(),
@@ -194,10 +221,10 @@ export const seriesUpdateSchema = z.object({
     genre: z.string().max(200).optional().refine((val) => !val || !containsProfanity(val), {
         message: "İçerik uygunsuz kelimeler barındırıyor",
     }),
-    totalSeasons: z.string().or(z.number()).optional(),
+    totalSeasons: z.coerce.number().int().positive("Geçersiz sezon sayısı").optional(),
     status: mediaStatusSchema,
-    lastSeason: z.string().or(z.number()).nullable().optional(),
-    lastEpisode: z.string().or(z.number()).nullable().optional(),
+    lastSeason: z.coerce.number().int().min(1).nullable().optional(),
+    lastEpisode: z.coerce.number().int().min(1).nullable().optional(),
 });
 
 export const mediaPatchSchema = z.object({
@@ -215,8 +242,8 @@ export const moviePatchSchema = mediaPatchSchema.extend({
 
 export const seriesPatchSchema = mediaPatchSchema.extend({
     userSeriesId: z.string().min(1),
-    lastSeason: z.string().or(z.number()).nullable().optional(),
-    lastEpisode: z.string().or(z.number()).nullable().optional(),
+    lastSeason: z.coerce.number().int().min(1).nullable().optional(),
+    lastEpisode: z.coerce.number().int().min(1).nullable().optional(),
     seasonId: z.string().optional(),
     seasonStatus: mediaStatusSchema.optional(),
 });
@@ -228,8 +255,10 @@ export const privacySchema = z.object({
 });
 
 export const profileImageSchema = z.string().min(1, "Resim yolu gereklidir").max(500, "Resim yolu çok uzun").refine((val) => {
-    // HTTPS URL'leri kabul et (eski format desteği)
-    if (val.startsWith("https://")) return true;
+    // HTTPS URL'leri sadece kendi alan adımızsa kabul et
+    if (val.startsWith("https://")) {
+        return val.startsWith("https://qyeexaciulccipypubdt.supabase.co");
+    }
 
     // Path Traversal koruması: "..", "//", "\\" karakterlerini engelle
     if (val.includes("..") || val.includes("//") || val.includes("\\")) return false;
@@ -237,7 +266,7 @@ export const profileImageSchema = z.string().min(1, "Resim yolu gereklidir").max
     // Sadece avatars/ altında ve güvenli dosya uzantılarıyla kabul et
     return /^avatars\/[a-zA-Z0-9@!_-]+\.(jpg|jpeg|png|webp)$/i.test(val);
 }, {
-    message: "Geçersiz resim formatı"
+    message: "Geçersiz veya yetkisiz resim formatı"
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

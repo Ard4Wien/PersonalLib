@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { ZoomIn, ZoomOut, Check, X } from "lucide-react";
+import { useTranslation } from "@/contexts/language-context";
 
 interface ImageCropModalProps {
     isOpen: boolean;
@@ -67,6 +68,7 @@ export function ImageCropModal({
     imageSrc,
     onCropComplete,
 }: ImageCropModalProps) {
+    const { t } = useTranslation();
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -86,7 +88,7 @@ export function ImageCropModal({
             onCropComplete(croppedImage);
             onClose();
         } catch (error) {
-            console.error("Kırpma hatası");
+            console.error("Crop error");
         }
     };
 
@@ -98,9 +100,9 @@ export function ImageCropModal({
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="sm:max-w-md bg-slate-950/95 backdrop-blur-xl border-white/10 shadow-2xl shadow-purple-500/10">
                 <DialogHeader>
-                    <DialogTitle className="text-white">Fotoğrafı Kırp</DialogTitle>
+                    <DialogTitle className="text-white">{t.profile.cropPhoto}</DialogTitle>
                     <DialogDescription className="sr-only">
-                        Profil fotoğrafınızı uygun boyuta getirmek için kırpın.
+                        {t.profile.cropDescription}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -139,14 +141,14 @@ export function ImageCropModal({
                         className="flex-1 border-white/10 bg-transparent text-white hover:bg-white/5"
                     >
                         <X className="h-4 w-4 mr-2" />
-                        İptal
+                        {t.common.cancel}
                     </Button>
                     <Button
                         onClick={handleSave}
                         className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white"
                     >
                         <Check className="h-4 w-4 mr-2" />
-                        Kaydet
+                        {t.common.save}
                     </Button>
                 </DialogFooter>
             </DialogContent>

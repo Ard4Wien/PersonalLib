@@ -14,10 +14,12 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { motion } from "framer-motion";
 import { Turnstile } from "@/components/ui/turnstile";
 import { ReCaptcha } from "@/components/ui/recaptcha";
+import { useTranslation } from "@/contexts/language-context";
 
 import { passwordSchema } from "@/lib/validations";
 
 export function ResetPasswordForm() {
+    const { t } = useTranslation();
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
@@ -31,9 +33,9 @@ export function ResetPasswordForm() {
 
     useEffect(() => {
         if (!token) {
-            setError("Geçersiz veya eksik bağlantı. Lütfen tekrar şifre sıfırlama talebinde bulunun.");
+            setError(t.auth.invalidResetLink);
         }
-    }, [token]);
+    }, [token, t.auth.invalidResetLink]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -45,7 +47,7 @@ export function ResetPasswordForm() {
         const confirmPassword = formData.get("confirmPassword") as string;
 
         if (password !== confirmPassword) {
-            setError("Şifreler eşleşmiyor");
+            setError(t.auth.passwordsNotMatch);
             setIsLoading(false);
             return;
         }
@@ -53,7 +55,7 @@ export function ResetPasswordForm() {
         // Merkezi validation şemasını kullan
         const validated = passwordSchema.safeParse(password);
         if (!validated.success) {
-            setError(validated.error.issues[0]?.message || "Geçersiz şifre formatı");
+            setError(validated.error.issues[0]?.message || t.auth.invalidPasswordFormat);
             setIsLoading(false);
             return;
         }
@@ -74,7 +76,7 @@ export function ResetPasswordForm() {
 
             if (!response.ok) {
                 // API'den gelen kontrollü hata mesajını göster
-                setError(data.error || "Bir hata oluştu. Lütfen tekrar deneyin.");
+                setError(data.error || t.common.tryAgain);
                 setIsLoading(false);
                 return;
             }
@@ -86,9 +88,9 @@ export function ResetPasswordForm() {
         } catch (err: unknown) {
             // Ağ hatası — dahili bilgi sızdırmamak için genel mesaj
             if (err instanceof TypeError && err.message === 'Failed to fetch') {
-                setError("Sunucuya ulaşılamıyor. Lütfen internet bağlantınızı kontrol edin.");
+                setError(t.common.serverUnreachable);
             } else {
-                setError("Beklenmedik bir hata oluştu. Lütfen tekrar deneyin.");
+                setError(t.common.unexpectedError);
             }
         } finally {
             setIsLoading(false);
@@ -108,14 +110,14 @@ export function ResetPasswordForm() {
                     </div>
                 </motion.div>
                 <p className="text-gray-300">
-                    Şifreniz başarıyla sıfırlandı. Giriş sayfasına yönlendiriliyorsunuz...
+                    {t.auth.resetSuccess}
                 </p>
                 <Button
                     asChild
                     variant="link"
                     className="text-purple-400"
                 >
-                    <Link href="/login">Hemen Giriş Yap</Link>
+                    <Link href="/login">{t.auth.loginNow}</Link>
                 </Button>
             </CardContent>
         );
@@ -139,7 +141,7 @@ export function ResetPasswordForm() {
 
                 <div className="space-y-2">
                     <Label htmlFor="password" className="text-muted-foreground">
-                        Yeni Şifre
+                        {t.auth.newPassword}
                     </Label>
                     <PasswordInput
                         id="password"
@@ -151,13 +153,13 @@ export function ResetPasswordForm() {
                         className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
                     />
                     <p className="text-[11px] text-muted-foreground/70 px-1 italic">
-                        * En az 8 karakter, bir büyük harf, bir rakam ve bir özel karakter içermelidir.
+                        {t.auth.passwordResetRequirements}
                     </p>
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="confirmPassword" className="text-muted-foreground">
-                        Şifre Tekrar
+                        {t.auth.confirmPassword}
                     </Label>
                     <PasswordInput
                         id="confirmPassword"
@@ -195,10 +197,10 @@ export function ResetPasswordForm() {
                     {isLoading ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Güncelleniyor...
+                            {t.common.updating}
                         </>
                     ) : (
-                        "Şifreyi Güncelle"
+                        t.auth.updatePassword
                     )}
                 </Button>
 
@@ -207,7 +209,7 @@ export function ResetPasswordForm() {
                         href="/forgot-password"
                         className="text-sm text-purple-400 hover:text-purple-300 transition-colors hover:underline text-center"
                     >
-                        Yeni bir bağlantı iste
+                        {t.auth.requestNewLink}
                     </Link>
                 )}
             </CardFooter>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image, { ImageProps } from "next/image";
 import { Image as ImageIcon } from "lucide-react";
+import { useTranslation } from "@/contexts/language-context";
 
 interface ClientImageProps extends Omit<ImageProps, 'priority'> {
     fallbackText?: string;
@@ -11,6 +12,7 @@ interface ClientImageProps extends Omit<ImageProps, 'priority'> {
 }
 
 export function ClientImage({ fallbackText, aspectRatio = "portrait", priority = false, ...props }: ClientImageProps) {
+    const { t } = useTranslation();
     const [error, setError] = useState(false);
 
     if (error || !props.src) {
@@ -23,7 +25,7 @@ export function ClientImage({ fallbackText, aspectRatio = "portrait", priority =
                     </div>
                 )}
                 <div className="absolute inset-x-0 bottom-4 text-white/20 text-[8px] font-bold uppercase tracking-[0.2em]">
-                    Görsel Bulunamadı
+                    {t.common.noImage}
                 </div>
             </div>
         );

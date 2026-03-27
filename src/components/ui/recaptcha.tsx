@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
+import { useNonce } from "@/contexts/nonce-context";
 
 interface ReCaptchaProps {
     onVerify: (token: string | null) => void;
@@ -13,22 +14,34 @@ export function ReCaptcha({ onVerify, theme = "light", size = "normal" }: ReCapt
     const containerRef = useRef<HTMLDivElement>(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const widgetIdRef = useRef<number | null>(null);
+    const nonce = useNonce();
 
     const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+    // Script zaten yüklüyse (client-side navigation durumunda onLoad tekrar tetiklenmez)
+    useEffect(() => {
+        if (typeof window !== "undefined" && typeof window.grecaptcha !== "undefined" && typeof window.grecaptcha.render === "function") {
+            setIsLoaded(true);
+        }
+    }, []);
 
     useEffect(() => {
         if (!siteKey || !isLoaded || !containerRef.current || widgetIdRef.current !== null) return;
 
         const renderWidget = () => {
-            if (window.grecaptcha && window.grecaptcha.render) {
-                widgetIdRef.current = window.grecaptcha.render(containerRef.current!, {
-                    sitekey: siteKey,
-                    callback: onVerify,
-                    "expired-callback": () => onVerify(null),
-                    "error-callback": () => onVerify(null),
-                    theme: theme,
-                    size: size,
-                });
+            if (window.grecaptcha && window.grecaptcha.render && containerRef.current) {
+                try {
+                    widgetIdRef.current = window.grecaptcha.render(containerRef.current, {
+                        sitekey: siteKey,
+                        callback: onVerify,
+                        "expired-callback": () => onVerify(null),
+                        "error-callback": () => onVerify(null),
+                        theme: theme,
+                        size: size,
+                    });
+                } catch {
+                    // Widget zaten render edilmiş olabilir (çift render koruması)
+                }
             }
         };
 
@@ -44,7 +57,15 @@ export function ReCaptcha({ onVerify, theme = "light", size = "normal" }: ReCapt
         checkAndRender();
 
         return () => {
-            // Cleanup if needed (reCaptcha v2 doesn't have a simple standard reset/remove for individual widgets without ID)
+            // Cleanup: widget'ı sıfırla (sayfa değişikliğinde)
+            if (widgetIdRef.current !== null) {
+                try {
+                    window.grecaptcha?.reset(widgetIdRef.current);
+                } catch {
+                    // Widget zaten kaldırılmış olabilir
+                }
+                widgetIdRef.current = null;
+            }
         };
     }, [isLoaded, siteKey, onVerify, theme, size]);
 
@@ -56,6 +77,7 @@ export function ReCaptcha({ onVerify, theme = "light", size = "normal" }: ReCapt
                 src="https://www.google.com/recaptcha/api.js?render=explicit"
                 onLoad={() => setIsLoaded(true)}
                 strategy="afterInteractive"
+                nonce={nonce}
             />
             <div ref={containerRef} />
         </div>

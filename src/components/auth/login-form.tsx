@@ -19,8 +19,10 @@ import { BookOpen, Film, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Turnstile } from "@/components/ui/turnstile";
 import { ReCaptcha } from "@/components/ui/recaptcha";
+import { useTranslation } from "@/contexts/language-context";
 
 export function LoginForm() {
+    const { t } = useTranslation();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -45,13 +47,13 @@ export function LoginForm() {
             });
 
             if (result?.error) {
-                setError("E-posta veya şifre hatalı");
+                setError(t.auth.loginError);
                 setIsLoading(false);
             } else {
                 window.location.href = "/books";
             }
         } catch {
-            setError("Bir hata oluştu. Lütfen tekrar deneyin.");
+            setError(t.common.tryAgain);
             setIsLoading(false);
         }
     };
@@ -74,10 +76,10 @@ export function LoginForm() {
                     </motion.div>
                 </div>
                 <CardTitle className="text-2xl font-bold text-foreground">
-                    Hoş Geldiniz
+                    {t.auth.welcome}
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
-                    Medya kütüphanenize giriş yapın
+                    {t.auth.loginDescription}
                 </CardDescription>
             </CardHeader>
 
@@ -95,13 +97,13 @@ export function LoginForm() {
 
                     <div className="space-y-2">
                         <Label htmlFor="email" className="text-muted-foreground">
-                            E-posta
+                            {t.auth.email}
                         </Label>
                         <Input
                             id="email"
                             name="email"
                             type="email"
-                            placeholder="ornek@email.com"
+                            placeholder={t.auth.emailPlaceholder}
                             required
                             autoCapitalize="none"
                             autoCorrect="off"
@@ -113,13 +115,13 @@ export function LoginForm() {
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
                             <Label htmlFor="password" className="text-muted-foreground">
-                                Şifre
+                                {t.auth.password}
                             </Label>
                             <Link
                                 href="/forgot-password"
                                 className="text-xs text-purple-400 hover:text-purple-300 transition-colors hover:underline"
                             >
-                                Şifremi Unuttum?
+                                {t.auth.forgotPassword}
                             </Link>
                         </div>
                         <PasswordInput
@@ -155,20 +157,20 @@ export function LoginForm() {
                         {isLoading ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Giriş yapılıyor...
+                                {t.auth.loggingIn}
                             </>
                         ) : (
-                            "Giriş Yap"
+                            t.auth.login
                         )}
                     </Button>
 
                     <p className="text-sm text-muted-foreground text-center">
-                        Hesabınız yok mu?{" "}
+                        {t.auth.noAccount}{" "}
                         <Link
                             href="/register"
                             className="text-purple-600 dark:text-purple-400 hover:text-purple-500 transition-colors hover:underline"
                         >
-                            Üye Ol
+                            {t.auth.register}
                         </Link>
                     </p>
                 </CardFooter>

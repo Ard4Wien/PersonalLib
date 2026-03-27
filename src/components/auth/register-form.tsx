@@ -21,8 +21,10 @@ import { motion } from "framer-motion";
 import { containsProfanity } from "@/lib/profanity";
 import { Turnstile } from "@/components/ui/turnstile";
 import { ReCaptcha } from "@/components/ui/recaptcha";
+import { useTranslation } from "@/contexts/language-context";
 
 export function RegisterForm() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -59,9 +61,9 @@ export function RegisterForm() {
             } catch (err: unknown) {
                 console.error("Kullanıcı adı kontrol hatası");
                 if (err instanceof TypeError && err.message === 'Failed to fetch') {
-                    setUsernameCheckError("Bağlantı hatası");
+                    setUsernameCheckError(t.common.connectionError);
                 } else {
-                    setUsernameCheckError("Sunucu hatası");
+                    setUsernameCheckError(t.common.serverError);
                 }
             } finally {
                 setIsCheckingUsername(false);
@@ -78,28 +80,28 @@ export function RegisterForm() {
         setEmailSuggestion(null);
 
         if (!agreedToTerms) {
-            setError("Devam etmek için Kullanım Koşullarını ve Gizlilik Politikasını kabul etmelisiniz.");
+            setError(t.auth.termsRequired);
             return;
         }
 
         if (/[^a-zA-ZğüşıöçĞÜŞİÖÇ\s]/.test(displayName)) {
-            setError("Görünen adda özel karakter veya sayı bulunamaz.");
+            setError(t.auth.displayNameSpecialCharError);
             return;
         }
 
         if (containsProfanity(displayName)) {
-            setError("Görünen ad uygunsuz içerik barındıramaz.");
+            setError(t.auth.displayNameProfanity);
             return;
         }
 
         if (/[^a-z0-9_]/.test(username)) {
-            setError("Kullanıcı adında özel karakter bulunamaz.");
+            setError(t.auth.usernameSpecialChar);
             return;
         }
 
 
         if (usernameAvailable === false) {
-            setError("Bu kullanıcı adı zaten alınmış.");
+            setError(t.auth.usernameTaken);
             return;
         }
 
@@ -121,13 +123,13 @@ export function RegisterForm() {
         // Merkezi validation şemasını kullan
         const validatedPassword = passwordSchema.safeParse(password);
         if (!validatedPassword.success) {
-            setError(validatedPassword.error.issues[0]?.message || "Şifre formatı geçersiz.");
+            setError(validatedPassword.error.issues[0]?.message || t.auth.invalidPasswordFormat);
             setIsLoading(false);
             return;
         }
 
         if (data.username.length < 4 || data.username.length > 12) {
-            setError("Kullanıcı adı 4 ile 12 karakter arasında olmalıdır");
+            setError(t.auth.usernameLength);
             setIsLoading(false);
             return;
         }
@@ -135,19 +137,19 @@ export function RegisterForm() {
         const isOnlyNumbers = (str: string) => /^\d+$/.test(str);
 
         if (isOnlyNumbers(data.username)) {
-            setError("Kullanıcı adı sadece rakamlardan oluşamaz");
+            setError(t.auth.usernameOnlyNumbers);
             setIsLoading(false);
             return;
         }
 
         if (isOnlyNumbers(data.displayName)) {
-            setError("Görünen ad sadece rakamlardan oluşamaz");
+            setError(t.auth.displayNameOnlyNumbers);
             setIsLoading(false);
             return;
         }
 
         if (data.password !== confirmPassword) {
-            setError("Şifreler eşleşmiyor");
+            setError(t.auth.passwordsNotMatch);
             setIsLoading(false);
             return;
         }
@@ -168,9 +170,9 @@ export function RegisterForm() {
                     }
                     const fieldErrors = result.error as Record<string, string[]>;
                     const firstError = Object.values(fieldErrors)[0]?.[0];
-                    setError(firstError || "Kayıt işlemi başarısız");
+                    setError(firstError || t.auth.registerFailed);
                 } else {
-                    setError(result.error || "Kayıt işlemi başarısız");
+                    setError(result.error || t.auth.registerFailed);
                 }
                 return;
             }
@@ -179,9 +181,9 @@ export function RegisterForm() {
         } catch (err: unknown) {
             // Ağ hatası mı yoksa beklenmedik bir js hatası mı kontrol et
             if (err instanceof TypeError && err.message === 'Failed to fetch') {
-                setError("Sunucuya ulaşılamıyor. Lütfen internet bağlantınızı kontrol edin.");
+                setError(t.common.serverUnreachable);
             } else {
-                setError("Beklenmedik bir hata oluştu. Lütfen sayfayı yenileyip tekrar deneyin.");
+                setError(t.common.unexpectedError);
             }
         } finally {
             setIsLoading(false);
@@ -206,10 +208,10 @@ export function RegisterForm() {
                     </motion.div>
                 </div>
                 <CardTitle className="text-2xl font-bold text-foreground">
-                    Hesap Oluştur
+                    {t.auth.createAccount}
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
-                    Kendi medya kütüphanenizi oluşturun
+                    {t.auth.createAccountDescription}
                 </CardDescription>
             </CardHeader>
 
@@ -228,22 +230,22 @@ export function RegisterForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="displayName" className="text-muted-foreground">
-                                Görünen Ad
+                                {t.auth.displayName}
                             </Label>
                             <Input
                                 id="displayName"
                                 name="displayName"
                                 type="text"
-                                placeholder="Adınız Soyadınız"
+                                placeholder={t.auth.displayNamePlaceholder}
                                 required
                                 value={displayName}
                                 onChange={(e) => {
                                     const val = e.target.value;
                                     setDisplayName(val);
                                     if (/[^a-zA-ZğüşıöçĞÜŞİÖÇ\s]/.test(val)) {
-                                        setDisplayNameCharError("Özel karakter veya sayı kullanılamaz.");
+                                        setDisplayNameCharError(t.auth.displayNameCharError);
                                     } else if (containsProfanity(val)) {
-                                        setDisplayNameCharError("Görünen ad uygunsuz içerik barındıramaz.");
+                                        setDisplayNameCharError(t.auth.displayNameProfanity);
                                     } else {
                                         setDisplayNameCharError(null);
                                     }
@@ -257,14 +259,14 @@ export function RegisterForm() {
 
                         <div className="space-y-2">
                             <Label htmlFor="username" className="text-muted-foreground">
-                                Kullanıcı Adı
+                                {t.auth.username}
                             </Label>
                             <div className="relative">
                                 <Input
                                     id="username"
                                     name="username"
                                     type="text"
-                                    placeholder="kullanıcıadınız"
+                                    placeholder={t.auth.usernamePlaceholder}
                                     required
                                     autoCapitalize="none"
                                     autoCorrect="off"
@@ -274,7 +276,7 @@ export function RegisterForm() {
                                         const val = e.target.value.toLowerCase();
                                         setUsername(val);
                                         if (/[^a-z0-9_]/.test(val)) {
-                                            setUsernameCharError("Sadece küçük harf, rakam ve _ kullanılabilir");
+                                            setUsernameCharError(t.auth.usernameCharError);
                                         } else {
                                             setUsernameCharError(null);
                                         }
@@ -294,7 +296,7 @@ export function RegisterForm() {
                             )}
                             {!usernameCharError && !usernameCheckError && usernameAvailable === true && (
                                 <p className="text-[10px] text-green-500 mt-1 pl-1">
-                                    Bu kullanıcı adı müsait!
+                                    {t.auth.usernameAvailable}
                                 </p>
                             )}
                             {usernameCharError && (
@@ -305,14 +307,14 @@ export function RegisterForm() {
 
                     <div className="space-y-2">
                         <Label htmlFor="email" className="text-muted-foreground">
-                            E-posta
+                            {t.auth.email}
                         </Label>
                         <div className="relative">
                             <Input
                                 id="email"
                                 name="email"
                                 type="email"
-                                placeholder="ornek@email.com"
+                                placeholder={t.auth.emailPlaceholder}
                                 required
                                 autoCapitalize="none"
                                 autoCorrect="off"
@@ -327,7 +329,7 @@ export function RegisterForm() {
                         </div>
                         {emailSuggestion && (
                             <div className="mt-2 p-2 rounded bg-purple-500/10 border border-purple-500/20 text-[11px]">
-                                <span className="text-muted-foreground">Bunu mu demek istediniz? </span>
+                                <span className="text-muted-foreground">{t.auth.emailSuggestion}</span>
                                 <button
                                     type="button"
                                     onClick={() => {
@@ -344,7 +346,7 @@ export function RegisterForm() {
 
                     <div className="space-y-2">
                         <Label htmlFor="password" className="text-muted-foreground">
-                            Şifre
+                            {t.auth.password}
                         </Label>
                         <PasswordInput
                             id="password"
@@ -357,13 +359,13 @@ export function RegisterForm() {
                             className="bg-zinc-100/50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-foreground placeholder:text-muted-foreground transition-all focus:scale-[1.01]"
                         />
                         <p className="text-[10px] text-gray-500 mt-1 pl-1 leading-relaxed">
-                            En az 8 karakter, bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir.
+                            {t.auth.passwordRequirements}
                         </p>
                     </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="confirmPassword" className="text-muted-foreground">
-                            Şifre Tekrar
+                            {t.auth.confirmPassword}
                         </Label>
                         <PasswordInput
                             id="confirmPassword"
@@ -385,10 +387,11 @@ export function RegisterForm() {
                             className="mt-1 h-4 w-4 rounded border-zinc-300 dark:border-zinc-600 text-purple-600 focus:ring-purple-500 cursor-pointer accent-purple-600"
                         />
                         <label htmlFor="terms" className="text-xs text-muted-foreground cursor-pointer select-none leading-relaxed">
-                            <Link href="/terms" target="_blank" className="text-purple-600 dark:text-purple-400 hover:underline">Kullanım Koşullarını</Link>
-                            {" "}ve{" "}
-                            <Link href="/privacy" target="_blank" className="text-purple-600 dark:text-purple-400 hover:underline">Gizlilik Politikasını</Link>
-                            {" "}okudum ve kabul ediyorum.
+                            {t.auth.termsAgreePre}
+                            <Link href="/terms" target="_blank" className="text-purple-600 dark:text-purple-400 hover:underline">{t.auth.termsLink}</Link>
+                            {t.auth.termsAgreeMid}
+                            <Link href="/privacy" target="_blank" className="text-purple-600 dark:text-purple-400 hover:underline">{t.auth.privacyLink}</Link>
+                            {t.auth.termsAgreePost}
                         </label>
                     </div>
 
@@ -412,20 +415,20 @@ export function RegisterForm() {
                         {isLoading ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Hesap oluşturuluyor...
+                                {t.auth.registering}
                             </>
                         ) : (
-                            "Kayıt Ol"
+                            t.auth.registerButton
                         )}
                     </Button>
 
                     <p className="text-sm text-muted-foreground text-center">
-                        Zaten hesabınız var mı?{" "}
+                        {t.auth.hasAccount}{" "}
                         <Link
                             href="/login"
                             className="text-purple-600 dark:text-purple-400 hover:text-purple-500 transition-colors hover:underline"
                         >
-                            Giriş Yap
+                            {t.auth.login}
                         </Link>
                     </p>
                 </CardFooter>

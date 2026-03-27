@@ -83,16 +83,19 @@ export default auth((request: NextRequest & { auth: any }) => {
     const cspHeader = [
         "default-src 'self'",
         // SIKI GÜVENLİK: Sadece kendi domainimiz, doğrulanmış nonce'lar ve gerekli harici servisler. 'unsafe-inline' KESİNLİKLE YOK.
-        `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/`,
+        `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ https://www.recaptcha.net`,
         "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' blob: data: https: https://qyeexaciulccipypubdt.supabase.co",
+        // GÖRSEL GÜVENLİĞİ: Sadece güvenilir medya kaynaklarına ve kendi depolama alanımıza izin ver. 'data:' ve 'https:' kaldırıldı.
+        "img-src 'self' blob: https://qyeexaciulccipypubdt.supabase.co https://*.googleusercontent.com https://books.google.com https://image.tmdb.org https://covers.openlibrary.org https://wsrv.nl https://cdn.discordapp.com https://i.scdn.co https://i.ytimg.com https://cdn.myanimelist.net https://m.media-amazon.com https://images.penguinrandomhouse.com",
         "font-src 'self'",
-        "connect-src 'self' https://qyeexaciulccipypubdt.supabase.co https://challenges.cloudflare.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ https://www.googleapis.com https://api.penguinrandomhouse.com https://openlibrary.org https://api.themoviedb.org https://api.jikan.moe https://wsrv.nl https://*.vercel.app",
-        "frame-src https://challenges.cloudflare.com https://www.google.com/recaptcha/ https://recaptcha.google.com/",
+        // BAĞLANTI GÜVENLİĞİ: Wildcard yerine sadece kendi production domainimiz.
+        "connect-src 'self' https://qyeexaciulccipypubdt.supabase.co https://challenges.cloudflare.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ https://www.recaptcha.net https://www.googleapis.com https://api.penguinrandomhouse.com https://openlibrary.org https://api.themoviedb.org https://api.jikan.moe https://wsrv.nl https://personal-lib.vercel.app",
+        "frame-src https://challenges.cloudflare.com https://www.google.com/recaptcha/ https://recaptcha.google.com/ https://www.recaptcha.net",
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",
         "frame-ancestors 'none'",
+        "upgrade-insecure-requests",
     ].join('; ');
 
     const requestHeaders = new Headers(request.headers);

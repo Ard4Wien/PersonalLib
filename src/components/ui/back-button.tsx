@@ -3,8 +3,10 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useTranslation } from "@/contexts/language-context";
 
 export function BackButton() {
+    const { t } = useTranslation();
     const router = useRouter();
 
     const handleBack = () => {
@@ -25,7 +27,7 @@ export function BackButton() {
             onClick={handleBack}
         >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Geri Dön
+            {t.common.back}
         </Button>
     );
 }

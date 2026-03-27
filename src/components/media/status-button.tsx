@@ -11,6 +11,7 @@ import {
 import { Check, Clock, Edit, Heart, MoreVertical, Star, Trash2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useTranslation } from "@/contexts/language-context";
 
 interface StatusButtonProps {
     type: "book" | "movie" | "series";
@@ -31,19 +32,21 @@ export default function StatusButton({
     onEdit,
     onDelete,
 }: StatusButtonProps) {
+    const { t } = useTranslation();
+
     const statusOptions =
         type === "book"
             ? [
-                { value: "COMPLETED", label: "Okundu", icon: Check, color: "text-green-400" },
-                { value: "READING", label: "Okunuyor", icon: Clock, color: "text-blue-400" },
-                { value: "WISHLIST", label: "İstek Listesi", icon: Heart, color: "text-purple-400" },
-                { value: "DROPPED", label: "Bırakıldı", icon: X, color: "text-red-400" },
+                { value: "COMPLETED", label: t.status.completed, icon: Check, color: "text-green-400" },
+                { value: "READING", label: t.status.reading, icon: Clock, color: "text-blue-400" },
+                { value: "WISHLIST", label: t.status.wishlist, icon: Heart, color: "text-purple-400" },
+                { value: "DROPPED", label: t.status.dropped, icon: X, color: "text-red-400" },
             ]
             : [
-                { value: "COMPLETED", label: "İzlendi", icon: Check, color: "text-green-400" },
-                { value: "WATCHING", label: "İzleniyor", icon: Clock, color: "text-blue-400" },
-                { value: "WISHLIST", label: "İstek Listesi", icon: Heart, color: "text-purple-400" },
-                { value: "DROPPED", label: "Bırakıldı", icon: X, color: "text-red-400" },
+                { value: "COMPLETED", label: t.status.completedMovie, icon: Check, color: "text-green-400" },
+                { value: "WATCHING", label: t.status.watching, icon: Clock, color: "text-blue-400" },
+                { value: "WISHLIST", label: t.status.wishlist, icon: Heart, color: "text-purple-400" },
+                { value: "DROPPED", label: t.status.dropped, icon: X, color: "text-red-400" },
             ];
 
     const handleStatusChange = (status: string, label: string) => {
@@ -51,8 +54,8 @@ export default function StatusButton({
 
         onStatusChange?.(status);
 
-        toast.success(`${label} olarak güncellendi`, {
-            description: "Durum başarıyla kaydedildi.",
+        toast.success(`${label} ${t.status.updatedTo}`, {
+            description: t.status.savedSuccessfully,
             icon: <Check className="h-4 w-4 text-green-500" />,
             duration: 2000,
         });
@@ -114,7 +117,7 @@ export default function StatusButton({
                         className={`flex items-center gap-2 cursor-pointer transition-colors ${isFavorite ? "text-yellow-600 dark:text-yellow-400 hover:text-yellow-500 dark:hover:text-yellow-300" : "text-muted-foreground hover:text-foreground dark:text-gray-300 dark:hover:text-white"}`}
                     >
                         <Star className={`h-4 w-4 ${isFavorite ? "fill-yellow-600 dark:fill-yellow-400" : ""}`} />
-                        <span>{isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}</span>
+                        <span>{isFavorite ? t.media.removeFromFavorites : t.media.addToFavorites}</span>
                     </DropdownMenuItem>
                 )}
                 {onEdit && (
@@ -123,7 +126,7 @@ export default function StatusButton({
                         className="flex items-center gap-2 cursor-pointer text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
                     >
                         <Edit className="h-4 w-4" />
-                        <span>Düzenle</span>
+                        <span>{t.common.edit}</span>
                     </DropdownMenuItem>
                 )}
                 {onDelete && (
@@ -132,7 +135,7 @@ export default function StatusButton({
                         className="flex items-center gap-2 cursor-pointer text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300"
                     >
                         <Trash2 className="h-4 w-4" />
-                        <span>Kaldır</span>
+                        <span>{t.media.remove}</span>
                     </DropdownMenuItem>
                 )}
             </DropdownMenuContent>

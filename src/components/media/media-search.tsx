@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { getOptimizedImageUrl } from "@/lib/utils";
 import { ClientImage } from "./client-image";
+import { useTranslation } from "@/contexts/language-context";
 
 interface MediaSearchResult {
     id: string | number;
@@ -33,6 +34,7 @@ interface MediaSearchProps {
 }
 
 export function MediaSearch({ type, onSelect }: MediaSearchProps) {
+    const { t } = useTranslation();
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<MediaSearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -50,25 +52,25 @@ export function MediaSearch({ type, onSelect }: MediaSearchProps) {
 
                 setResults(data as MediaSearchResult[]);
                 if ((data as MediaSearchResult[]).length === 0) {
-                    toast.info("Sonuç bulunamadı");
+                    toast.info(t.common.noResults);
                 }
             } else {
                 const errorData = await response.json().catch(() => ({}));
-                const errorMessage = errorData.error || "Arama yapılırken bir hata oluştu";
+                const errorMessage = errorData.error || t.common.error;
                 toast.error(errorMessage);
             }
         } catch (error) {
             console.error("Arama hatası");
-            toast.error("Bir ağ hatası oluştu");
+            toast.error(t.common.networkError);
         } finally {
             setIsSearching(false);
         }
     };
 
     const typeLabels = {
-        book: "Kitap",
-        movie: "Film",
-        series: "Dizi",
+        book: t.media.book,
+        movie: t.media.movie,
+        series: t.media.series,
     };
 
     return (
@@ -79,7 +81,7 @@ export function MediaSearch({ type, onSelect }: MediaSearchProps) {
                     <Input
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder={`İnternette ${typeLabels[type]} ara...`}
+                        placeholder={t.media.searchPlaceholder.replace("{type}", typeLabels[type])}
                         className="pl-9 bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white focus:ring-purple-500"
                     />
                 </div>
@@ -88,7 +90,7 @@ export function MediaSearch({ type, onSelect }: MediaSearchProps) {
                     disabled={isSearching || !query.trim()}
                     className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
-                    {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ara"}
+                    {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : t.common.search}
                 </Button>
             </form>
 
@@ -123,7 +125,7 @@ export function MediaSearch({ type, onSelect }: MediaSearchProps) {
                                     {(result.publishedYear || result.releaseYear || result.startYear) &&
                                         ` • ${result.publishedYear || result.releaseYear || result.startYear}`}
                                     {result.genre && ` • ${result.genre}`}
-                                    {type === "series" && result.totalSeasons && ` • ${result.totalSeasons} Sezon`}
+                                    {type === "series" && result.totalSeasons && ` • ${result.totalSeasons} ${t.movies.season}`}
                                 </p>
                             </div>
                             <Plus className="h-4 w-4 text-muted-foreground group-hover:text-foreground dark:group-hover:text-white self-center" />

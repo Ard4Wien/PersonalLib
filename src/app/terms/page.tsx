@@ -6,8 +6,11 @@ import { BACKGROUND_GRADIENT } from "@/lib/utils";
 import Link from "next/link";
 import { ArrowLeft, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/contexts/language-context";
 
 export default function TermsPage() {
+    const { t } = useTranslation();
+
     return (
         <div className={BACKGROUND_GRADIENT + " items-center justify-center p-4 transition-colors duration-500 overflow-y-auto"}>
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
@@ -17,7 +20,7 @@ export default function TermsPage() {
                     <Link href="/">
                         <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground">
                             <ArrowLeft className="h-4 w-4" />
-                            Geri Dön
+                            {t.common.back}
                         </Button>
                     </Link>
                     <ThemeToggle />
@@ -32,97 +35,100 @@ export default function TermsPage() {
                         <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
                             <Scale className="h-6 w-6 text-white" />
                         </div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Kullanım Koşulları</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t.terms.title}</h1>
                     </div>
 
                     <div className="space-y-6 text-muted-foreground text-sm md:text-base leading-relaxed">
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">1. Giriş</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.terms.section1Title}</h2>
                             <p>
-                                PersonalLib platformuna hoş geldiniz. Bu web sitesini veya hizmetlerimizi kullanarak aşağıda belirtilen kullanım koşullarını kabul etmiş sayılırsınız. Lütfen bu koşulları dikkatlice okuyunuz.
+                                {t.terms.section1Text}
                             </p>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">2. Hizmet Tanımı</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.terms.section2Title}</h2>
                             <p>
-                                PersonalLib, kullanıcıların kişisel medya kütüphanelerini (kitaplar, filmler, diziler) dijital ortamda yönetmelerini sağlayan bir platformdur. Hizmetimiz &quot;olduğu gibi&quot; sunulmakta olup, herhangi bir garanti verilmemektedir.
+                                {t.terms.section2Text}
                             </p>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">3. Kullanıcı Yükümlülükleri ve İçerik (UGC)</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.terms.section3Title}</h2>
                             <ul className="list-disc list-inside space-y-1 pl-2">
-                                <li>Hesap bilgilerinizin güvenliğinden siz sorumlusunuz.</li>
-                                <li><strong>İçerik Sorumluluğu:</strong> Eklediğiniz tüm verilerin (kitap incelemeleri, başlıklar, listeler vb.) yasal sorumluluğu tamamen size aittir.</li>
-                                <li><strong>Telif Hakları:</strong> Telif hakkı ihlali içeren veya yasadışı materyaller (korsan linkler vb.) paylaşamazsınız.</li>
-                                <li>Platformu yasadışı veya kötü niyetli amaçlarla kullanamazsınız.</li>
-                                <li>Platformun teknik altyapısına zarar verecek davranışlarda bulunamazsınız.</li>
+                                {t.terms.section3Items.map((item, idx) => (
+                                    <li key={idx}>{item}</li>
+                                ))}
+                                <li><strong>{t.terms.section3Content}</strong>{t.terms.section3ContentText}</li>
+                                <li><strong>{t.terms.section3Copyright}</strong>{t.terms.section3CopyrightText}</li>
+                                {t.terms.section3Extra.map((item, idx) => (
+                                    <li key={idx}>{item}</li>
+                                ))}
                             </ul>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">4. Açık Kaynak Lisansı ve Kullanım Şartları</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.terms.section4Title}</h2>
                             <p>
-                                PersonalLib&apos;in kaynak kodu açık kaynaklıdır ve aşağıdaki koşullar çerçevesinde kullanılabilir:
+                                {t.terms.section4Intro}
                             </p>
                             <ul className="list-disc list-inside space-y-1 pl-2">
-                                <li><strong>Kullanım ve Değiştirme:</strong> Kaynak kodunu kişisel veya eğitim amaçlı olarak kullanabilir, değiştirebilir ve dağıtabilirsiniz.</li>
-                                <li><strong>Atıf Zorunluluğu:</strong> Kodu kullanan veya türetilmiş çalışmalar oluşturan herkes, orijinal projeye (PersonalLib) açık ve görünür bir şekilde atıfta bulunmak zorundadır.</li>
-                                <li><strong>Ticari Kullanım Yasağı:</strong> Kaynak kodu veya türetilmiş çalışmalar hiçbir şekilde ticari amaçlarla kullanılamaz, satılamaz veya gelir elde etmek için dağıtılamaz.</li>
+                                <li><strong>{t.terms.section4Usage}</strong>{t.terms.section4UsageText}</li>
+                                <li><strong>{t.terms.section4Attribution}</strong>{t.terms.section4AttributionText}</li>
+                                <li><strong>{t.terms.section4Commercial}</strong>{t.terms.section4CommercialText}</li>
                             </ul>
                             <p className="text-xs italic text-muted-foreground/70 pt-1">
-                                Bu lisans koşulları Creative Commons Attribution-NonCommercial 4.0 (CC BY-NC 4.0) ilkeleriyle uyumludur.
+                                {t.terms.section4License}
                             </p>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">5. Fikri Mülkiyet</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.terms.section5Title}</h2>
                             <p>
-                                PersonalLib&apos;in logosu, tasarımı, yazılımı ve tüm özgün içerikleri PersonalLib&apos;e aittir. İzinsiz kopyalanamaz, çoğaltılamaz veya dağıtılamaz.
+                                {t.terms.section5Text}
                             </p>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">6. Hesap Askıya Alma ve Fesih</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.terms.section6Title}</h2>
                             <p>
-                                Kullanım koşullarını ihlal eden hesaplar önceden bildirimde bulunulmaksızın askıya alınabilir veya kalıcı olarak kapatılabilir.
+                                {t.terms.section6Text}
                             </p>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">7. Sorumluluk Sınırlaması ve Hizmet Kesintileri</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.terms.section7Title}</h2>
                             <p>
-                                PersonalLib, &quot;olduğu gibi&quot; sunulmaktadır. Bakım çalışmaları, güncellemeler veya teknik arızalar nedeniyle platforma erişim geçici olarak kesilebilir. PersonalLib, bu kesintilerden veya platformun kullanımından doğabilecek zararlardan sorumlu tutulamaz.
+                                {t.terms.section7Text}
                             </p>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">8. Sorumluluk Reddi (Disclaimer)</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.terms.section8Title}</h2>
                             <p>
-                                PersonalLib üzerinden erişilen verilerin (kitap, film bilgileri vb.) doğruluğu, güncelliği veya eksiksizliği konusunda herhangi bir garanti verilmemektedir. Platformdaki bilgiler yalnızca bilgilendirme amaçlıdır. Kullanıcıların bu bilgilere dayanarak aldığı kararların sorumluluğu kendilerine aittir.
+                                {t.terms.section8Text}
                             </p>
                         </section>
 
                         <section className="space-y-2">
-                            <h2 className="text-lg font-semibold text-foreground">9. Uyuşmazlıkların Çözümü</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.terms.section9Title}</h2>
                             <p>
-                                Bu kullanım koşullarından doğabilecek her türlü uyuşmazlıkta Türkiye Cumhuriyeti yasaları geçerli olacak ve İstanbul (Merkez) Mahkemeleri ile İcra Daireleri yetkili kılınacaktır.
+                                {t.terms.section9Text}
                             </p>
                         </section>
 
                         <section className="space-y-2 border-t border-black/5 dark:border-white/5 pt-6">
-                            <h2 className="text-lg font-semibold text-foreground">11. İletişim</h2>
+                            <h2 className="text-lg font-semibold text-foreground">{t.terms.section10Title}</h2>
                             <p>
-                                Bu kullanım koşulları hakkında herhangi bir sorunuz varsa bizimle iletişime geçebilirsiniz:
+                                {t.terms.section10Text}
                             </p>
                             <p className="font-semibold text-purple-600 dark:text-purple-400">
-                                personallibinfo@gmail.com
+                                {t.privacy.section6Email}
                             </p>
                         </section>
 
                         <div className="pt-4 text-xs italic text-muted-foreground/70">
-                            Son güncelleme: 22 Mart 2026
+                            {t.terms.lastUpdated}
                         </div>
                     </div>
                 </motion.div>

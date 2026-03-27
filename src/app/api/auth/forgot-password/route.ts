@@ -108,7 +108,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ message: "Sıfırlama bağlantısı gönderildi" });
     } catch (error) {
-        console.error("Forgot password hatası");
+        console.error("Şifre sıfırlama hatası");
         return NextResponse.json(
             { error: "Bir hata oluştu. Lütfen daha sonra tekrar deneyin." },
             { status: 500 }

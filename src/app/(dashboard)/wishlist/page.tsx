@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import AnimatedPage from "@/components/layout/animated-page";
 import { useSearch } from "@/contexts/search-context";
+import { useTranslation } from "@/contexts/language-context";
 import {
     Select,
     SelectContent,
@@ -38,12 +39,12 @@ interface WishlistItem {
     originalData: any;
 }
 
-const statusOptions = [
-    { value: "WISHLIST", label: "İstek Listesi", icon: Heart, color: "text-purple-400" },
-    { value: "WATCHING", label: "İzleniyor", icon: Clock, color: "text-blue-400" },
-    { value: "READING", label: "Okunuyor", icon: Clock, color: "text-blue-400" },
-    { value: "COMPLETED", label: "Tamamlandı", icon: Check, color: "text-green-400" },
-    { value: "DROPPED", label: "Bırakıldı", icon: X, color: "text-red-400" },
+const getStatusOptions = (t: any) => [
+    { value: "WISHLIST", label: t.status.wishlist, icon: Heart, color: "text-purple-400" },
+    { value: "WATCHING", label: t.status.watching, icon: Clock, color: "text-blue-400" },
+    { value: "READING", label: t.status.reading, icon: Clock, color: "text-blue-400" },
+    { value: "COMPLETED", label: t.status.completed, icon: Check, color: "text-green-400" },
+    { value: "DROPPED", label: t.status.dropped, icon: X, color: "text-red-400" },
 ];
 
 export default function WishlistPage() {
@@ -60,6 +61,9 @@ export default function WishlistPage() {
     const [itemToDelete, setItemToDelete] = useState<{ id: string; type: "book" | "movie" | "series" } | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const { searchQuery } = useSearch();
+    const { t } = useTranslation();
+
+    const statusOptions = getStatusOptions(t);
 
     useEffect(() => {
         fetchWishlist();
@@ -134,8 +138,8 @@ export default function WishlistPage() {
 
             setItems(wishlistItems);
         } catch {
-            console.error("İstek listesi yükleme hatası");
-            toast.error("İstek listesi yüklenirken bir hata oluştu");
+            console.error("Wishlist loading error");
+            toast.error(t.wishlist.loadError);
         } finally {
             setIsLoading(false);
         }
@@ -174,16 +178,16 @@ export default function WishlistPage() {
             });
 
             if (response.ok) {
-                toast.success("Kitap güncellendi!");
+                toast.success(t.books.updateSuccess);
                 setIsEditDialogOpen(false);
                 setEditingItem(null);
                 fetchWishlist();
             } else {
                 const error = await response.json();
-                toast.error(error.error || "Kitap güncellenemedi");
+                toast.error(error.error || t.books.updateFailed);
             }
         } catch {
-            toast.error("Bir hata oluştu");
+            toast.error(t.common.error);
         } finally {
             setIsSubmitting(false);
         }
@@ -213,16 +217,16 @@ export default function WishlistPage() {
             });
 
             if (response.ok) {
-                toast.success("Film güncellendi!");
+                toast.success(t.movies.movieUpdateSuccess);
                 setIsEditDialogOpen(false);
                 setEditingItem(null);
                 fetchWishlist();
             } else {
                 const error = await response.json();
-                toast.error(error.error || "Film güncellenemedi");
+                toast.error(error.error || t.movies.movieUpdateFailed);
             }
         } catch {
-            toast.error("Bir hata oluştu");
+            toast.error(t.common.error);
         } finally {
             setIsSubmitting(false);
         }
@@ -253,16 +257,16 @@ export default function WishlistPage() {
             });
 
             if (response.ok) {
-                toast.success("Dizi güncellendi!");
+                toast.success(t.movies.seriesUpdateSuccess);
                 setIsEditDialogOpen(false);
                 setEditingItem(null);
                 fetchWishlist();
             } else {
                 const error = await response.json();
-                toast.error(error.error || "Dizi güncellenemedi");
+                toast.error(error.error || t.movies.seriesUpdateFailed);
             }
         } catch {
-            toast.error("Bir hata oluştu");
+            toast.error(t.common.error);
         } finally {
             setIsSubmitting(false);
         }
@@ -287,12 +291,15 @@ export default function WishlistPage() {
 
             if (response.ok) {
                 setItems((prev) => prev.filter((i) => i.id !== itemToDelete.id));
-                toast.success(`${itemToDelete.type === "book" ? "Kitap" : itemToDelete.type === "movie" ? "Film" : "Dizi"} kaldırıldı`);
+                const message = itemToDelete.type === "book" ? t.wishlist.bookRemoved :
+                              itemToDelete.type === "movie" ? t.wishlist.movieRemoved :
+                              t.wishlist.seriesRemoved;
+                toast.success(message);
                 setIsDeleteDialogOpen(false);
                 setItemToDelete(null);
             }
         } catch {
-            toast.error("İçerik kaldırılamadı");
+            toast.error(t.common.error);
         } finally {
             setIsDeleting(false);
         }
@@ -334,9 +341,9 @@ export default function WishlistPage() {
                     <Heart className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                    <h1 className="text-xl md:text-2xl font-bold text-foreground line-clamp-1">İstek Listem</h1>
+                    <h1 className="text-xl md:text-2xl font-bold text-foreground line-clamp-1">{t.wishlist.title}</h1>
                     <p className="text-muted-foreground text-xs md:text-sm">
-                        {items.length} içerik bekliyor
+                        {t.wishlist.itemsWaiting.replace("{count}", items.length.toString())}
                     </p>
                 </div>
             </div>
@@ -346,15 +353,15 @@ export default function WishlistPage() {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <TabsList className="bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 w-full sm:w-auto justify-start overflow-x-auto">
                         <TabsTrigger value="all" className="flex-1 sm:flex-none data-[state=active]:bg-purple-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">
-                            Tümü ({items.length})
+                            {t.wishlist.allTab} ({items.length})
                         </TabsTrigger>
                         <TabsTrigger value="books" className="flex-1 sm:flex-none data-[state=active]:bg-purple-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">
                             <BookOpen className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
-                            Kitaplar
+                            {t.wishlist.booksTab}
                         </TabsTrigger>
                         <TabsTrigger value="movies" className="flex-1 sm:flex-none data-[state=active]:bg-blue-600 data-[state=active]:text-white text-xs md:text-sm text-muted-foreground hover:text-foreground">
                             <Film className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
-                            Film & Dizi
+                            {t.wishlist.moviesSeriesTab}
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -364,7 +371,7 @@ export default function WishlistPage() {
                         items={filteredItems}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
-                        emptyMessage="İstek listeniz boş"
+                        emptyMessage={t.wishlist.emptyWishlist}
                     />
                 </TabsContent>
             </Tabs>
@@ -373,31 +380,31 @@ export default function WishlistPage() {
             <Dialog open={isEditDialogOpen && editingItem?.type === "book"} onOpenChange={(open) => { setIsEditDialogOpen(open); if (!open) setEditingItem(null); }}>
                 <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-foreground dark:text-white">Kitabı Düzenle</DialogTitle>
+                        <DialogTitle className="text-foreground dark:text-white">{t.wishlist.editBook}</DialogTitle>
                         <DialogDescription className="sr-only">
-                            İstek listesindeki kitabın bilgilerini güncelleyin.
+                            {t.wishlist.editBookDescription}
                         </DialogDescription>
                     </DialogHeader>
                     {editingItem && editingItem.type === "book" && (
                         <form onSubmit={handleEditBook} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="edit-book-title" className="text-muted-foreground">Kitap Adı *</Label>
+                                <Label htmlFor="edit-book-title" className="text-muted-foreground">{t.books.bookName}</Label>
                                 <Input id="edit-book-title" name="title" required defaultValue={editingItem.title} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-book-author" className="text-muted-foreground">Yazar *</Label>
+                                <Label htmlFor="edit-book-author" className="text-muted-foreground">{t.books.author}</Label>
                                 <Input id="edit-book-author" name="author" required defaultValue={editingItem.subtitle} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-book-cover" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                <Label htmlFor="edit-book-cover" className="text-muted-foreground">{t.books.coverImageUrl}</Label>
                                 <Input id="edit-book-cover" name="coverImage" type="url" defaultValue={editingItem.coverImage || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-book-genre" className="text-muted-foreground">Tür</Label>
+                                <Label htmlFor="edit-book-genre" className="text-muted-foreground">{t.books.genre}</Label>
                                 <Input id="edit-book-genre" name="genre" defaultValue={editingItem.genre || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-muted-foreground">Durum</Label>
+                                <Label className="text-muted-foreground">{t.books.status}</Label>
                                 <Select value={editStatus} onValueChange={setEditStatus}>
                                     <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                         <SelectValue />
@@ -419,7 +426,7 @@ export default function WishlistPage() {
                             </div>
                             <DialogFooter>
                                 <Button type="submit" disabled={isSubmitting} className="bg-gradient-to-r from-blue-600 to-cyan-600">
-                                    {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Güncelleniyor...</> : "Güncelle"}
+                                    {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t.common.updating}</> : t.common.update}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -431,31 +438,31 @@ export default function WishlistPage() {
             <Dialog open={isEditDialogOpen && editingItem?.type === "movie"} onOpenChange={(open) => { setIsEditDialogOpen(open); if (!open) setEditingItem(null); }}>
                 <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-foreground dark:text-white">Filmi Düzenle</DialogTitle>
+                        <DialogTitle className="text-foreground dark:text-white">{t.wishlist.editMovie}</DialogTitle>
                         <DialogDescription className="sr-only">
-                            İstek listesindeki filmin bilgilerini güncelleyin.
+                            {t.wishlist.editMovieDescription}
                         </DialogDescription>
                     </DialogHeader>
                     {editingItem && editingItem.type === "movie" && (
                         <form onSubmit={handleEditMovie} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="edit-movie-title" className="text-muted-foreground">Film Adı *</Label>
+                                <Label htmlFor="edit-movie-title" className="text-muted-foreground">{t.movies.movieName}</Label>
                                 <Input id="edit-movie-title" name="title" required defaultValue={editingItem.title} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-movie-director" className="text-muted-foreground">Yönetmen</Label>
+                                <Label htmlFor="edit-movie-director" className="text-muted-foreground">{t.movies.director}</Label>
                                 <Input id="edit-movie-director" name="director" defaultValue={editingItem.subtitle} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-movie-cover" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                <Label htmlFor="edit-movie-cover" className="text-muted-foreground">{t.books.coverImageUrl}</Label>
                                 <Input id="edit-movie-cover" name="coverImage" type="url" defaultValue={editingItem.coverImage || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-movie-genre" className="text-muted-foreground">Tür</Label>
+                                <Label htmlFor="edit-movie-genre" className="text-muted-foreground">{t.books.genre}</Label>
                                 <Input id="edit-movie-genre" name="genre" defaultValue={editingItem.genre || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-muted-foreground">Durum</Label>
+                                <Label className="text-muted-foreground">{t.books.status}</Label>
                                 <Select value={editStatus} onValueChange={setEditStatus}>
                                     <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                         <SelectValue />
@@ -477,7 +484,7 @@ export default function WishlistPage() {
                             </div>
                             <DialogFooter>
                                 <Button type="submit" disabled={isSubmitting} className="bg-gradient-to-r from-blue-600 to-cyan-600">
-                                    {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Güncelleniyor...</> : "Güncelle"}
+                                    {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t.common.updating}</> : t.common.update}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -489,37 +496,37 @@ export default function WishlistPage() {
             <Dialog open={isEditDialogOpen && editingItem?.type === "series"} onOpenChange={(open) => { setIsEditDialogOpen(open); if (!open) setEditingItem(null); }}>
                 <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-foreground dark:text-white">Diziyi Düzenle</DialogTitle>
+                        <DialogTitle className="text-foreground dark:text-white">{t.wishlist.editSeries}</DialogTitle>
                         <DialogDescription className="sr-only">
-                            İstek listesindeki dizinin bilgilerini güncelleyin.
+                            {t.wishlist.editSeriesDescription}
                         </DialogDescription>
                     </DialogHeader>
                     {editingItem && editingItem.type === "series" && (
                         <form onSubmit={handleEditSeries} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="edit-series-title" className="text-muted-foreground">Dizi Adı *</Label>
+                                <Label htmlFor="edit-series-title" className="text-muted-foreground">{t.movies.seriesName}</Label>
                                 <Input id="edit-series-title" name="title" required defaultValue={editingItem.title} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-series-creator" className="text-muted-foreground">Yapımcı</Label>
+                                <Label htmlFor="edit-series-creator" className="text-muted-foreground">{t.movies.creator}</Label>
                                 <Input id="edit-series-creator" name="creator" defaultValue={editingItem.subtitle} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-series-cover" className="text-muted-foreground">Kapak Görseli URL</Label>
+                                <Label htmlFor="edit-series-cover" className="text-muted-foreground">{t.books.coverImageUrl}</Label>
                                 <Input id="edit-series-cover" name="coverImage" type="url" defaultValue={editingItem.coverImage || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="edit-series-genre" className="text-muted-foreground">Tür</Label>
+                                    <Label htmlFor="edit-series-genre" className="text-muted-foreground">{t.books.genre}</Label>
                                     <Input id="edit-series-genre" name="genre" defaultValue={editingItem.genre || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="edit-series-seasons" className="text-muted-foreground">Sezon Sayısı</Label>
+                                    <Label htmlFor="edit-series-seasons" className="text-muted-foreground">{t.movies.totalSeasons}</Label>
                                     <Input id="edit-series-seasons" name="totalSeasons" type="number" min="1" defaultValue={editingItem.originalData.series.totalSeasons} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-muted-foreground">Durum</Label>
+                                <Label className="text-muted-foreground">{t.books.status}</Label>
                                 <Select value={editStatus} onValueChange={setEditStatus}>
                                     <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                         <SelectValue />
@@ -541,7 +548,7 @@ export default function WishlistPage() {
                             </div>
                             <DialogFooter>
                                 <Button type="submit" disabled={isSubmitting} className="bg-gradient-to-r from-purple-600 to-pink-600">
-                                    {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Güncelleniyor...</> : "Güncelle"}
+                                    {isSubmitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t.common.updating}</> : t.common.update}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -553,8 +560,8 @@ export default function WishlistPage() {
                 isOpen={isDeleteDialogOpen}
                 onClose={() => setIsDeleteDialogOpen(false)}
                 onConfirm={confirmDelete}
-                title={`${itemToDelete?.type === "book" ? "Kitabı" : itemToDelete?.type === "movie" ? "Filmi" : "Diziyi"} Kaldır`}
-                description={`Bu ${itemToDelete?.type === "book" ? "kitabı" : itemToDelete?.type === "movie" ? "filmi" : "diziyi"} kütüphanenizden kaldırmak istediğinize emin misiniz? Bu işlem geri alınamaz.`}
+                title={itemToDelete?.type === "book" ? t.wishlist.removeBook : itemToDelete?.type === "movie" ? t.wishlist.removeMovie : t.wishlist.removeSeries}
+                description={itemToDelete?.type === "book" ? t.wishlist.removeBookDescription : itemToDelete?.type === "movie" ? t.wishlist.removeMovieDescription : t.wishlist.removeSeriesDescription}
                 isLoading={isDeleting}
             />
         </AnimatedPage>

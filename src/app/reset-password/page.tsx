@@ -4,6 +4,7 @@ import { Loader2, Lock, KeyRound } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BACKGROUND_GRADIENT } from "@/lib/utils";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+import { AuthFooter } from "@/components/auth/auth-footer";
 
 export const metadata = {
     title: "Şifre Sıfırlama | PersonalLib",
@@ -47,9 +48,7 @@ export default function ResetPasswordPage() {
                 </Suspense>
             </div>
 
-            <footer className="mt-8 relative z-10 text-gray-500 text-sm">
-                PersonalLib ile oluşturuldu 📚🎬
-            </footer>
+            <AuthFooter />
         </div>
     );
 }

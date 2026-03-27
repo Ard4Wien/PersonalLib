@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle } from "lucide-react";
+import { useTranslation } from "@/contexts/language-context";
 
 interface DeleteConfirmDialogProps {
     isOpen: boolean;
@@ -28,6 +29,8 @@ export function DeleteConfirmDialog({
     description,
     isLoading = false,
 }: DeleteConfirmDialogProps) {
+    const { t } = useTranslation();
+
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !isLoading && !open && onClose()}>
             <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl max-w-md">
@@ -49,7 +52,7 @@ export function DeleteConfirmDialog({
                         disabled={isLoading}
                         className="text-muted-foreground hover:text-foreground dark:hover:text-white"
                     >
-                        İptal
+                        {t.common.cancel}
                     </Button>
                     <Button
                         variant="destructive"
@@ -60,10 +63,10 @@ export function DeleteConfirmDialog({
                         {isLoading ? (
                             <>
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Siliniyor...
+                                {t.common.deleting}
                             </>
                         ) : (
-                            "Silmeyi Onayla"
+                            t.common.confirm
                         )}
                     </Button>
                 </DialogFooter>
