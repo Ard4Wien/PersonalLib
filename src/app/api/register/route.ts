@@ -29,18 +29,24 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { turnstileToken, recaptchaToken } = body;
 
-        // reCaptcha Doğrulaması (Birincil)
-        if (process.env.RECAPTCHA_SECRET_KEY) {
-            const isValid = await validateRecaptcha(recaptchaToken);
-            if (!isValid) {
-                return NextResponse.json({ error: "reCaptcha doğrulaması başarısız." }, { status: 403 });
+        const mobileSecret = request.headers.get("x-mobile-app-secret");
+        const isMobileRequest = mobileSecret && mobileSecret === process.env.MOBILE_APP_SECRET;
+
+        // Bot Koruması 
+        if (!isMobileRequest) {
+            // reCaptcha Doğrulaması (Birincil)
+            if (process.env.RECAPTCHA_SECRET_KEY) {
+                const isValid = await validateRecaptcha(recaptchaToken);
+                if (!isValid) {
+                    return NextResponse.json({ error: "reCaptcha doğrulaması başarısız." }, { status: 403 });
+                }
             }
-        }
-        // Turnstile Doğrulaması (Yedek - Sadece reCaptcha anahtarı yoksa çalışır)
-        else if (process.env.TURNSTILE_SECRET_KEY) {
-            const isValid = await validateTurnstile(turnstileToken);
-            if (!isValid) {
-                return NextResponse.json({ error: "Bot doğrulaması başarısız." }, { status: 403 });
+            // Turnstile Doğrulaması (Yedek - Sadece reCaptcha anahtarı yoksa çalışır)
+            else if (process.env.TURNSTILE_SECRET_KEY) {
+                const isValid = await validateTurnstile(turnstileToken);
+                if (!isValid) {
+                    return NextResponse.json({ error: "Bot doğrulaması başarısız." }, { status: 403 });
+                }
             }
         }
 

@@ -12,9 +12,9 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
         const { email, turnstileToken, recaptchaToken } = body;
-        
+
         const headerList = await headers();
-        
+
         // Daha güvenilir IP tespiti
         const forwarded = headerList.get("x-forwarded-for");
         const realIp = headerList.get("x-real-ip");
@@ -27,13 +27,19 @@ export async function POST(request: Request) {
             );
         }
 
-        // Bot Koruması (Hibrit)
-        if (process.env.RECAPTCHA_SECRET_KEY) {
-            const isValid = await validateRecaptcha(recaptchaToken);
-            if (!isValid) return NextResponse.json({ error: "Güvenlik doğrulaması başarısız (reCaptcha)." }, { status: 403 });
-        } else if (process.env.TURNSTILE_SECRET_KEY) {
-            const isValid = await validateTurnstile(turnstileToken);
-            if (!isValid) return NextResponse.json({ error: "Güvenlik doğrulaması başarısız (Turnstile)." }, { status: 403 });
+        // Mobil Uygulama
+        const mobileSecret = request.headers.get("x-mobile-app-secret");
+        const isMobileRequest = mobileSecret && mobileSecret === process.env.MOBILE_APP_SECRET;
+
+        // Bot Koruması (Hibrit - Mobil değilse çalışır)
+        if (!isMobileRequest) {
+            if (process.env.RECAPTCHA_SECRET_KEY) {
+                const isValid = await validateRecaptcha(recaptchaToken);
+                if (!isValid) return NextResponse.json({ error: "Güvenlik doğrulaması başarısız (reCaptcha)." }, { status: 403 });
+            } else if (process.env.TURNSTILE_SECRET_KEY) {
+                const isValid = await validateTurnstile(turnstileToken);
+                if (!isValid) return NextResponse.json({ error: "Güvenlik doğrulaması başarısız (Turnstile)." }, { status: 403 });
+            }
         }
 
         const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
