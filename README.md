@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/Ard4Wien/PersonalLib/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-CC%20BY--NC%204.0-blue?style=flat-square" alt="Lisans" /></a>
   <a href="https://personal-lib.vercel.app/books"><img src="https://img.shields.io/badge/platform-Web-blue?style=flat-square" alt="Web" /></a>
-  <a href="https://github.com/Ard4Wien/PersonalLib"><img src="https://img.shields.io/badge/--Mobile-blue?style=flat-square" alt="Mobile" /></a>
+  <a href="https://github.com/Ard4Wien/PersonalLibMobil"><img src="https://img.shields.io/badge/--Mobile-blue?style=flat-square" alt="Mobile" /></a>
 </p>
 
 ---
