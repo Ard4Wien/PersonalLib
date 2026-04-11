@@ -129,5 +129,5 @@ Bu proje **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-N
 ---
 
 <p align="center">
-  <a href="https://github.com/Ard4Wien">ArdaWien</a> tarafından ❤️ ile geliştirildi
+  <a href="https://github.com/Ard4Wien">ArdaWien</a> tarafından geliştirildi
 </p>
