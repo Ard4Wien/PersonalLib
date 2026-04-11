@@ -30,11 +30,11 @@ PersonalLib; farklı medya türlerini tek bir arayüzde toplamak için tasarlanm
 
 PersonalLib, maksimum performans ve güvenilirlik için modern ve tip güvenli bir teknoloji yığını ile oluşturulmuştur:
 
-- **Frontend**: Next.js 15 (App Router), React 19, Tailwind CSS, Framer Motion.
-- **Backend**: Next.js API Routes (Serverless), Prisma ORM.
+- **Frontend**: Next.js 16.1 (App Router), React 19.2, Tailwind CSS, Framer Motion 12.2.
+- **Backend**: Next.js API Routes (Serverless), Prisma 5.22 ORM.
 - **Veritabanı**: Neon üzerinde PostgreSQL.
-- **Kimlik Doğrulama**: Güvenli oturum yönetimi ile Auth.js (NextAuth).
-- **Doğrulama**: Zod şema doğrulaması ve Abstract API entegrasyonu.
+- **Kimlik Doğrulama**: Güvenli oturum yönetimi ile Auth.js (NextAuth) v5.
+- **Doğrulama**: Zod şema doğrulaması ve güvenli API entegrasyonları.
 
 ## Ön İzleme
 
@@ -59,7 +59,8 @@ src/
 │   ├── media/         # Medyaya özel kartlar ve ızgaralar
 │   └── ui/            # Temel Tailwind stilli bileşenler
 ├── lib/               # Yardımcı fonksiyonlar, doğrulayıcılar ve istemciler
-├── context/           # React Context sağlayıcıları
+├── contexts/          # React Context sağlayıcıları (Theme, Language, ViewMode)
+├── hooks/             # Özel React Hook'ları (isMobile, vb.)
 └── types/             # Paylaşılan TypeScript arayüzleri ve DTO'lar
 ```
 
@@ -98,9 +99,11 @@ Yerel bir geliştirme ortamı kurmak için:
 
 PersonalLib, veri bütünlüğüne ve kullanıcı güvenliğine öncelik verir:
 - **Sanitizasyon**: Enjeksiyonu önlemek için tüm kullanıcı girişleri Zod şemaları ile doğrulanır.
-- **CSP**: XSS risklerini azaltmak için özel İçerik Güvenliği Politikası başlıkları uygulanır.
+- **CSP**: XSS risklerini azaltmak için sıkı İçerik Güvenliği Politikası (CSP) başlıkları uygulanır.
+- **Bot Koruması**: Cloudflare Turnstile ve Google reCAPTCHA v2 ile hibrit bot doğrulaması.
+- **Mobil Güvenlik**: Mobil uygulama için özel "Secret Header Bypass" mekanizması.
 - **JWT Koruması**: Oturum belirteçleri için sıkı HS256 algoritma doğrulaması uygulanır.
-- **Hız Sınırlama**: Kimlik doğrulama uç noktalarında kaba kuvvet (brute-force) saldırılarına karşı koruma.
+- **Hız Sınırlama**: Kimlik doğrulama uç noktalarında brute-force saldırılarına karşı IP tabanlı koruma.
 
 ## Yardım
 
