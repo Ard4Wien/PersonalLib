@@ -29,7 +29,6 @@ export function getOptimizedImageUrl(url: string | null | undefined, width = 600
   if (url.startsWith("data:")) return "";
 
 
-  if (url.includes("myanimelist.net")) return url;
 
   let decodedUrl = url;
   try {
