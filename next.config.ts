@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.penguinrandomhouse.com" },
       { protocol: "https", hostname: "image.tmdb.org" },
       { protocol: "https", hostname: "cdn.myanimelist.net" },
+      { protocol: "https", hostname: "myanimelist.net" },
       { protocol: "https", hostname: "wsrv.nl" },
       { protocol: "https", hostname: "*.googleusercontent.com" },
       { protocol: "https", hostname: "amazon.com" },
