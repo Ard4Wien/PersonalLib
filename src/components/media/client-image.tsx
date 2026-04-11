@@ -37,6 +37,7 @@ export function ClientImage({ fallbackText, aspectRatio = "portrait", priority =
             priority={priority}
             loading={priority ? "eager" : "lazy"}
             onError={() => setError(true)}
+            referrerPolicy="no-referrer"
         />
     );
 }
