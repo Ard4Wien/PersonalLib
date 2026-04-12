@@ -71,7 +71,7 @@ export async function GET(request: Request) {
                     startYear: show.premiered ? parseInt(show.premiered.substring(0, 4)) : undefined,
                     coverImage: show.image?.original || show.image?.medium || "",
                     genre: show.genres?.[0] || "",
-                    description: show.summary ? show.summary.replace(/<[^>]*>/g, "") : "", // HTML taglerini temizle
+                    description: show.summary ? show.summary.replace(/<[^>]*>/g, "") : "",
                     source: "tvmaze"
                 };
             });
@@ -128,7 +128,7 @@ export async function GET(request: Request) {
             return score;
         };
 
-        // Performans için detay araması yapılan dizi sayısını 4+4+4 olarak sınırla
+        // dizi sınırlama
         const topTMDB = tmdbResults.slice(0, 4);
         const topTVm = tvmazeResults.slice(0, 4);
         const topOMDb = omdbResults.slice(0, 4);
@@ -163,7 +163,7 @@ export async function GET(request: Request) {
                 } catch { return show; }
             })),
             Promise.all(topTVm.map(async (show: any) => {
-                // TVMaze'den sezon ve ekip çekilmiyor (Performans ve Veri Tutarlılığı için)
+                // TVMaze'den sezon ve ekip çekilmiyor
                 return show;
             }))
         ]);
@@ -173,7 +173,7 @@ export async function GET(request: Request) {
             .map(item => ({ ...item, score: getScore(item, query) }))
             .sort((a, b) => b.score - a.score);
 
-        // Kapak resmi olmayanları filtrele
+        // Kapak resmi filtresi
         const cleanResults = allResults
             .map(({ score, ...item }) => ({
                 ...item,
@@ -184,15 +184,10 @@ export async function GET(request: Request) {
             .slice(0, 40);
 
         return NextResponse.json(cleanResults);
-    } catch (error: any) {
-        let errorMessage = error?.message || "Diziler aranırken bir hata oluştu";
-        if (TMDB_API_KEY) errorMessage = errorMessage.replace(TMDB_API_KEY, "[MASKELENDİ]");
-        const OMDB_API_KEY = process.env.OMDB_API_KEY;
-        if (OMDB_API_KEY) errorMessage = errorMessage.replace(OMDB_API_KEY, "[MASKELENDİ]");
-
-        console.error("Dizi arama hatası:", errorMessage);
+    } catch {
+        console.error("series search error");
         return NextResponse.json(
-            { error: "Diziler aranırken bir hata oluştu" },
+            { error: "Bir hata oluştu, lütfen arama terimini kontrol edip tekrar dene." },
             { status: 500 }
         );
     }

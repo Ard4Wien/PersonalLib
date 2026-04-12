@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
         const headerList = await headers();
 
-        // Daha güvenilir IP tespiti
+        // IP tespiti
         const forwarded = headerList.get("x-forwarded-for");
         const realIp = headerList.get("x-real-ip");
         const ip = forwarded ? forwarded.split(",")[0] : (realIp || "127.0.0.1");
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         const mobileSecret = request.headers.get("x-mobile-app-secret");
         const isMobileRequest = mobileSecret && mobileSecret === process.env.MOBILE_APP_SECRET;
 
-        // Bot Koruması (Hibrit - Mobil değilse çalışır)
+        // Bot Koruması
         if (!isMobileRequest) {
             if (process.env.RECAPTCHA_SECRET_KEY) {
                 const isValid = await validateRecaptcha(recaptchaToken);
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
             where: { createdAt: { lt: last24Hours } }
         });
 
-        // IP Limiti (Aynı ağdaki birden fazla kişiyi engellememek için esnek: 20)
+        // IP Limiti
         const ipAttempts = await prisma.passwordResetAttempt.count({
             where: {
                 ip,
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // E-posta Limiti (Aynı hesabı korumak için: 10)
+        // E-posta Limiti
         const emailAttempts = await prisma.passwordResetAttempt.count({
             where: {
                 email,
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
         });
 
         if (!user) {
-            // Zamanlama normalizasyonu: e-posta ifşasını önlemek için sabit gecikme
+            // Zamanlama normalizasyonu
             await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 100));
             return NextResponse.json({ message: "Sıfırlama bağlantısı gönderildi" });
         }
@@ -113,10 +113,10 @@ export async function POST(request: Request) {
         await sendPasswordResetEmail(email, resetUrl);
 
         return NextResponse.json({ message: "Sıfırlama bağlantısı gönderildi" });
-    } catch (error) {
-        console.error("Şifre sıfırlama hatası");
+    } catch {
+        console.error("forgot-password fail");
         return NextResponse.json(
-            { error: "Bir hata oluştu. Lütfen daha sonra tekrar deneyin." },
+            { error: "Şu an istek gönderilemiyor, lütfen birazdan tekrar dene." },
             { status: 500 }
         );
     }

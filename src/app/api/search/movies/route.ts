@@ -90,7 +90,7 @@ export async function GET(request: Request) {
             return score;
         };
 
-        // Performans için detay araması yapılan film sayısını 5+5 olarak sınırla
+        // film sınırlama
         const topTMDB = tmdbResults.slice(0, 5);
         const topOMDb = omdbResults.slice(0, 5);
 
@@ -100,10 +100,10 @@ export async function GET(request: Request) {
                 const res = await fetch(`${TMDB_BASE_URL}/movie/${movie.id.replace("tmdb-", "")}?api_key=${TMDB_API_KEY}&append_to_response=credits&language=tr-TR`);
                 if (!res.ok) return movie;
                 const details = await res.json();
-                
+
                 let description = details.overview || movie.description;
-                
-                // Eğer Türkçe açıklama yoksa İngilizce dene (Dil Fallback)
+
+                // tr yoksa en dene
                 if (!description && TMDB_API_KEY) {
                     try {
                         const enRes = await fetch(`${TMDB_BASE_URL}/movie/${movie.id.replace("tmdb-", "")}?api_key=${TMDB_API_KEY}&language=en-US`);
@@ -111,7 +111,7 @@ export async function GET(request: Request) {
                             const enData = await enRes.json();
                             description = enData.overview || "";
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 return {
@@ -146,7 +146,7 @@ export async function GET(request: Request) {
             .map(item => ({ ...item, score: getScore(item, query) }))
             .sort((a, b) => b.score - a.score);
 
-        // Kapak resmi olmayanları filtrele
+        // Kapak resmi filtresi
         const cleanResults = allResults
             .map(({ score, ...item }) => ({
                 ...item,
@@ -157,16 +157,10 @@ export async function GET(request: Request) {
             .slice(0, 30);
 
         return NextResponse.json(cleanResults);
-    } catch (error: any) {
-        let errorMessage = error?.message || "Filmler aranırken bir hata oluştu";
-        // Hata loglarında API anahtarlarını maskele
-        if (TMDB_API_KEY) errorMessage = errorMessage.replace(TMDB_API_KEY, "[MASKELENDİ]");
-        const OMDB_API_KEY = process.env.OMDB_API_KEY;
-        if (OMDB_API_KEY) errorMessage = errorMessage.replace(OMDB_API_KEY, "[MASKELENDİ]");
-
-        console.error("Film arama hatası:", errorMessage);
+    } catch {
+        console.error("movie search fail");
         return NextResponse.json(
-            { error: "Filmler aranırken bir hata oluştu" },
+            { error: "Arama şu an yapılamıyor, lütfen sonra tekrar dene." },
             { status: 500 }
         );
     }

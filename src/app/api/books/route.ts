@@ -38,10 +38,9 @@ export async function GET(request: Request) {
         }));
 
         return NextResponse.json(standardizedBooks);
-    } catch (error) {
-        console.error("Kitap hatası");
+    } catch {
         return NextResponse.json(
-            { error: "Kitaplar yüklenirken bir hata oluştu" },
+            { error: "Kitaplar yüklenemedi" },
             { status: 500 }
         );
     }
@@ -138,9 +137,9 @@ export async function POST(request: Request) {
 
         return NextResponse.json(standardizedResponse, { status: 201 });
     } catch (error) {
-        console.error("Kitap hatası");
+        console.error("books POST:", error instanceof Error ? error.message : error);
         return NextResponse.json(
-            { error: "Kitap eklenirken bir hata oluştu" },
+            { error: "Kitap eklenemedi" },
             { status: 500 }
         );
     }
@@ -208,12 +207,12 @@ export async function PUT(request: Request) {
             } else {
                 const originalBook = await prisma.book.findUnique({ where: { id: bookId } });
                 targetBook = await prisma.book.create({
-                    data: { 
-                        title, 
-                        author, 
-                        coverImage: coverImage || null, 
+                    data: {
+                        title,
+                        author,
+                        coverImage: coverImage || null,
                         genre: genre || null,
-                        isbn: originalBook?.isbn 
+                        isbn: originalBook?.isbn
                     },
                 });
             }
@@ -226,15 +225,14 @@ export async function PUT(request: Request) {
         });
 
         if (targetBook.id !== bookId) {
-             const oldBookCount = await prisma.userBook.count({ where: { bookId } });
-             if (oldBookCount === 0) await prisma.book.delete({ where: { id: bookId } }).catch(() => {});
+            const oldBookCount = await prisma.userBook.count({ where: { bookId } });
+            if (oldBookCount === 0) await prisma.book.delete({ where: { id: bookId } }).catch(() => { });
         }
 
         return NextResponse.json(userBook);
-    } catch (error) {
-        console.error("Kitap hatası");
+    } catch {
         return NextResponse.json(
-            { error: "Kitap güncellenirken bir hata oluştu" },
+            { error: "Kitap güncellenemedi" },
             { status: 500 }
         );
     }
@@ -278,12 +276,8 @@ export async function PATCH(request: Request) {
         });
 
         return NextResponse.json(userBook);
-    } catch (error) {
-        console.error("Kitap hatası");
-        return NextResponse.json(
-            { error: "Kitap güncellenirken bir hata oluştu" },
-            { status: 500 }
-        );
+    } catch {
+        return NextResponse.json({ error: "İşlem başarısız" }, { status: 500 });
     }
 }
 
@@ -325,17 +319,15 @@ export async function DELETE(request: Request) {
             },
         });
 
-        // Yetim kayıt temizliği: Artık hiçbir kullanıcıya ait olmayan Book'u sil
         const remainingOwners = await prisma.userBook.count({ where: { bookId: userBook.bookId } });
         if (remainingOwners === 0) {
-            await prisma.book.delete({ where: { id: userBook.bookId } }).catch(() => {});
+            await prisma.book.delete({ where: { id: userBook.bookId } }).catch(() => { });
         }
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("Kitap hatası");
+    } catch {
         return NextResponse.json(
-            { error: "Kitap silinirken bir hata oluştu" },
+            { error: "Kitap silinemedi" },
             { status: 500 }
         );
     }

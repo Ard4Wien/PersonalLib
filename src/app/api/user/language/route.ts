@@ -20,8 +20,8 @@ export async function GET(request: Request) {
         });
 
         return NextResponse.json({ language: user?.language || "tr" });
-    } catch (error) {
-        console.error("Dil alma hatası");
+    } catch (err) {
+        console.warn("language GET err");
         return NextResponse.json({ error: "Dil bilgisi alınamadı" }, { status: 500 });
     }
 }
@@ -41,7 +41,7 @@ export async function PATCH(request: Request) {
         }
 
         const body = await request.json();
-        
+
         // Merkezi şema ile doğrulama (tr, en, fr, de)
         const validated = languageSchema.safeParse(body.language);
         if (!validated.success) {
@@ -56,7 +56,7 @@ export async function PATCH(request: Request) {
         });
 
         return NextResponse.json({ success: true, language });
-    } catch (error) {
-        return NextResponse.json({ error: "Dil ayarı güncellenemedi" }, { status: 500 });
+    } catch {
+        return NextResponse.json({ error: "Dil seçimi kaydedilemedi" }, { status: 500 });
     }
 }

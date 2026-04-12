@@ -7,26 +7,52 @@ const MAX_FAILED_LOGINS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 dakika
 
 
+// In-memory rate limit store
+// Not: Eski implementasyon loginAttempt tablosunu sorguluyordu fakat
+// login dışındaki endpointler bu tabloya yazma yapmadığından sayaç
+// daima 0 dönüyor ve rate limiter hiç tetiklenmiyordu.
+const rateLimitStore = new Map<string, { count: number; windowStart: number }>();
+const MAX_STORE_SIZE = 10000;
+
+function pruneExpiredEntries() {
+    const now = Date.now();
+    for (const [key, data] of rateLimitStore) {
+        if (now - data.windowStart > RATE_LIMIT_WINDOW_MS) {
+            rateLimitStore.delete(key);
+        }
+    }
+}
+
+
 export async function checkRateLimit(ip: string): Promise<{
     success: boolean;
     message?: string;
     retryAfter?: number;
 }> {
-    const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS);
+    // Store çok büyürse eski kayıtları temizle
+    if (rateLimitStore.size > MAX_STORE_SIZE) {
+        pruneExpiredEntries();
+    }
 
-    const recentAttempts = await prisma.loginAttempt.count({
-        where: {
-            ip,
-            createdAt: { gte: windowStart }
-        }
-    });
+    const now = Date.now();
+    const data = rateLimitStore.get(ip);
 
-    if (recentAttempts >= MAX_REQUESTS_PER_WINDOW) {
-        const retryAfter = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
+    // Yeni pencere veya süresi dolmuş pencere
+    if (!data || now - data.windowStart > RATE_LIMIT_WINDOW_MS) {
+        rateLimitStore.set(ip, { count: 1, windowStart: now });
+        return { success: true };
+    }
+
+    // Mevcut pencerede sayacı artır
+    data.count++;
+
+    if (data.count > MAX_REQUESTS_PER_WINDOW) {
+        const remainingMs = RATE_LIMIT_WINDOW_MS - (now - data.windowStart);
+        const retryAfter = Math.ceil(remainingMs / 1000);
         return {
             success: false,
             message: "Çok fazla istek. Lütfen biraz bekleyin.",
-            retryAfter
+            retryAfter: Math.max(retryAfter, 1)
         };
     }
 
@@ -87,7 +113,7 @@ export async function recordFailedLogin(email: string, ip: string = "unknown"): 
 
 
 export async function resetLoginAttempts(email: string): Promise<void> {
-    // Başarılı giriş kaydı oluştur (isteğe bağlı audit trail)
+    // Başarılı giriş kaydı oluştur
     // Eski başarısız denemeleri temizle
     await prisma.loginAttempt.deleteMany({
         where: {
@@ -99,8 +125,7 @@ export async function resetLoginAttempts(email: string): Promise<void> {
 
 
 export function getClientIP(request: Request): string {
-    // Güvenilir proxy header'ları (Vercel, Cloudflare, vb.)
-    // Bu header'lar platform tarafından ayarlanır ve istemci tarafından manipüle edilemez
+    // Güvenilir proxy headerları
     const trustedHeaders = [
         "x-real-ip",            // Nginx / Vercel
         "cf-connecting-ip",     // Cloudflare
@@ -115,7 +140,6 @@ export function getClientIP(request: Request): string {
         }
     }
 
-    // Fallback: x-forwarded-for (manipüle edilebilir ama son çare)
     const forwarded = request.headers.get("x-forwarded-for");
     if (forwarded) {
         const ip = forwarded.split(",")[0].trim();
@@ -126,17 +150,17 @@ export function getClientIP(request: Request): string {
 }
 
 
-// Basit IP format doğrulaması (IPv4 ve IPv6)
+// Basit IP format doğrulaması
 function isValidIP(ip: string): boolean {
     // IPv4
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) return true;
-    // IPv6 (basitleştirilmiş)
+    // IPv6
     if (/^[0-9a-fA-F:]+$/.test(ip) && ip.includes(":")) return true;
     return false;
 }
 
 
-// Eski kayıtları temizleme (24 saatten eski)
+// Eski kayıtları temizleme
 export async function cleanupOldAttempts(): Promise<void> {
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
     await prisma.loginAttempt.deleteMany({

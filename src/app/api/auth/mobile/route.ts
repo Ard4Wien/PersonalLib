@@ -10,7 +10,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         const ip = getClientIP(request);
 
-        // Siber Güvenlik: IP tabanlı genel hız sınırı kontrolü
+        // Rate limit kontrolü
         const rateLimit = await checkRateLimit(ip);
         if (!rateLimit.success) {
             return NextResponse.json(
@@ -45,9 +45,7 @@ export async function POST(request: Request) {
             where: { email },
         });
 
-        // Timing Attack önlemi: Kullanıcı bulunamasa bile bcrypt.compare çalıştırılarak
-        // yanıt süresi sabitlenir. Bu, saldırganların zamanlama farkından
-        // e-posta adreslerinin sistemde kayıtlı olup olmadığını tespit etmesini engeller.
+        // Timing attack önlemi
         const DUMMY_HASH = "$2b$10$tnwJkrdRvkJ49DvEzHFM..AQmt3BmTjccjU2Hx/CmWp8ALvMkkWwd6";
         const hashToCompare = user?.passwordHash || DUMMY_HASH;
         const passwordsMatch = await compare(password, hashToCompare);
@@ -92,10 +90,10 @@ export async function POST(request: Request) {
                 displayName: user.displayName,
             },
         });
-    } catch (error) {
-        console.error("Mobil giriş hatası");
+    } catch {
+        console.error("mobile login fail");
         return NextResponse.json(
-            { error: "Giriş işlemi sırasında bir hata oluştu" },
+            { error: "Girdiğiniz bilgiler hatalı olabilir veya bir bağlantı sorunu oluştu" },
             { status: 500 }
         );
     }

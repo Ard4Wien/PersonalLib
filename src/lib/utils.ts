@@ -25,7 +25,6 @@ export const BACKGROUND_GRADIENT = "min-h-screen flex flex-col bg-gradient-to-br
 export function getOptimizedImageUrl(url: string | null | undefined, width = 600) {
   if (!url) return "";
   if (url.startsWith("/")) return url;
-  // Güvenlik: data: URL'leri XSS/exfiltration riski taşır, engelle
   if (url.startsWith("data:")) return "";
 
 

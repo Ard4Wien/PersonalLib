@@ -1,19 +1,12 @@
-/**
- * Sistem tarafından ayrılmış (kullanılması yasak) kullanıcı adları
- */
 const RESERVED_USERNAMES = [
-    // Yönetim
     "admin", "administrator", "moderator", "mod", "support", "yardim", "destek",
     "root", "sysadmin", "system", "personallib",
 
-    // Sayfa Rotaları
     "login", "register", "api", "dashboard", "settings", "profile", "portfolio",
     "auth", "reset-password", "forgot-password", "search"
 ];
 
-/**
- * Uygunsuz kelimeler ve küfürler
- */
+// küfür filt
 const PROFANITY_LIST = [
     "porno", "porn", "p0rn", "pornoo", "p0rn0", "prno", "pornp", "pornhub", "p0rnhub", "pornohub", "prnhub",
     "seks", "sex", "s3x", "s3ks", "sekss", "s€ks", "s€x", "seksy", "seksi", "sexxy", "s3ksi", "sex shop", "sexshop",
@@ -84,27 +77,23 @@ const PROFANITY_PATTERNS = PROFANITY_LIST.map(word => {
     return new RegExp(`(^|[^a-zA-ZğüşöçıİĞÜŞÖÇ])${escaped}([^a-zA-ZğüşöçıİĞÜŞÖÇ]|$)`, 'i');
 });
 
-/**
- * Metin içinde küfür veya uygunsuz içerik olup olmadığını kontrol eder
- */
+
+// Genel küfür kontrolü
+
 export function containsProfanity(text: string): boolean {
     if (!text) return false;
     return PROFANITY_PATTERNS.some(pattern => pattern.test(text));
 }
 
-/**
- * Kullanıcı adının hem küfür içermediğini hem de sistem tarafından 
- * rezerve edilmediğini doğrular
- */
+
+// Rezerve isim ve küfür kontrolü
+
 export function isValidUsername(text: string): boolean {
     if (!text) return false;
 
     const lowerText = text.toLowerCase();
 
-    // Küfür kontrolü
     if (containsProfanity(lowerText)) return false;
-
-    // Rezerve kelime kontrolü
     if (RESERVED_USERNAMES.includes(lowerText)) return false;
 
     return true;

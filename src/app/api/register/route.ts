@@ -32,16 +32,15 @@ export async function POST(request: Request) {
         const mobileSecret = request.headers.get("x-mobile-app-secret");
         const isMobileRequest = mobileSecret && mobileSecret === process.env.MOBILE_APP_SECRET;
 
-        // Bot Koruması 
         if (!isMobileRequest) {
-            // reCaptcha Doğrulaması (Birincil)
+            // reCaptcha Doğrulaması
             if (process.env.RECAPTCHA_SECRET_KEY) {
                 const isValid = await validateRecaptcha(recaptchaToken);
                 if (!isValid) {
                     return NextResponse.json({ error: "reCaptcha doğrulaması başarısız." }, { status: 403 });
                 }
             }
-            // Turnstile Doğrulaması (Yedek - Sadece reCaptcha anahtarı yoksa çalışır)
+            // Turnstile Doğrulaması
             else if (process.env.TURNSTILE_SECRET_KEY) {
                 const isValid = await validateTurnstile(turnstileToken);
                 if (!isValid) {
@@ -61,7 +60,7 @@ export async function POST(request: Request) {
 
         const { email, username, displayName, password } = validatedFields.data;
 
-        // Email Domain Kontrolü (Spam/Disposable mail engeli)
+        // Email Domain Kontrolü
         const domainValidation = await validateEmailDomain(email);
         if (!domainValidation.valid) {
             return NextResponse.json(
@@ -88,9 +87,6 @@ export async function POST(request: Request) {
         ]);
 
         if (existingUserByEmail || existingUserByUsername) {
-            // Siber güvenlik: Timing Attack ve Enumeration önlemi. 
-            // Kullanıcı bulunsa da bulunmasa da benzer bir işlem yükü (bcrypt/delay)
-            // oluşturularak yanıt süresi maskelenir.
             const DUMMY_HASH = "$2b$10$tnwJkrdRvkJ49DvEzHFM..AQmt3BmTjccjU2Hx/CmWp8ALvMkkWwd6";
             await bcrypt.compare(password, DUMMY_HASH); // Hash hesaplama yükü ekle
             await new Promise(resolve => setTimeout(resolve, Math.random() * 200 + 100)); // Rastgele gecikme
@@ -123,10 +119,10 @@ export async function POST(request: Request) {
             },
             { status: 201 }
         );
-    } catch (error) {
-        console.error("Kayıt hatası");
+    } catch {
+        console.error("register fail");
         return NextResponse.json(
-            { error: "Kayıt işlemi sırasında bir hata oluştu" },
+            { error: "Kayıt olurken bir sorun çıktı, lütfen tekrar dene." },
             { status: 500 }
         );
     }

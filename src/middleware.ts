@@ -2,9 +2,39 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Basit in-memory rate limit (Edge Runtime uyumlu)
-// Not: Her Vercel instance'i icin ayri calisir ama temel botlari durdurur.
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
+
+// Edge-uyumlu IP tespiti (rate-limiter.ts'deki getClientIP ile aynı mantık)
+// Middleware Edge runtime'da çalıştığı için rate-limiter.ts'den import yapılamaz
+function getMiddlewareClientIP(request: NextRequest): string {
+    const trustedHeaders = [
+        "x-real-ip",
+        "cf-connecting-ip",
+        "x-vercel-forwarded-for",
+    ];
+
+    for (const header of trustedHeaders) {
+        const value = request.headers.get(header);
+        if (value) {
+            const ip = value.split(",")[0].trim();
+            if (isValidIP(ip)) return ip;
+        }
+    }
+
+    const forwarded = request.headers.get("x-forwarded-for");
+    if (forwarded) {
+        const ip = forwarded.split(",")[0].trim();
+        if (isValidIP(ip)) return ip;
+    }
+
+    return "127.0.0.1";
+}
+
+function isValidIP(ip: string): boolean {
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) return true;
+    if (/^[0-9a-fA-F:]+$/.test(ip) && ip.includes(":")) return true;
+    return false;
+}
 
 function isRateLimited(ip: string, limit: number, windowMs: number) {
     const now = Date.now();
@@ -25,8 +55,8 @@ export default auth((request: NextRequest & { auth: any }) => {
     const { pathname } = request.nextUrl;
     const isLoggedIn = !!request.auth;
 
-    // Gelişmiş İstek Kontrolü (Header Validation - Arkadaş Tavsiyesi)
-    // Sadece tarayıcıdan gelen geçerli istekleri kabul et
+    // İstek Kontrolü
+    // Sadece tarayıcıdan gelen geçerli istekler
     if (request.method !== "GET" && pathname.startsWith("/api/")) {
         const fetchSite = request.headers.get("sec-fetch-site");
         const origin = request.headers.get("origin");
@@ -43,13 +73,11 @@ export default auth((request: NextRequest & { auth: any }) => {
         }
     }
 
-    // Rate Limiting (Hassas API rotaları + Login denemeleri)
-    if (pathname.startsWith("/api/register") || 
+    if (pathname.startsWith("/api/register") ||
         pathname.startsWith("/api/auth/forgot-password") ||
         pathname.startsWith("/api/auth/signin") ||
         pathname.startsWith("/api/auth/callback")) {
-        const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
-        // Hassas rotalar icin: 1 dakikada 5 istek sınırı
+        const ip = getMiddlewareClientIP(request);
         if (isRateLimited(ip, 5, 60 * 1000)) {
             return NextResponse.json(
                 { error: "Çok fazla istek gönderdiniz. Lütfen bir süre bekleyin." },
@@ -77,18 +105,15 @@ export default auth((request: NextRequest & { auth: any }) => {
         return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // Her istek için benzersiz nonce üret (Sıkı CSP için)
+    // Her istek için benzersiz nonce
     const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
 
     const cspHeader = [
         "default-src 'self'",
-        // SIKI GÜVENLİK: Sadece kendi domainimiz, doğrulanmış nonce'lar ve gerekli harici servisler. 'unsafe-inline' KESİNLİKLE YOK.
         `script-src 'self' 'nonce-${nonce}' https://challenges.cloudflare.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ https://www.recaptcha.net`,
         "style-src 'self' 'unsafe-inline'",
-        // GÖRSEL GÜVENLİĞİ: Sadece güvenilir medya kaynaklarına ve kendi depolama alanımıza izin ver. 'data:' ve 'https:' kaldırıldı.
         "img-src 'self' blob: https://qyeexaciulccipypubdt.supabase.co https://*.googleusercontent.com https://books.google.com https://image.tmdb.org https://covers.openlibrary.org https://wsrv.nl https://cdn.discordapp.com https://i.scdn.co https://i.ytimg.com https://cdn.myanimelist.net https://myanimelist.net https://m.media-amazon.com https://images.penguinrandomhouse.com",
         "font-src 'self'",
-        // BAĞLANTI GÜVENLİĞİ: Wildcard yerine sadece kendi production domainimiz.
         "connect-src 'self' https://qyeexaciulccipypubdt.supabase.co https://challenges.cloudflare.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ https://www.recaptcha.net https://www.googleapis.com https://api.penguinrandomhouse.com https://openlibrary.org https://api.themoviedb.org https://api.jikan.moe https://wsrv.nl https://personal-lib.vercel.app",
         "frame-src https://challenges.cloudflare.com https://www.google.com/recaptcha/ https://recaptcha.google.com/ https://www.recaptcha.net",
         "object-src 'none'",

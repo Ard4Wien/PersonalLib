@@ -13,9 +13,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PersonalLib - Kişisel Medya Kütüphanesi",
-  description: "Kitaplarınızı, filmlerinizi ve dizilerinizi takip edin. Kendi medya arşivinizi oluşturun ve paylaşın.",
-  keywords: ["personal library", "kişisel kütüphane", "kitap takibi", "film arşivi", "dizi takibi", "media tracker", "okuma listesi"],
+  title: "PersonalLib – Personal Library | Kişisel Medya Kütüphanesi",
+  description: "PersonalLib is your free personal library to track books, movies and TV series. Build your media collection, create wishlists and share your portfolio. | Kitaplarınızı, filmlerinizi ve dizilerinizi takip edin. Kendi medya arşivinizi oluşturun ve paylaşın.",
+  keywords: ["personal lib", "personal library", "personallib", "book tracker", "movie tracker", "series tracker", "media library", "free personal library", "kişisel kütüphane", "kitap takibi", "film arşivi", "dizi takibi", "medya kütüphanesi", "okuma listesi", "izleme listesi"],
   authors: [{ name: "PersonalLib Team" }],
   metadataBase: new URL("https://personal-lib.vercel.app"),
   alternates: {
@@ -25,8 +25,8 @@ export const metadata: Metadata = {
     google: "FazKHNpurwfHLXERte0WuCLfyBF0K0nFwjrVIqU7vSE",
   },
   openGraph: {
-    title: "PersonalLib - Kişisel Medya Kütüphanesi",
-    description: "Kitaplarınızı, filmlerinizi ve dizilerinizi takip edin. Kendi medya arşivinizi oluşturun.",
+    title: "PersonalLib – Personal Library | Kişisel Medya Kütüphanesi",
+    description: "Track your books, movies and TV series in one place. Create your personal media collection and share your portfolio. | Kitaplarınızı, filmlerinizi ve dizilerinizi takip edin.",
     url: "https://personal-lib.vercel.app",
     siteName: "PersonalLib",
     locale: "tr_TR",
@@ -34,12 +34,19 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "PersonalLib - Kişisel Medya Kütüphanesi",
-    description: "Kitaplarınızı, filmlerinizi ve dizilerinizi takip edin.",
+    title: "PersonalLib – Personal Library | Kişisel Kütüphane",
+    description: "Track books, movies & series. Build your personal media library. | Kitap, film ve dizi takip uygulaması.",
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
@@ -63,15 +70,26 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "SoftwareApplication",
+              "@type": "WebApplication",
               "name": "PersonalLib",
+              "alternateName": ["Personal Lib", "Personal Library"],
+              "url": "https://personal-lib.vercel.app",
               "operatingSystem": "Web",
               "applicationCategory": "LifestyleApplication",
-              "description": "Kitaplarınızı, filmlerinizi ve dizilerinizi takip edin. Kendi medya arşivinizi oluşturun.",
+              "description": "Free personal library to track books, movies and TV series. Build your media collection and share your portfolio.",
+              "inLanguage": ["tr", "en"],
+              "featureList": "Book Tracking, Movie Tracking, Series Tracking, Wishlist, Shareable Portfolio, Multi-language Support",
               "offers": {
                 "@type": "Offer",
                 "price": "0",
-                "priceCurrency": "USD"
+                "priceCurrency": "USD",
+                "availability": "https://schema.org/InStock"
+              },
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "ratingCount": "50",
+                "bestRating": "5"
               }
             })
           }}

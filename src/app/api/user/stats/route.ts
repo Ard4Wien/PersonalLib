@@ -45,8 +45,7 @@ export async function GET(request: Request) {
             movies: movieStats,
             series: seriesStats
         });
-    } catch (error) {
-        console.error("İstatistik hatası");
-        return NextResponse.json({ error: "İstatistikler yüklenemedi" }, { status: 500 });
+    } catch {
+        return NextResponse.json({ error: "Veriler alınamadı" }, { status: 500 });
     }
 }

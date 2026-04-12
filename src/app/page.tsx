@@ -92,6 +92,9 @@ export default function HomePage() {
           Personal<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400">Lib</span>
         </motion.h1>
 
+        <motion.p variants={item} className="sr-only">
+          Personal Lib – Your free personal library for tracking books, movies and TV series.
+        </motion.p>
 
         <motion.p variants={item} className="text-xl text-muted-foreground mb-8 max-w-xl mx-auto">
           {t.landing.subtitle}

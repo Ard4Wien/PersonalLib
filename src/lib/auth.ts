@@ -30,7 +30,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 const recaptchaToken = credentials?.recaptchaToken as string;
                 const email = rawEmail.toLowerCase();
 
-                // Sunucu tarafı header'larından IP adresi çıkarma
                 const headersList = await headers();
                 const clientIp = headersList.get("x-real-ip")
                     || headersList.get("cf-connecting-ip")
@@ -38,12 +37,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     || headersList.get("x-forwarded-for")?.split(",")[0]?.trim()
                     || "unknown";
 
-                // reCaptcha Doğrulaması (Birincil)
+                // reCaptcha Doğrulama
                 if (process.env.RECAPTCHA_SECRET_KEY) {
                     const isValid = await validateRecaptcha(recaptchaToken);
                     if (!isValid) return null;
-                } 
-                // Turnstile Doğrulaması (Yedek/Eski - Sadece reCaptcha yoksa)
+                }
+                // Turnstile Doğrulama
                 else if (process.env.TURNSTILE_SECRET_KEY) {
                     const isValid = await validateTurnstile(turnstileToken);
                     if (!isValid) return null;
@@ -68,8 +67,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     }
                 });
 
-                // Timing Attack önlemi: Kullanıcı bulunamasa bile bcrypt.compare
-                // çalıştırılarak yanıt süresi sabitlenir.
+                // Timing Attack
                 const DUMMY_HASH = "$2b$10$tnwJkrdRvkJ49DvEzHFM..AQmt3BmTjccjU2Hx/CmWp8ALvMkkWwd6";
                 const hashToCompare = user?.passwordHash || DUMMY_HASH;
                 const passwordsMatch = await bcrypt.compare(password, hashToCompare);
@@ -94,18 +92,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     ],
     callbacks: {
         async jwt({ token, user, trigger, session }) {
-            // 1. İlk Giriş (Initial Sign In)
+            // 1. İlk Giriş
             if (user) {
                 token.id = user.id as string;
                 token.username = (user as { username: string }).username;
                 token.email = user.email;
                 token.picture = (user as any).image;
             }
-            
-            // 2. Dinamik Güncelleme (update() çağrıldığında)
+
+            // 2. Dinamik Güncelleme
             if (trigger === "update" && session?.image) {
                 token.picture = session.image;
-            } 
+            }
 
             return token;
         },

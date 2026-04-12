@@ -189,10 +189,10 @@ export async function GET(request: Request) {
 
 
         return NextResponse.json(cleanResults);
-    } catch (error) {
-        console.error("Kitap arama hatası");
+    } catch {
+        console.error("search books fail");
         return NextResponse.json(
-            { error: "Kitaplar aranırken bir hata oluştu" },
+            { error: "Arama sırasında bir hata oluştu" },
             { status: 500 }
         );
     }

@@ -11,10 +11,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ═══════════════════════════════════════════════════════════
-// KULLANICI MODELİ
-// ═══════════════════════════════════════════════════════════
-
+// Auth & User
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -28,7 +25,7 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  // İlişkiler
+  // Relations
   books               UserBook[]
   movies              UserMovie[]
   series              UserSeries[]
@@ -72,10 +69,7 @@ model LoginAttempt {
 }
 
 
-// ═══════════════════════════════════════════════════════════
-// İÇERİK MODELLERİ
-// ═══════════════════════════════════════════════════════════
-
+// Core Content Models
 model Book {
   id            String   @id @default(cuid())
   title         String
@@ -143,10 +137,7 @@ model Season {
   @@map("seasons")
 }
 
-// ═══════════════════════════════════════════════════════════
-// KULLANICI-İÇERİK İLİŞKİ MODELLERİ
-// ═══════════════════════════════════════════════════════════
-
+// User-Media Relations (Library)
 model UserBook {
   id        String   @id @default(cuid())
   userId    String
@@ -210,3 +201,4 @@ model UserSeasonStatus {
   @@unique([userSeriesId, seasonId])
   @@map("user_season_statuses")
 }
+

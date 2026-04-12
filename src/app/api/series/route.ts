@@ -53,10 +53,9 @@ export async function GET(request: Request) {
         const standardizedSeries = userSeries.map(formatUserSeriesResponse);
 
         return NextResponse.json(standardizedSeries);
-    } catch (error) {
-        console.error("Dizi hatası");
+    } catch {
         return NextResponse.json(
-            { error: "Diziler yüklenirken bir hata oluştu" },
+            { error: "Diziler listelenirken bir sorun oluştu" },
             { status: 500 }
         );
     }
@@ -168,12 +167,9 @@ export async function POST(request: Request) {
 
 
         return NextResponse.json(formatUserSeriesResponse(userSeries), { status: 201 });
-    } catch (error) {
-        console.error("Dizi hatası");
-        return NextResponse.json(
-            { error: "Dizi eklenirken bir hata oluştu" },
-            { status: 500 }
-        );
+    } catch (err) {
+        console.error("series POST:", err);
+        return NextResponse.json({ error: "Dizi eklenemedi" }, { status: 500 });
     }
 }
 
@@ -309,10 +305,9 @@ export async function PUT(request: Request) {
         }
 
         return NextResponse.json(formatUserSeriesResponse(userSeries));
-    } catch (error) {
-        console.error("Dizi hatası");
+    } catch {
         return NextResponse.json(
-            { error: "Dizi güncellenirken bir hata oluştu" },
+            { error: "Dizi güncellenemedi" },
             { status: 500 }
         );
     }
@@ -395,12 +390,8 @@ export async function PATCH(request: Request) {
 
 
         return NextResponse.json(formatUserSeriesResponse(userSeries));
-    } catch (error) {
-        console.error("Dizi hatası");
-        return NextResponse.json(
-            { error: "Dizi güncellenirken bir hata oluştu" },
-            { status: 500 }
-        );
+    } catch {
+        return NextResponse.json({ error: "Güncelleme başarısız" }, { status: 500 });
     }
 }
 
@@ -450,10 +441,9 @@ export async function DELETE(request: Request) {
         }
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("Dizi hatası");
+    } catch {
         return NextResponse.json(
-            { error: "Dizi silinirken bir hata oluştu" },
+            { error: "Silme işlemi sırasında bir hata oluştu" },
             { status: 500 }
         );
     }
