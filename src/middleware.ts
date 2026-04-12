@@ -4,8 +4,6 @@ import type { NextRequest } from "next/server";
 
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
 
-// Edge-uyumlu IP tespiti (rate-limiter.ts'deki getClientIP ile aynı mantık)
-// Middleware Edge runtime'da çalıştığı için rate-limiter.ts'den import yapılamaz
 function getMiddlewareClientIP(request: NextRequest): string {
     const trustedHeaders = [
         "x-real-ip",

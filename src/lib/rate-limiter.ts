@@ -8,9 +8,6 @@ const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 dakika
 
 
 // In-memory rate limit store
-// Not: Eski implementasyon loginAttempt tablosunu sorguluyordu fakat
-// login dışındaki endpointler bu tabloya yazma yapmadığından sayaç
-// daima 0 dönüyor ve rate limiter hiç tetiklenmiyordu.
 const rateLimitStore = new Map<string, { count: number; windowStart: number }>();
 const MAX_STORE_SIZE = 10000;
 
@@ -29,7 +26,6 @@ export async function checkRateLimit(ip: string): Promise<{
     message?: string;
     retryAfter?: number;
 }> {
-    // Store çok büyürse eski kayıtları temizle
     if (rateLimitStore.size > MAX_STORE_SIZE) {
         pruneExpiredEntries();
     }
@@ -37,13 +33,11 @@ export async function checkRateLimit(ip: string): Promise<{
     const now = Date.now();
     const data = rateLimitStore.get(ip);
 
-    // Yeni pencere veya süresi dolmuş pencere
     if (!data || now - data.windowStart > RATE_LIMIT_WINDOW_MS) {
         rateLimitStore.set(ip, { count: 1, windowStart: now });
         return { success: true };
     }
 
-    // Mevcut pencerede sayacı artır
     data.count++;
 
     if (data.count > MAX_REQUESTS_PER_WINDOW) {
