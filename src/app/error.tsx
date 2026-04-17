@@ -68,7 +68,13 @@ export default function Error({
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                     <Button 
-                        onClick={() => reset()}
+                        onClick={() => {
+                            if (typeof window !== "undefined") {
+                                window.location.reload();
+                            } else {
+                                reset();
+                            }
+                        }}
                         className="w-full sm:w-auto h-12 px-8 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white shadow-xl shadow-red-500/20 transition-all hover:scale-105 active:scale-95 gap-2"
                     >
                         <RefreshCcw className="h-4 w-4" />

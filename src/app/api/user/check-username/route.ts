@@ -24,13 +24,12 @@ export async function GET(request: Request) {
             return NextResponse.json({ available: false, error: "Kullanıcı adı gereklidir" }, { status: 400 });
         }
 
-        // Merkezi validation şemasını kullan (uzunluk, karakter, küfür vb. hepsi dahil)
         const validated = usernameSchema.safeParse(usernameParam);
-        
+
         if (!validated.success) {
-            return NextResponse.json({ 
-                available: false, 
-                error: validated.error.issues[0]?.message || "Geçersiz kullanıcı adı" 
+            return NextResponse.json({
+                available: false,
+                error: validated.error.issues[0]?.message || "Geçersiz kullanıcı adı"
             });
         }
 

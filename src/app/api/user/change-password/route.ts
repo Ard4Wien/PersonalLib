@@ -77,8 +77,7 @@ export async function POST(request: Request) {
         const isPasswordMatch = await bcrypt.compare(currentPassword, user.passwordHash);
 
         if (!isPasswordMatch) {
-            // Timing attack koruması: Rastgele bekleme ve dummy compare
-            await bcrypt.compare("dummy_password", "$2b$10$dummyhashdummyhashdummyhashdummyhashdummyhash");
+            await bcrypt.compare("dummy_password", "$2b$10$tnwJkrdRvkJ49DvEzHFM..AQmt3BmTjccjU2Hx/CmWp8ALvMkkWwd6");
             const delay = Math.floor(Math.random() * 200) + 100;
             await new Promise(resolve => setTimeout(resolve, delay));
 

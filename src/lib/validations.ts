@@ -248,7 +248,7 @@ export const seriesPatchSchema = mediaPatchSchema.extend({
     seasonStatus: mediaStatusSchema.optional(),
 });
 
-export const languageSchema = z.enum(["tr", "en", "fr", "de"]);
+export const languageSchema = z.enum(["tr", "en", "fr", "de", "ru", "zh", "ja"]);
 
 export const privacySchema = z.object({
     isPrivate: z.boolean()

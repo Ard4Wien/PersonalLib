@@ -85,6 +85,7 @@ export async function POST(request: Request) {
 
         const user = await prisma.user.findUnique({
             where: { email },
+            select: { id: true, language: true }
         });
 
         if (!user) {
@@ -110,7 +111,7 @@ export async function POST(request: Request) {
         });
 
         const resetUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/reset-password?token=${rawToken}`;
-        await sendPasswordResetEmail(email, resetUrl);
+        await sendPasswordResetEmail(email, resetUrl, user.language as any);
 
         return NextResponse.json({ message: "Sıfırlama bağlantısı gönderildi" });
     } catch {

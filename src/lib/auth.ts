@@ -92,15 +92,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     ],
     callbacks: {
         async jwt({ token, user, trigger, session }) {
-            // 1. İlk Giriş
             if (user) {
                 token.id = user.id as string;
                 token.username = (user as { username: string }).username;
                 token.email = user.email;
-                token.picture = (user as any).image;
+                token.picture = (user as { image?: string | null }).image;
             }
 
-            // 2. Dinamik Güncelleme
             if (trigger === "update" && session?.image) {
                 token.picture = session.image;
             }

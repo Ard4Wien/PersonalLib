@@ -30,7 +30,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
 
 # vercel
@@ -42,10 +42,10 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# database files (CRITICAL - never commit)
+# database files
 *.db
 *.db-journal
 prisma/*.db
 
-# project summary (local only)
+# local only
 Proje\ Özeti.md

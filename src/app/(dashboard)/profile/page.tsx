@@ -25,8 +25,11 @@ import { useTranslation } from "@/contexts/language-context";
 
 
 const LANGUAGES = [
-    { code: "tr", name: "Türkçe" },
-    { code: "en", name: "English" },
+    { code: "tr", name: "Türkçe", flag: "🇹🇷" },
+    { code: "en", name: "English", flag: "ᴇɴ" },
+    { code: "ru", name: "Русский", flag: "🇷🇺" },
+    { code: "zh", name: "中文", flag: "🇨🇳" },
+    { code: "ja", name: "日本語", flag: "🇯🇵" },
 ];
 
 import { SOCIAL_PLATFORMS } from "@/lib/social-platforms";
@@ -81,7 +84,7 @@ export default function ProfilePage() {
             .then(res => res.json())
             .then(data => setSocialLinks(data.socialLinks || {}))
             .catch(() => { });
-    }, [t]);
+    }, []);
 
     const saveSocialLinks = useCallback(async (links: SocialLinks) => {
         setIsSocialSaving(true);
@@ -98,7 +101,7 @@ export default function ProfilePage() {
         } finally {
             setIsSocialSaving(false);
         }
-    }, [t]);
+    }, []);
 
     const handleSocialChange = useCallback((platform: string, field: "username" | "isVisible", value: string | boolean) => {
         setSocialLinks(prev => {
@@ -220,7 +223,7 @@ export default function ProfilePage() {
             <Card className="bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-sm transition-all duration-300">
                 <CardContent className="pt-6">
                     <div className="flex flex-col sm:flex-row items-center gap-6">
-                        <ImageUpload 
+                        <ImageUpload
                             userId={session.user.id}
                             username={session.user.username}
                             name={session.user.name}
@@ -262,7 +265,7 @@ export default function ProfilePage() {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <StatCard 
+                <StatCard
                     label={t.nav.books}
                     value={stats?.books || 0}
                     icon={<BookOpen className="h-5 w-5" />}
@@ -272,7 +275,7 @@ export default function ProfilePage() {
                     shadowClass="hover:shadow-purple-500/10"
                     href="/books"
                 />
-                <StatCard 
+                <StatCard
                     label={t.movies.moviesTab}
                     value={stats?.movies || 0}
                     icon={<Film className="h-5 w-5" />}
@@ -282,7 +285,7 @@ export default function ProfilePage() {
                     shadowClass="hover:shadow-blue-500/10"
                     href="/movies"
                 />
-                <StatCard 
+                <StatCard
                     label={t.movies.seriesTab}
                     value={stats?.series || 0}
                     icon={<Tv className="h-5 w-5" />}
@@ -350,13 +353,25 @@ export default function ProfilePage() {
                             <p className="text-xs text-muted-foreground">{t.profile.languageDescription}</p>
                         </div>
                         <Select value={locale} onValueChange={handleLanguageChange}>
-                            <SelectTrigger size="sm" className="w-[120px] bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10">
-                                <SelectValue />
+                            <SelectTrigger size="sm" className="w-[130px] bg-transparent border-transparent shadow-none hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus:ring-0">
+                                <SelectValue>
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="text-base leading-none">{LANGUAGES.find(l => l.code === locale)?.flag}</span>
+                                        <span className="text-sm font-medium">{LANGUAGES.find(l => l.code === locale)?.name}</span>
+                                    </div>
+                                </SelectValue>
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="bg-white/70 dark:bg-zinc-950/70 backdrop-blur-2xl border border-black/5 dark:border-white/10 shadow-lg rounded-xl p-1 z-50">
                                 {LANGUAGES.map((lang) => (
-                                    <SelectItem key={lang.code} value={lang.code}>
-                                        {lang.name}
+                                    <SelectItem
+                                        key={lang.code}
+                                        value={lang.code}
+                                        className="rounded-lg cursor-pointer focus:bg-black/5 dark:focus:bg-white/10 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2.5 w-[100px] py-0.5">
+                                            <span className="text-base leading-none">{lang.flag}</span>
+                                            <span className="text-sm font-medium">{lang.name}</span>
+                                        </div>
                                     </SelectItem>
                                 ))}
                             </SelectContent>

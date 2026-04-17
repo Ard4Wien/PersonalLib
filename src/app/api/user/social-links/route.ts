@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { containsHtml, isSafeUrl } from "@/lib/sanitize";
+import { containsHtml } from "@/lib/sanitize";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limiter";
 
 // İzin verilen sosyal medya platformları

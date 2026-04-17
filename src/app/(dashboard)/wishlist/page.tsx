@@ -320,6 +320,8 @@ export default function WishlistPage() {
         if (activeTab === "books") return item.type === "book";
         if (activeTab === "movies") return item.type === "movie" || item.type === "series";
         return true;
+    }).sort((a, b) => {
+        return new Date(b.originalData?.updatedAt || 0).getTime() - new Date(a.originalData?.updatedAt || 0).getTime();
     });
 
     const bookCount = items.filter((i) => i.type === "book").length;

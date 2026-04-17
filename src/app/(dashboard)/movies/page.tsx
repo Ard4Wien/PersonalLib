@@ -495,10 +495,7 @@ export default function MoviesPage() {
         if (statusFilter === "all") return true;
         return m.status === statusFilter;
     }).sort((a, b) => {
-        if (a.isFavorite === b.isFavorite) {
-            return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
-        }
-        return a.isFavorite ? -1 : 1;
+        return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
     });
 
     const filteredSeries = series.filter((s) => {
@@ -512,10 +509,7 @@ export default function MoviesPage() {
         if (statusFilter === "all") return true;
         return (s.status || s.overallStatus) === statusFilter;
     }).sort((a, b) => {
-        if (a.isFavorite === b.isFavorite) {
-            return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
-        }
-        return a.isFavorite ? -1 : 1;
+        return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
     });
 
     const movieItems = filteredMovies.map((m) => ({
@@ -707,7 +701,7 @@ export default function MoviesPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-muted-foreground">{t.books.status}</Label>
+                                    <Label className="text-muted-foreground">{t.status.status}</Label>
                                     <Select value={seriesStatus} onValueChange={setSeriesStatus}>
                                         <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                             <SelectValue />
@@ -826,19 +820,19 @@ export default function MoviesPage() {
                     <Dialog open={isSeriesEditDialogOpen} onOpenChange={(open) => { setIsSeriesEditDialogOpen(open); if (!open) setEditingSeries(null); }}>
                         <DialogContent className="bg-white dark:bg-slate-950/95 backdrop-blur-xl border-black/5 dark:border-white/10 shadow-2xl">
                             <DialogHeader>
-                                <DialogTitle className="text-foreground dark:text-white">Diziyi Düzenle</DialogTitle>
+                                <DialogTitle className="text-foreground dark:text-white">{t.movies.editSeries}</DialogTitle>
                                 <DialogDescription className="sr-only">
-                                    Seçili dizinin bilgilerini ve izleme durumunu güncelleyin.
+                                    {t.movies.editSeries}
                                 </DialogDescription>
                             </DialogHeader>
                             {editingSeries && (
                                 <form onSubmit={handleEditSeries} className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-series-title" className="text-muted-foreground">Dizi Adı *</Label>
+                                        <Label htmlFor="edit-series-title" className="text-muted-foreground">{t.movies.seriesName}</Label>
                                         <Input id="edit-series-title" name="title" required defaultValue={editingSeries.title} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="edit-series-creator" className="text-muted-foreground">Yapımcı</Label>
+                                        <Label htmlFor="edit-series-creator" className="text-muted-foreground">{t.movies.creator}</Label>
                                         <Input id="edit-series-creator" name="creator" defaultValue={editingSeries.subtitle} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                     </div>
                                     <div className="space-y-2">
@@ -856,7 +850,7 @@ export default function MoviesPage() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-muted-foreground">Durum</Label>
+                                        <Label className="text-muted-foreground">{t.status.status}</Label>
                                         <Select value={editSeriesStatus} onValueChange={setEditSeriesStatus}>
                                             <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                                 <SelectValue />
@@ -960,7 +954,6 @@ export default function MoviesPage() {
                 <TabsContent value="all" className="mt-6">
                     <MediaGrid
                         items={[...movieItems, ...seriesItems].sort((a, b) => {
-                            if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1;
                             const aMovie = movies.find(m => m.id === a.id);
                             const bMovie = movies.find(m => m.id === b.id);
                             const aSeries = series.find(s => s.id === a.id);

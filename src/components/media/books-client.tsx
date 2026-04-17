@@ -246,10 +246,7 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
         if (activeTab === "wishlist") return b.status === "WISHLIST";
         return true;
     }).sort((a, b) => {
-        if (a.isFavorite === b.isFavorite) {
-            return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
-        }
-        return a.isFavorite ? -1 : 1;
+        return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
     });
 
     const mediaItems = filteredBooks.map((b) => ({
@@ -317,11 +314,11 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                         <form id="add-book-form" onSubmit={handleAddBook} className="space-y-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="title" className="text-muted-foreground">{t.books.bookName} *</Label>
+                                    <Label htmlFor="title" className="text-muted-foreground">{t.books.bookName}</Label>
                                     <Input id="title" name="title" required placeholder={t.books.bookNamePlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="author" className="text-muted-foreground">{t.books.author} *</Label>
+                                    <Label htmlFor="author" className="text-muted-foreground">{t.books.author}</Label>
                                     <Input id="author" name="author" required placeholder={t.books.authorPlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                                 </div>
                             </div>
@@ -334,7 +331,7 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                                 <Input id="genre" name="genre" placeholder={t.books.genrePlaceholder} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-muted-foreground">Durum</Label>
+                                <Label className="text-muted-foreground">{t.status.status}</Label>
                                 <Select value={addStatus} onValueChange={setAddStatus}>
                                     <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                         <SelectValue />
@@ -377,11 +374,11 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                     {editingBook && (
                         <form onSubmit={handleEditBook} className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="edit-title" className="text-muted-foreground">{t.books.bookName} *</Label>
+                                <Label htmlFor="edit-title" className="text-muted-foreground">{t.books.bookName}</Label>
                                 <Input id="edit-title" name="title" required defaultValue={editingBook.title} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="edit-author" className="text-muted-foreground">{t.books.author} *</Label>
+                                <Label htmlFor="edit-author" className="text-muted-foreground">{t.books.author}</Label>
                                 <Input id="edit-author" name="author" required defaultValue={editingBook.subtitle} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
@@ -393,7 +390,7 @@ export function BooksClient({ initialBooks }: BooksClientProps) {
                                 <Input id="edit-genre" name="genre" defaultValue={editingBook.genre || editingBook.book?.genre || ""} className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-muted-foreground">Durum</Label>
+                                <Label className="text-muted-foreground">{t.status.status}</Label>
                                 <Select value={editStatus} onValueChange={setEditStatus}>
                                     <SelectTrigger className="bg-black/5 dark:bg-white/5 border-black/5 dark:border-white/10 text-foreground dark:text-white">
                                         <SelectValue />
